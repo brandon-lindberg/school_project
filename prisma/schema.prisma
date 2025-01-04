@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  user_id       Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  full_name     String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  lists UserList[]
+}
+
+model School {
+  school_id     Int     @id @default(autoincrement())
+  site_id       String
+  name_en       String?
+  name_jp       String?
+  location_en   String?
+  location_jp   String?
+  phone_en      String?
+  phone_jp      String?
+  email_en      String?
+  email_jp      String?
+  address_en    String?
+  address_jp    String?
+  curriculum_en String?
+  curriculum_jp String?
+
+  structured_data Json @default("{}")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  userListSchools UserListSchools[]
+}
+
+model UserList {
+  list_id    Int      @id @default(autoincrement())
+  list_name  String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  user    User              @relation(fields: [user_id], references: [user_id])
+  user_id Int
+  schools UserListSchools[]
+}
+
+model UserListSchools {
+  // Composite key for (list_id, school_id)
+  list_id   Int
+  school_id Int
+
+  // Relations
+  list   UserList @relation(fields: [list_id], references: [list_id])
+  school School   @relation(fields: [school_id], references: [school_id])
+
+  @@id([list_id, school_id])
+}
