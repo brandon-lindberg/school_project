@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -28,6 +30,7 @@ export default function RegisterPage() {
       } else {
         // success
         setMessage(`Success! Your user ID: ${data.userId}`);
+        router.push('/list');
       }
     } catch (err: unknown) {
       // Use a fallback message unless it's an instance of Error

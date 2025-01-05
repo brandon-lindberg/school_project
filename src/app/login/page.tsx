@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export default function LoginPage() {
         setMessage(data.error || 'Invalid credentials');
       } else {
         setMessage(`Logged in! User ID: ${data.userId}`);
+        router.push('/list');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
