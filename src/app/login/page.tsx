@@ -34,33 +34,39 @@ export default function LoginPage() {
   };
 
   return (
-    <main style={{ padding: '1rem' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '300px' }}>
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
+    <main className="p-4 flex justify-center items-center min-h-screen">
+      <div className="max-w-xs w-full">
+        <h1 className="text-xl font-bold mb-4">Login</h1>
+        <form onSubmit={handleLogin} className="flex flex-col gap-2">
+          <label className="flex flex-col">
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="border p-2 rounded"
+            />
+          </label>
 
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
+          <label className="flex flex-col">
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="border p-2 rounded"
+            />
+          </label>
 
-        <button type="submit">Log In</button>
-      </form>
+          <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+            Log In
+          </button>
+        </form>
 
-      {message && <p>{message}</p>}
+        {message && <p className="mt-4 text-red-500">{message}</p>}
+      </div>
     </main>
   );
 }

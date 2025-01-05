@@ -40,67 +40,69 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Register</h1>
-      <form onSubmit={handleRegister} className="flex flex-col gap-4 max-w-md">
-        <label className="flex flex-col">
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          />
-        </label>
+    <main className="flex items-center justify-center min-h-screen p-4 bg-[var(--background)] text-black">
+      <div className="max-w-lg w-full">
+        <h1 className="text-2xl font-bold mb-4">Register</h1>
+        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+          <label className="flex flex-col">
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </label>
 
-        <label className="flex flex-col">
-          Family Name
-          <input
-            type="text"
-            value={familyName}
-            onChange={(e) => setFamilyName(e.target.value)}
-            className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          />
-        </label>
+          <label className="flex flex-col">
+            Family Name
+            <input
+              type="text"
+              value={familyName}
+              onChange={(e) => setFamilyName(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </label>
 
-        <label className="flex flex-col">
-          First Name
-          <input
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          />
-        </label>
+          <label className="flex flex-col">
+            First Name
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </label>
 
-        <label className="flex flex-col">
-          Phone Number
-          <input
-            type="text"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          />
-        </label>
+          <label className="flex flex-col">
+            Phone Number
+            <input
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </label>
 
-        <label className="flex flex-col">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          />
-        </label>
+          <label className="flex flex-col">
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </label>
 
-        <button type="submit" className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-          Sign Up
-        </button>
-      </form>
+          <button type="submit" className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+            Sign Up
+          </button>
+        </form>
 
-      {message && <p className="mt-4 text-red-500">{message}</p>}
+        {message && <p className="mt-4 text-red-500">{message}</p>}
+      </div>
     </main>
   );
 }
