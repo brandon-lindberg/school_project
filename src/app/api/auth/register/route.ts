@@ -1,3 +1,5 @@
+// src/app/api/auth/register/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -7,9 +9,9 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, fullName } = body;
+    const { email, password, familyName, firstName, phoneNumber } = body;
 
-    // 1. Basic validation
+    // Basic validation
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required.' },
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Check if user already exists
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -28,16 +30,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Hash the password
+    // Hash the password
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // 4. Create the new user
+    // Create the new user with correct field names
     const newUser = await prisma.user.create({
       data: {
         email,
         password_hash: passwordHash,
-        full_name: fullName || null,
+        family_name: familyName ?? null,      // Changed from familyName to family_name
+        first_name: firstName ?? null,        // Changed from firstName to first_name
+        phone_number: phoneNumber ?? null,    // Changed from phoneNumber to phone_number
       },
     });
 
@@ -50,3 +54,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
