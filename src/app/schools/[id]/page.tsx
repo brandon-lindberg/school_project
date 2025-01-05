@@ -5,6 +5,11 @@ import { NormalizedDataItem, SubPage } from '../../../interfaces/NormalizedData'
 import { School } from '../../../interfaces/School';
 import Link from 'next/link';
 
+interface Params {
+  id: string;
+}
+
+// Function to parse raw data and extract school information
 const parseSchools = (): School[] => {
   const schools: School[] = [];
   let idCounter = 1;
@@ -48,7 +53,7 @@ const parseSchools = (): School[] => {
     });
 
     schools.push({
-      id: (idCounter++).toString(),
+      id: (idCounter++).toString(), // Ensure id is a string
       name: schoolName || 'Unnamed School',
       description,
       contactEmail,
@@ -58,10 +63,6 @@ const parseSchools = (): School[] => {
   });
 
   return schools;
-};
-
-interface Params {
-  id: string;
 }
 
 export async function generateStaticParams() {
@@ -72,8 +73,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Params }) {
+  const resolvedParams = await params; // Await params as it's now a Promise
   const schools: School[] = parseSchools();
-  const school = schools.find((s) => s.id.toString() === params.id);
+  const school = schools.find((s) => s.id.toString() === resolvedParams.id);
 
   return {
     title: school ? `${school.name} - Details` : 'School Not Found',
@@ -101,10 +103,11 @@ const fetchSchoolDetails = async (id: string): Promise<{ school: School; details
 };
 
 export default async function SchoolDetailPage({ params }: { params: Params }) {
-  const { id } = params;
+  const resolvedParams = await params; // Await params as it's now a Promise
+  const { id } = resolvedParams;
 
   if (!id) {
-    redirect('/list');
+    redirect('/login');
   }
 
   const schoolDetails = await fetchSchoolDetails(id);

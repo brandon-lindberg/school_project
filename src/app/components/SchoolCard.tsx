@@ -14,10 +14,21 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school }) => {
     router.push(`/schools/${school.id}`);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
     <div
       className="border rounded-lg p-6 shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
       onClick={handleCardClick}
+      onKeyPress={handleKeyPress}
+      role="button"
+      tabIndex={0}
+      aria-pressed="false"
     >
       <h2 className="text-2xl font-semibold mb-2">{school.name}</h2>
       <p className="text-gray-600 mb-4">{school.description}</p>
