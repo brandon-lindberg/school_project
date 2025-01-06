@@ -17,6 +17,26 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
     router.push(`/schools/${school.id}`);
   };
 
+  const handleAddToList = async () => {
+    try {
+      const response = await fetch('/api/userLists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ schoolId: school.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add school to list');
+      }
+
+      alert('School added to your list!');
+    } catch (error) {
+      console.error('Error adding school to list:', error);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -66,7 +86,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
         alt={`${school.name} Image`}
         className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-t-lg"
       />
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="relative p-4 flex flex-col flex-grow">
         <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 flex items-center">
           <img
             src="https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172"
@@ -104,6 +124,15 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
             Visit Website
           </Link>
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddToList();
+          }}
+          className="bg-green-500 text-white p-2 rounded mt-2 absolute bottom-4 right-4"
+        >
+          +
+        </button>
       </div>
     </div>
   );
