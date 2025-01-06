@@ -47,11 +47,11 @@ model School {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // New Columns with English and Japanese Versions
-  url_en          String
-  url_jp          String
-  logo_id         String
-  image_id        String
+  // New Columns with English and Japanese Versions (Now Nullable)
+  url_en          String?
+  url_jp          String?
+  logo_id         String?
+  image_id        String?
   affiliations_en String[]
   affiliations_jp String[]
   accreditation_en String[]
@@ -60,72 +60,72 @@ model School {
   // Education
   education_programs_offered_en           String[]
   education_programs_offered_jp           String[]
-  education_curriculum_en                 String
-  education_curriculum_jp                 String
+  education_curriculum_en                 String?
+  education_curriculum_jp                 String?
   education_academic_support_en           String[]
   education_academic_support_jp           String[]
   education_extracurricular_activities_en String[]
   education_extracurricular_activities_jp String[]
 
   // Admissions
-  admissions_acceptance_policy_en               String
-  admissions_acceptance_policy_jp               String
-  admissions_application_guidelines_en          String
-  admissions_application_guidelines_jp          String
-  admissions_age_requirements_en                String
-  admissions_age_requirements_jp                String
-  admissions_fees_en                             String
-  admissions_fees_jp                             String
-  admissions_breakdown_fees_application_fee_en  String
-  admissions_breakdown_fees_application_fee_jp  String
-  admissions_breakdown_fees_day_care_fee_tuition_en         String
-  admissions_breakdown_fees_day_care_fee_tuition_jp         String
-  admissions_breakdown_fees_day_care_fee_registration_fee_en String
-  admissions_breakdown_fees_day_care_fee_registration_fee_jp String
-  admissions_breakdown_fees_day_care_fee_maintenance_fee_en   String
-  admissions_breakdown_fees_day_care_fee_maintenance_fee_jp   String
-  admissions_breakdown_fees_kindergarten_tuition_en         String
-  admissions_breakdown_fees_kindergarten_tuition_jp         String
-  admissions_breakdown_fees_kindergarten_registration_fee_en String
-  admissions_breakdown_fees_kindergarten_registration_fee_jp String
-  admissions_breakdown_fees_kindergarten_maintenance_fee_en   String
-  admissions_breakdown_fees_kindergarten_maintenance_fee_jp   String
-  admissions_breakdown_fees_grade_elementary_tuition_en     String
-  admissions_breakdown_fees_grade_elementary_tuition_jp     String
-  admissions_breakdown_fees_grade_elementary_registration_fee_en String
-  admissions_breakdown_fees_grade_elementary_registration_fee_jp String
-  admissions_breakdown_fees_grade_elementary_maintenance_fee_en String
-  admissions_breakdown_fees_grade_elementary_maintenance_fee_jp String
-  admissions_breakdown_fees_grade_junior_high_tuition_en        String
-  admissions_breakdown_fees_grade_junior_high_tuition_jp        String
-  admissions_breakdown_fees_grade_junior_high_registration_fee_en String
-  admissions_breakdown_fees_grade_junior_high_registration_fee_jp String
-  admissions_breakdown_fees_grade_junior_high_maintenance_fee_en   String
-  admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp   String
-  admissions_breakdown_fees_grade_high_school_tuition_en        String
-  admissions_breakdown_fees_grade_high_school_tuition_jp        String
-  admissions_breakdown_fees_grade_high_school_registration_fee_en String
-  admissions_breakdown_fees_grade_high_school_registration_fee_jp String
-  admissions_breakdown_fees_grade_high_school_maintenance_fee_en   String
-  admissions_breakdown_fees_grade_high_school_maintenance_fee_jp   String
-  admissions_breakdown_fees_summer_school_tuition_en           String
-  admissions_breakdown_fees_summer_school_tuition_jp           String
-  admissions_breakdown_fees_summer_school_registration_fee_en   String
-  admissions_breakdown_fees_summer_school_registration_fee_jp   String
-  admissions_breakdown_fees_summer_school_maintenance_fee_en     String
-  admissions_breakdown_fees_summer_school_maintenance_fee_jp     String
-  admissions_breakdown_fees_other_tuition_en                  String
-  admissions_breakdown_fees_other_tuition_jp                  String
-  admissions_breakdown_fees_other_registration_fee_en          String
-  admissions_breakdown_fees_other_registration_fee_jp          String
-  admissions_breakdown_fees_other_maintenance_fee_en            String
-  admissions_breakdown_fees_other_maintenance_fee_jp            String
-  admissions_procedure_en                            String
-  admissions_procedure_jp                            String
-  admissions_language_requirements_students_en       String
-  admissions_language_requirements_students_jp       String
-  admissions_language_requirements_parents_en        String
-  admissions_language_requirements_parents_jp        String
+  admissions_acceptance_policy_en               String?
+  admissions_acceptance_policy_jp               String?
+  admissions_application_guidelines_en          String?
+  admissions_application_guidelines_jp          String?
+  admissions_age_requirements_en                String?
+  admissions_age_requirements_jp                String?
+  admissions_fees_en                             String?
+  admissions_fees_jp                             String?
+  admissions_breakdown_fees_application_fee_en  String?
+  admissions_breakdown_fees_application_fee_jp  String?
+  admissions_breakdown_fees_day_care_fee_tuition_en         String?
+  admissions_breakdown_fees_day_care_fee_tuition_jp         String?
+  admissions_breakdown_fees_day_care_fee_registration_fee_en String?
+  admissions_breakdown_fees_day_care_fee_registration_fee_jp String?
+  admissions_breakdown_fees_day_care_fee_maintenance_fee_en   String?
+  admissions_breakdown_fees_day_care_fee_maintenance_fee_jp   String?
+  admissions_breakdown_fees_kindergarten_tuition_en         String?
+  admissions_breakdown_fees_kindergarten_tuition_jp         String?
+  admissions_breakdown_fees_kindergarten_registration_fee_en String?
+  admissions_breakdown_fees_kindergarten_registration_fee_jp String?
+  admissions_breakdown_fees_kindergarten_maintenance_fee_en   String?
+  admissions_breakdown_fees_kindergarten_maintenance_fee_jp   String?
+  admissions_breakdown_fees_grade_elementary_tuition_en     String?
+  admissions_breakdown_fees_grade_elementary_tuition_jp     String?
+  admissions_breakdown_fees_grade_elementary_registration_fee_en String?
+  admissions_breakdown_fees_grade_elementary_registration_fee_jp String?
+  admissions_breakdown_fees_grade_elementary_maintenance_fee_en String?
+  admissions_breakdown_fees_grade_elementary_maintenance_fee_jp String?
+  admissions_breakdown_fees_grade_junior_high_tuition_en        String?
+  admissions_breakdown_fees_grade_junior_high_tuition_jp        String?
+  admissions_breakdown_fees_grade_junior_high_registration_fee_en String?
+  admissions_breakdown_fees_grade_junior_high_registration_fee_jp String?
+  admissions_breakdown_fees_grade_junior_high_maintenance_fee_en   String?
+  admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp   String?
+  admissions_breakdown_fees_grade_high_school_tuition_en        String?
+  admissions_breakdown_fees_grade_high_school_tuition_jp        String?
+  admissions_breakdown_fees_grade_high_school_registration_fee_en String?
+  admissions_breakdown_fees_grade_high_school_registration_fee_jp String?
+  admissions_breakdown_fees_grade_high_school_maintenance_fee_en   String?
+  admissions_breakdown_fees_grade_high_school_maintenance_fee_jp   String?
+  admissions_breakdown_fees_summer_school_tuition_en           String?
+  admissions_breakdown_fees_summer_school_tuition_jp           String?
+  admissions_breakdown_fees_summer_school_registration_fee_en   String?
+  admissions_breakdown_fees_summer_school_registration_fee_jp   String?
+  admissions_breakdown_fees_summer_school_maintenance_fee_en     String?
+  admissions_breakdown_fees_summer_school_maintenance_fee_jp     String?
+  admissions_breakdown_fees_other_tuition_en                  String?
+  admissions_breakdown_fees_other_tuition_jp                  String?
+  admissions_breakdown_fees_other_registration_fee_en          String?
+  admissions_breakdown_fees_other_registration_fee_jp          String?
+  admissions_breakdown_fees_other_maintenance_fee_en            String?
+  admissions_breakdown_fees_other_maintenance_fee_jp            String?
+  admissions_procedure_en                            String?
+  admissions_procedure_jp                            String?
+  admissions_language_requirements_students_en       String?
+  admissions_language_requirements_students_jp       String?
+  admissions_language_requirements_parents_en        String?
+  admissions_language_requirements_parents_jp        String?
 
   events_en String[]
   events_jp String[]
@@ -133,32 +133,32 @@ model School {
   // Campus
   campus_facilities_en String[]
   campus_facilities_jp String[]
-  campus_virtual_tour_en String
-  campus_virtual_tour_jp String
+  campus_virtual_tour_en String?
+  campus_virtual_tour_jp String?
 
   // Student Life
-  student_life_counseling_en           String
-  student_life_counseling_jp           String
+  student_life_counseling_en           String?
+  student_life_counseling_jp           String?
   student_life_support_services_en    String[]
   student_life_support_services_jp    String[]
-  student_life_library_en             String
-  student_life_library_jp             String
-  student_life_calendar_en            String
-  student_life_calendar_jp            String
-  student_life_tour_en                String
-  student_life_tour_jp                String
+  student_life_library_en             String?
+  student_life_library_jp             String?
+  student_life_calendar_en            String?
+  student_life_calendar_jp            String?
+  student_life_tour_en                String?
+  student_life_tour_jp                String?
 
   // Employment
   employment_open_positions_en        String[]
   employment_open_positions_jp        String[]
-  employment_application_process_en   String
-  employment_application_process_jp   String
+  employment_application_process_en   String?
+  employment_application_process_jp   String?
 
   // Policies
-  policies_privacy_policy_en String
-  policies_privacy_policy_jp String
-  policies_terms_of_use_en    String
-  policies_terms_of_use_jp    String
+  policies_privacy_policy_en String?
+  policies_privacy_policy_jp String?
+  policies_terms_of_use_en    String?
+  policies_terms_of_use_jp    String?
 
   // Staff
   staff_staff_list_en     String[]
@@ -166,9 +166,16 @@ model School {
   staff_board_members_en  String[]
   staff_board_members_jp  String[]
 
+  // New Columns Added
+  short_description_en String?
+  short_description_jp String?
+  description_en       String?
+  description_jp       String?
+
   // Relations
   userListSchools UserListSchools[]
 
+  // Indexes
   @@index([name_en, name_jp], name: "idx_school_name")
   @@index([location_en, location_jp], name: "idx_school_location")
   @@index([email_en, email_jp], name: "idx_school_email")
