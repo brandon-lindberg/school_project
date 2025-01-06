@@ -5,6 +5,7 @@ import { NormalizedDataItem, SubPage } from '../../../interfaces/NormalizedData'
 import { School } from '../../../interfaces/School';
 import Link from 'next/link';
 
+// Define the Params interface if not already defined
 interface Params {
   id: string;
 }
@@ -65,6 +66,7 @@ const parseSchools = (): School[] => {
   return schools;
 }
 
+// Generate static params for static generation
 export async function generateStaticParams() {
   const schools: School[] = parseSchools().slice(0, 5); // Ensure only 5 schools
   return schools.map((school) => ({
@@ -72,14 +74,14 @@ export async function generateStaticParams() {
   }));
 }
 
+// Generate metadata for the page
 export async function generateMetadata({ params }: { params: Params }) {
-  const resolvedParams = await params; // Await params as it's now a Promise
   const schools: School[] = parseSchools();
-  const school = schools.find((s) => s.id.toString() === resolvedParams.id);
+  const school = schools.find((s) => s.id.toString() === params.id);
 
   return {
-    title: school ? `${school.name} - Details` : 'School Not Found',
-    description: school ? school.description : 'No description available.',
+    title: school ? `${school.name_en} - Details` : 'School Not Found',
+    description: school ? school.description_en : 'No description available.',
   };
 }
 
@@ -102,9 +104,9 @@ const fetchSchoolDetails = async (id: string): Promise<{ school: School; details
   };
 };
 
-export default async function SchoolDetailPage({ params }: { params: Params }) {
-  const resolvedParams = await params; // Await params as it's now a Promise
-  const { id } = resolvedParams;
+// **Updated Component Definition**
+const SchoolDetailPage = async ({ params }: { params: Params }) => {
+  const { id } = params;
 
   if (!id) {
     redirect('/login');
@@ -120,12 +122,12 @@ export default async function SchoolDetailPage({ params }: { params: Params }) {
 
   return (
     <div className="container mx-auto py-8">
-      <Link href="/list" className="text-blue-500 hover:underline mb-4 inline-block">
+      <Link href="/list" className="text-green-500 hover:underline mb-4 inline-block">
         &larr; Back to School List
       </Link>
       <div className="border rounded-lg p-6 shadow-md">
-        <h1 className="text-3xl font-bold mb-4">{school.name}</h1>
-        <p className="text-gray-700 mb-4">{school.description}</p>
+        <h1 className="text-3xl font-bold mb-4">{school.name_en}</h1>
+        <p className="text-gray-700 mb-4">{school.description_en}</p>
         <div className="mb-4">
           <strong>Contact Email:</strong>{' '}
           <a href={`mailto:${school.contactEmail}`} className="text-blue-500 hover:underline">
@@ -157,4 +159,7 @@ export default async function SchoolDetailPage({ params }: { params: Params }) {
       </div>
     </div>
   );
-}
+};
+
+// **Export the Component**
+export default SchoolDetailPage;

@@ -1,12 +1,20 @@
-import React from 'react';
-import SchoolCard from '../components/SchoolCard';
+'use client'
+
+import React, { useState, useEffect, useCallback } from 'react';
+import SchoolList from '../components/SchoolList';
 import rawData from '../../../normalized_output.json';
 import { NormalizedDataItem, SubPage } from '../../interfaces/NormalizedData';
 import { School } from '../../interfaces/School';
+import SearchBox from '../components/SearchBox';
+import debounce from 'lodash.debounce';
 
 const ListPage: React.FC = () => {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const parseSchools = (): School[] => {
-    const schools: School[] = [];
+    const parsedSchools: School[] = [];
     let idCounter = 1;
 
     (rawData as NormalizedDataItem[]).forEach((item) => {
@@ -19,7 +27,10 @@ const ListPage: React.FC = () => {
 
       if (item.content.sub_pages.length > 0) {
         const firstSubPage = item.content.sub_pages[0];
-        description = firstSubPage.data.length > 200 ? `${firstSubPage.data.substring(0, 200)}...` : firstSubPage.data;
+        description =
+          firstSubPage.data.length > 200
+            ? `${firstSubPage.data.substring(0, 200)}...`
+            : firstSubPage.data;
       }
 
       item.content.sub_pages.forEach((subPage: SubPage) => {
@@ -47,7 +58,7 @@ const ListPage: React.FC = () => {
         }
       });
 
-      schools.push({
+      parsedSchools.push({
         id: (idCounter++).toString(), // Ensure id is a string
         name: schoolName || 'Unnamed School',
         description,
@@ -57,23 +68,50 @@ const ListPage: React.FC = () => {
       });
     });
 
-    return schools;
+    return parsedSchools;
   };
 
-  const schools: School[] = parseSchools().slice(0, 5); // Ensure only 5 schools are displayed
+  useEffect(() => {
+    const allSchools = parseSchools();
+    setSchools(allSchools);
+    setFilteredSchools(allSchools.slice(0, 5)); // Initially display first 5 schools
+  }, []);
+
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query); // Update the search query state
+      if (query === '') {
+        setFilteredSchools(schools.slice(0, 5)); // Reset to initial state
+      } else {
+        const lowerCaseQuery = query.toLowerCase();
+        const filtered = schools.filter(
+          (school) =>
+            school.name.toLowerCase().includes(lowerCaseQuery) ||
+            school.description.toLowerCase().includes(lowerCaseQuery)
+        );
+        setFilteredSchools(filtered);
+      }
+    }, 300), // Delay of 300ms
+    [schools]
+  );
+
+  const handleSearchInput = (query: string) => {
+    handleSearch(query);
+  };
+
+  useEffect(() => {
+    return () => {
+      handleSearch.cancel();
+    };
+  }, [handleSearch]);
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold mb-6">School List</h1>
-      {schools.length === 0 ? (
-        <p>No schools found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {schools.map((school) => (
-            <SchoolCard key={school.id} school={school} />
-          ))}
-        </div>
-      )}
+      <div className="mb-6">
+        <SearchBox onSearch={handleSearchInput} />
+      </div>
+      <SchoolList schools={filteredSchools} />
     </div>
   );
 };

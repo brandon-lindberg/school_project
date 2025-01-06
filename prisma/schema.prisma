@@ -172,6 +172,14 @@ model School {
   description_en       String?
   description_jp       String?
 
+  // Additional Columns
+  country_en   String?
+  country_jp   String?
+  region_en    String?
+  region_jp    String?
+  geography_en String?
+  geography_jp String?
+
   // Relations
   userListSchools UserListSchools[]
 
@@ -184,6 +192,9 @@ model School {
   @@index([url_en, url_jp], name: "idx_school_url")
   @@index([logo_id], name: "idx_school_logo")
   @@index([image_id], name: "idx_school_image")
+  @@index([country_en, country_jp], name: "idx_school_country")
+  @@index([region_en, region_jp], name: "idx_school_region")
+  @@index([geography_en, geography_jp], name: "idx_school_geography")
 }
 
 model UserList {
