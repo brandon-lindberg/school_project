@@ -54,6 +54,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
   return (
     <div
       className="border rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow w-full max-w-xs sm:max-w-sm md:max-w-md"
+      style={{ height: '66.67vh', maxHeight: '32.125rem' }}
       onClick={handleCardClick}
       onKeyPress={handleKeyPress}
       role="button"
@@ -65,7 +66,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
         alt={`${school.name} Image`}
         className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-t-lg"
       />
-      <div className="p-4 flex flex-col">
+      <div className="p-4 flex flex-col flex-grow">
         <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 flex items-center">
           <img
             src="https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172"
@@ -74,7 +75,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
           />
           {highlightText(school.name, searchQuery)}
         </h2>
-        <p className="text-gray-600 mb-4 text-sm sm:text-base">
+        <p className="text-gray-600 mb-4 text-sm sm:text-base flex-grow">
           {highlightText(school.description, searchQuery)}
         </p>
         <div className="mt-auto">
