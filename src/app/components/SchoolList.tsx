@@ -13,9 +13,11 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) =>
       {schools.length === 0 ? (
         <p>No schools found.</p>
       ) : (
-        <div className="flex flex-wrap justify-center gap-4 p-4">
+        <div className="flex overflow-x-auto space-x-4 p-4">
           {schools.map((school) => (
-            <SchoolCard key={school.id} school={school} searchQuery={searchQuery} />
+            <div key={school.id} className="flex-shrink-0">
+              <SchoolCard school={school} searchQuery={searchQuery} />
+            </div>
           ))}
         </div>
       )}
@@ -23,4 +25,4 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) =>
   );
 };
 
-export default SchoolList; 
+export default SchoolList;
