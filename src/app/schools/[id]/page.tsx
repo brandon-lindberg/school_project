@@ -60,6 +60,7 @@ const parseSchools = (): School[] => {
       contactEmail,
       contactPhone,
       website: website || '#',
+      logo_id: item.source.id, // Assuming logo_id is part of the source
     });
   });
 

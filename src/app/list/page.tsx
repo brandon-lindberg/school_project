@@ -7,11 +7,15 @@ import { NormalizedDataItem, SubPage } from '../../interfaces/NormalizedData';
 import { School } from '../../interfaces/School';
 import SearchBox from '../components/SearchBox';
 import debounce from 'lodash.debounce';
+import { useRouter } from 'next/navigation';
+
+const DEFAULT_LOGO_URL = 'https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172';
 
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
 
   const parseSchools = (): School[] => {
     const parsedSchools: School[] = [];
@@ -65,6 +69,7 @@ const ListPage: React.FC = () => {
         contactEmail,
         contactPhone,
         website: website || '#',
+        logo_id: item.source.id, // Assuming logo_id is part of the source
       });
     });
 
@@ -110,8 +115,33 @@ const ListPage: React.FC = () => {
       <h1 className="text-3xl font-bold mb-6">School List</h1>
       <div className="mb-6">
         <SearchBox onSearch={handleSearchInput} />
+        {searchQuery && (
+          <div className="bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-10 mt-2">
+            {filteredSchools.length > 0 ? (
+              <div className="space-y-4">
+                {filteredSchools.map((school) => (
+                  <div
+                    key={school.id}
+                    className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => router.push(`/schools/${school.id}`)}
+                  >
+                    <img
+                      src={`/logos/${school.logo_id}.png`}
+                      onError={(e) => (e.currentTarget.src = DEFAULT_LOGO_URL)}
+                      alt={`${school.name} Logo`}
+                      className="w-10 h-10 mr-4 object-contain"
+                    />
+                    <span>{school.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-2 text-gray-500">No schools found.</div>
+            )}
+          </div>
+        )}
       </div>
-      <SchoolList schools={filteredSchools} />
+      <SchoolList schools={filteredSchools} searchQuery={searchQuery} />
     </div>
   );
 };
