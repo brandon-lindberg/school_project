@@ -24,6 +24,7 @@ model User {
   updated_at    DateTime @updatedAt
 
   lists UserList[]
+  browsingHistories BrowsingHistory[]
 }
 
 model School {
@@ -182,6 +183,7 @@ model School {
 
   // Relations
   userListSchools UserListSchools[]
+  browsingHistories BrowsingHistory[]
 
   // Indexes
   @@index([name_en, name_jp], name: "idx_school_name")
@@ -219,4 +221,17 @@ model UserListSchools {
   school School   @relation(fields: [school_id], references: [school_id])
 
   @@id([list_id, school_id])
+}
+
+model BrowsingHistory {
+  history_id Int      @id @default(autoincrement())
+  user_id    Int
+  school_id  Int
+  viewed_at  DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [user_id], references: [user_id])
+  school School @relation(fields: [school_id], references: [school_id])
+
+  @@index([user_id, school_id], name: "idx_browsing_history_user_school")
 }
