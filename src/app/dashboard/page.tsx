@@ -103,21 +103,18 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <h1 className="text-3xl font-bold mb-6 text-center sm:text-left">Dashboard</h1>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4">Your Lists</h2>
-        <button onClick={handleCreateList} className="mb-4 bg-blue-500 text-white p-2 rounded">
-          Create New List
-        </button>
-        <ul>
+        <h2 className="text-2xl font-semibold mb-4 text-center sm:text-left">Your Lists</h2>
+        <ul className="space-y-4">
           {userLists.map((list) => (
-            <li key={list.list_id}>
-              <span>{list.list_name}</span>
-              <ul>
+            <li key={list.list_id} className="border p-4 rounded shadow-sm">
+              <span className="block font-medium">{list.list_name}</span>
+              <ul className="mt-2 space-y-2">
                 {list.schools.map((school) => (
-                  <li key={school.school_id}>
+                  <li key={school.school_id} className="flex justify-between items-center">
                     <span>School ID: {school.school_id}</span>
                     <button
                       onClick={() => handleDeleteSchoolFromList(list.list_id, school.school_id)}
@@ -128,12 +125,14 @@ const DashboardPage: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <button onClick={() => handleEditList(list.list_id)} className="ml-2 text-blue-500">
-                Edit
-              </button>
-              <button onClick={() => handleDeleteList(list.list_id)} className="ml-2 text-red-500">
-                Delete
-              </button>
+              <div className="mt-4 flex justify-end space-x-2">
+                <button onClick={() => handleEditList(list.list_id)} className="text-blue-500">
+                  Edit
+                </button>
+                <button onClick={() => handleDeleteList(list.list_id)} className="text-red-500">
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>
