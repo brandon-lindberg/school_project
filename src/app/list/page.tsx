@@ -8,6 +8,7 @@ import { School } from '../../interfaces/School';
 import SearchBox from '../components/SearchBox';
 import debounce from 'lodash.debounce';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 const DEFAULT_LOGO_URL = 'https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172';
 
@@ -16,6 +17,7 @@ const ListPage: React.FC = () => {
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { data: session } = useSession();
 
   const parseSchools = (): School[] => {
     const parsedSchools: School[] = [];
@@ -141,7 +143,11 @@ const ListPage: React.FC = () => {
           </div>
         )}
       </div>
-      <SchoolList schools={filteredSchools} searchQuery={searchQuery} />
+      <SchoolList
+        schools={filteredSchools}
+        searchQuery={searchQuery}
+        userId={session?.user?.email ? parseInt(session.user.email.split('@')[0]) : 0}
+      />
     </div>
   );
 };

@@ -8,9 +8,10 @@ import { useRouter } from 'next/navigation';
 interface SchoolCardProps {
   school: School;
   searchQuery?: string;
+  userId?: number;
 }
 
-const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => {
+const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '' }) => {
   const router = useRouter();
 
   const handleCardClick = () => {
@@ -24,16 +25,21 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ schoolId: school.id }),
+        body: JSON.stringify({
+          userId: userId,
+          schoolId: school.id
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to add school to list');
       }
 
+      const data = await response.json();
       alert('School added to your list!');
     } catch (error) {
       console.error('Error adding school to list:', error);
+      alert('Failed to add school to list. Please try again.');
     }
   };
 

@@ -5,9 +5,10 @@ import { School } from '../../interfaces/School';
 interface SchoolListProps {
   schools: School[];
   searchQuery?: string;
+  userId?: number;
 }
 
-const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) => {
+const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '', userId }) => {
   return (
     <>
       {schools.length === 0 ? (
@@ -16,7 +17,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) =>
         <div className="flex overflow-x-auto space-x-4 p-4">
           {schools.map((school) => (
             <div key={school.id} className="flex-shrink-0">
-              <SchoolCard school={school} searchQuery={searchQuery} />
+              <SchoolCard school={school} searchQuery={searchQuery} userId={userId} />
             </div>
           ))}
         </div>
