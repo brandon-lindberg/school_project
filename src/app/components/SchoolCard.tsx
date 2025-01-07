@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 interface SchoolCardProps {
   school: School;
   searchQuery?: string;
-  userId?: number;
+  userId?: number | undefined;
 }
 
 const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '' }) => {
@@ -130,15 +130,17 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '
             Visit Website
           </Link>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAddToList();
-          }}
-          className="bg-green-500 text-white p-2 rounded mt-2 absolute bottom-4 right-4"
-        >
-          +
-        </button>
+        {(typeof userId === 'number' || typeof userId === 'string') && Number(userId) > 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToList();
+            }}
+            className="bg-green-500 text-white p-2 rounded mt-2 absolute bottom-4 right-4"
+          >
+            +
+          </button>
+        )}
       </div>
     </div>
   );

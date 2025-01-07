@@ -16,6 +16,8 @@ const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -81,7 +83,7 @@ const ListPage: React.FC = () => {
   useEffect(() => {
     const allSchools = parseSchools();
     setSchools(allSchools);
-    setFilteredSchools(allSchools.slice(0, 5)); // Initially display first 5 schools
+    setFilteredSchools(allSchools.slice(0, 5));
   }, []);
 
   const handleSearch = useCallback(
@@ -111,6 +113,39 @@ const ListPage: React.FC = () => {
       handleSearch.cancel();
     };
   }, [handleSearch]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUserId = async () => {
+      if (!session?.user) {
+        setUserId(undefined);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        if (isMounted && response.ok) {
+          setUserId(data.userId);
+        }
+      } catch (error) {
+        console.error('Error fetching user ID:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    setIsLoading(true);
+    fetchUserId();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session?.user]);
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -143,11 +178,13 @@ const ListPage: React.FC = () => {
           </div>
         )}
       </div>
-      <SchoolList
-        schools={filteredSchools}
-        searchQuery={searchQuery}
-        userId={session?.user?.email ? parseInt(session.user.email.split('@')[0]) : 0}
-      />
+      {!isLoading && (
+        <SchoolList
+          schools={filteredSchools}
+          searchQuery={searchQuery}
+          userId={userId}
+        />
+      )}
     </div>
   );
 };

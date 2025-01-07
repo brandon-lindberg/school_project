@@ -2,9 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -31,15 +37,28 @@ const Navbar = () => {
             <Link href="/list" className="text-gray-700 hover:text-blue-600">
               Schools
             </Link>
-            <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
-              Dashboard
-            </Link>
-            <Link href="/login" className="text-gray-700 hover:text-blue-600">
-              Login
-            </Link>
-            <Link href="/register" className="text-gray-700 hover:text-blue-600">
-              Register
-            </Link>
+            {session ? (
+              <>
+                <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-blue-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-gray-700 hover:text-blue-600">
+                  Login
+                </Link>
+                <Link href="/register" className="text-gray-700 hover:text-blue-600">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -49,15 +68,28 @@ const Navbar = () => {
             <Link href="/list" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
               Schools
             </Link>
-            <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-              Dashboard
-            </Link>
-            <Link href="/login" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-              Login
-            </Link>
-            <Link href="/register" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-              Register
-            </Link>
+            {session ? (
+              <>
+                <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1 text-left"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                  Login
+                </Link>
+                <Link href="/register" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

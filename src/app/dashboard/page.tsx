@@ -35,19 +35,29 @@ const getUserId = async (): Promise<number> => {
 
 const DashboardPage: React.FC = () => {
   const [userLists, setUserLists] = useState<UserList[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
 
     const fetchData = async () => {
       try {
-        const userId = session?.user?.email ? parseInt(session.user.email.split('@')[0]) : 0;
-        const response = await fetch(`/api/userLists?userId=${userId}`);
+        setIsLoading(true);
+        // Get the actual userId using the getUserId function
+        const fetchedUserId = await getUserId();
+        setUserId(fetchedUserId);
+
+        const response = await fetch(`/api/userLists?userId=${fetchedUserId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch user lists');
         }
@@ -55,13 +65,27 @@ const DashboardPage: React.FC = () => {
         setUserLists(data.lists);
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    if (session?.user?.email) {
+    if (session) {
       fetchData();
     }
   }, [session, status, router]);
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <p className="text-center">Loading...</p>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // Return null since we're redirecting
+  }
 
   const handleCreateList = () => {
     // Logic to create a new list
