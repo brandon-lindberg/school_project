@@ -5,17 +5,19 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    // For demonstration, fetch the first user from the database
+    // TODO: Replace this with actual auth logic to get the current user
     const user = await prisma.user.findFirst();
     if (!user) {
-      return NextResponse.json({ error: 'No user found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
     }
     return NextResponse.json({ userId: user.user_id });
   } catch (error: unknown) {
-    let message = 'An unexpected error occurred.';
-    if (error instanceof Error) {
-      message = error.message;
-    }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch user information' },
+      { status: 500 }
+    );
   }
 }

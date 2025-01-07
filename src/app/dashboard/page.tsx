@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 // Define the type for user list items
 type UserList = {
@@ -16,29 +17,36 @@ type UserList = {
 // Function to fetch the user ID dynamically
 const getUserId = async (): Promise<number> => {
   try {
-    const response = await fetch('/api/user'); // Replace with your actual API endpoint
+    const response = await fetch('/api/user');
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch user ID:', response.status, errorText);
-      throw new Error('Failed to fetch user ID');
+      const errorData = await response.json();
+      if (response.status === 401) {
+        throw new Error('Please log in to access this page');
+      }
+      throw new Error(errorData.error || 'Failed to fetch user ID');
     }
     const data = await response.json();
-    return data.userId; // Adjust this based on your API response structure
+    return data.userId;
   } catch (error) {
     console.error('Error fetching user ID:', error);
-    throw error; // Re-throw the error to handle it in the calling function
+    throw error;
   }
 };
 
 const DashboardPage: React.FC = () => {
   const [userLists, setUserLists] = useState<UserList[]>([]);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        // Fetch user ID dynamically
-        const userId = await getUserId();
+        const userId = session?.user?.email ? parseInt(session.user.email.split('@')[0]) : 0;
         const response = await fetch(`/api/userLists?userId=${userId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch user lists');
@@ -50,8 +58,10 @@ const DashboardPage: React.FC = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (session?.user?.email) {
+      fetchData();
+    }
+  }, [session, status, router]);
 
   const handleCreateList = () => {
     // Logic to create a new list
