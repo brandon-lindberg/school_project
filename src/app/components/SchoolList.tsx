@@ -1,21 +1,27 @@
 import React from 'react';
 import SchoolCard from './SchoolCard';
 import { School } from '../../interfaces/School';
+import './styles/scrollbar.css';
 
 interface SchoolListProps {
   schools: School[];
   searchQuery?: string;
+  userId?: number;
 }
 
-const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) => {
+const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '', userId }) => {
   return (
     <>
       {schools.length === 0 ? (
         <p>No schools found.</p>
       ) : (
-        <div className="flex flex-wrap justify-center gap-4 p-4">
+        <div
+          className="flex overflow-x-auto space-x-4 p-4 scrollbar"
+        >
           {schools.map((school) => (
-            <SchoolCard key={school.id} school={school} searchQuery={searchQuery} />
+            <div key={school.id} className="flex-shrink-0">
+              <SchoolCard school={school} searchQuery={searchQuery} userId={userId} />
+            </div>
           ))}
         </div>
       )}
@@ -23,4 +29,4 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) =>
   );
 };
 
-export default SchoolList; 
+export default SchoolList;

@@ -7,11 +7,19 @@ import { NormalizedDataItem, SubPage } from '../../interfaces/NormalizedData';
 import { School } from '../../interfaces/School';
 import SearchBox from '../components/SearchBox';
 import debounce from 'lodash.debounce';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+
+const DEFAULT_LOGO_URL = 'https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172';
 
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const { data: session } = useSession();
 
   const parseSchools = (): School[] => {
     const parsedSchools: School[] = [];
@@ -65,6 +73,7 @@ const ListPage: React.FC = () => {
         contactEmail,
         contactPhone,
         website: website || '#',
+        logo_id: item.source.id, // Assuming logo_id is part of the source
       });
     });
 
@@ -74,7 +83,7 @@ const ListPage: React.FC = () => {
   useEffect(() => {
     const allSchools = parseSchools();
     setSchools(allSchools);
-    setFilteredSchools(allSchools.slice(0, 5)); // Initially display first 5 schools
+    setFilteredSchools(allSchools.slice(0, 5));
   }, []);
 
   const handleSearch = useCallback(
@@ -105,13 +114,77 @@ const ListPage: React.FC = () => {
     };
   }, [handleSearch]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUserId = async () => {
+      if (!session?.user) {
+        setUserId(undefined);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        if (isMounted && response.ok) {
+          setUserId(data.userId);
+        }
+      } catch (error) {
+        console.error('Error fetching user ID:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    setIsLoading(true);
+    fetchUserId();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session?.user]);
+
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold mb-6">School List</h1>
       <div className="mb-6">
         <SearchBox onSearch={handleSearchInput} />
+        {searchQuery && (
+          <div className="bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-10 mt-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent">
+            {filteredSchools.length > 0 ? (
+              <div className="space-y-4">
+                {filteredSchools.map((school) => (
+                  <div
+                    key={school.id}
+                    className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => router.push(`/schools/${school.id}`)}
+                  >
+                    <img
+                      src={`/logos/${school.logo_id}.png`}
+                      onError={(e) => (e.currentTarget.src = DEFAULT_LOGO_URL)}
+                      alt={`${school.name} Logo`}
+                      className="w-10 h-10 mr-4 object-contain"
+                    />
+                    <span>{school.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-2 text-gray-500">No schools found.</div>
+            )}
+          </div>
+        )}
       </div>
-      <SchoolList schools={filteredSchools} />
+      {!isLoading && (
+        <SchoolList
+          schools={filteredSchools}
+          searchQuery={searchQuery}
+          userId={userId}
+        />
+      )}
     </div>
   );
 };

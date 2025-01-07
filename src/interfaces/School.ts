@@ -9,4 +9,5 @@ export interface School {
   contactEmail: string;
   contactPhone: string;
   website: string;
-} 
+  logo_id: string;
+}
