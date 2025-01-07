@@ -118,7 +118,7 @@ const ListPage: React.FC = () => {
       <div className="mb-6">
         <SearchBox onSearch={handleSearchInput} />
         {searchQuery && (
-          <div className="bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-10 mt-2">
+          <div className="bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-10 mt-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent">
             {filteredSchools.length > 0 ? (
               <div className="space-y-4">
                 {filteredSchools.map((school) => (
