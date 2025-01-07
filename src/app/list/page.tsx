@@ -25,24 +25,24 @@ const ListPage: React.FC = () => {
     const parsedSchools: School[] = [];
     let idCounter = 1;
 
-    (rawData as NormalizedDataItem[]).forEach((item) => {
-      const schoolName = item.source.title.split("|")[0].trim();
-      const website = item.source.url;
+    ((rawData as unknown) as NormalizedDataItem[]).forEach((item) => {
+      const schoolName = item.source?.title?.split("|")[0]?.trim() || 'Unnamed School';
+      const website = item.source?.url || '#';
 
       let contactEmail = 'N/A';
       let contactPhone = 'N/A';
       let description = 'No description available.';
 
-      if (item.content.sub_pages.length > 0) {
-        const firstSubPage = item.content.sub_pages[0];
-        description =
-          firstSubPage.data.length > 200
-            ? `${firstSubPage.data.substring(0, 200)}...`
-            : firstSubPage.data;
+      const subPages = item.content?.sub_pages || [];
+      if (subPages.length > 0) {
+        const firstSubPage = subPages[0];
+        description = firstSubPage?.data?.length ?
+          (firstSubPage.data.length > 200 ? `${firstSubPage.data.substring(0, 200)}...` : firstSubPage.data)
+          : 'No description available.';
       }
 
-      item.content.sub_pages.forEach((subPage: SubPage) => {
-        const data = subPage.data;
+      subPages.forEach((subPage: SubPage) => {
+        const data = subPage.data || '';
 
         // Extract Email
         if (contactEmail === 'N/A') {
@@ -67,13 +67,13 @@ const ListPage: React.FC = () => {
       });
 
       parsedSchools.push({
-        id: (idCounter++).toString(), // Ensure id is a string
-        name: schoolName || 'Unnamed School',
+        id: (idCounter++).toString(),
+        name: schoolName,
         description,
         contactEmail,
         contactPhone,
-        website: website || '#',
-        logo_id: item.source.id, // Assuming logo_id is part of the source
+        website,
+        logo_id: item.source?.id || 'default',
       });
     });
 

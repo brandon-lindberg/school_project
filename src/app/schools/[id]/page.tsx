@@ -4,6 +4,8 @@ import rawData from '../../../../normalized_output.json';
 import { NormalizedDataItem, SubPage } from '../../../interfaces/NormalizedData';
 import { School } from '../../../interfaces/School';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../app/api/auth/[...nextauth]/auth';
 
 // Define the Params interface if not already defined
 interface Params {
@@ -15,21 +17,24 @@ const parseSchools = (): School[] => {
   const schools: School[] = [];
   let idCounter = 1;
 
-  (rawData as NormalizedDataItem[]).forEach((item) => {
-    const schoolName = item.source.title.split("|")[0].trim();
-    const website = item.source.url;
+  ((rawData as unknown) as NormalizedDataItem[]).forEach((item) => {
+    const schoolName = item.source?.title?.split("|")[0]?.trim() || 'Unnamed School';
+    const website = item.source?.url || '#';
 
     let contactEmail = 'N/A';
     let contactPhone = 'N/A';
     let description = 'No description available.';
 
-    if (item.content.sub_pages.length > 0) {
-      const firstSubPage = item.content.sub_pages[0];
-      description = firstSubPage.data.length > 200 ? `${firstSubPage.data.substring(0, 200)}...` : firstSubPage.data;
+    const subPages = item.content?.sub_pages || [];
+    if (subPages.length > 0) {
+      const firstSubPage = subPages[0];
+      description = firstSubPage?.data?.length ?
+        (firstSubPage.data.length > 200 ? `${firstSubPage.data.substring(0, 200)}...` : firstSubPage.data)
+        : 'No description available.';
     }
 
-    item.content.sub_pages.forEach((subPage: SubPage) => {
-      const data = subPage.data;
+    subPages.forEach((subPage: SubPage) => {
+      const data = subPage.data || '';
 
       // Extract Email
       if (contactEmail === 'N/A') {
@@ -54,36 +59,17 @@ const parseSchools = (): School[] => {
     });
 
     schools.push({
-      id: (idCounter++).toString(), // Ensure id is a string
-      name: schoolName || 'Unnamed School',
+      id: (idCounter++).toString(),
+      name: schoolName,
       description,
       contactEmail,
       contactPhone,
-      website: website || '#',
-      logo_id: item.source.id, // Assuming logo_id is part of the source
+      website,
+      logo_id: item.source?.id || 'default',
     });
   });
 
   return schools;
-}
-
-// Generate static params for static generation
-export async function generateStaticParams() {
-  const schools: School[] = parseSchools().slice(0, 5); // Ensure only 5 schools
-  return schools.map((school) => ({
-    id: school.id.toString(),
-  }));
-}
-
-// Generate metadata for the page
-export async function generateMetadata({ params }: { params: Params }) {
-  const schools: School[] = parseSchools();
-  const school = schools.find((s) => s.id.toString() === params.id);
-
-  return {
-    title: school ? `${school.name_en} - Details` : 'School Not Found',
-    description: school ? school.description_en : 'No description available.',
-  };
 }
 
 // Function to fetch school details
@@ -97,26 +83,28 @@ const fetchSchoolDetails = async (id: string): Promise<{ school: School; details
 
   // Extract detailed information from sub_pages
   const dataItem = (rawData as NormalizedDataItem[])[parseInt(id) - 1];
-  const detailedData = dataItem.content.sub_pages.map((subPage: SubPage) => subPage.data);
+  const detailedData = dataItem.content?.sub_pages?.map((subPage: SubPage) => subPage.data || '') || [];
 
   return {
     school,
-    details: detailedData,
+    details: detailedData.filter((data): data is string => typeof data === 'string'),
   };
 };
 
 // **Updated Component Definition**
-const SchoolDetailPage = async ({ params }: { params: Params }) => {
-  const { id } = params;
-
-  if (!id) {
-    redirect('/login');
+export default async function SchoolDetailPage({ params }: { params: Promise<Params> }) {
+  // Check authentication
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect('/list');
   }
 
-  const schoolDetails = await fetchSchoolDetails(id);
+  // Await the params
+  const resolvedParams = await params;
+  const schoolDetails = await fetchSchoolDetails(resolvedParams.id);
 
   if (!schoolDetails) {
-    redirect('/join');
+    redirect('/list');
   }
 
   const { school, details } = schoolDetails;
@@ -127,8 +115,8 @@ const SchoolDetailPage = async ({ params }: { params: Params }) => {
         &larr; Back to School List
       </Link>
       <div className="border rounded-lg p-6 shadow-md">
-        <h1 className="text-3xl font-bold mb-4">{school.name_en}</h1>
-        <p className="text-gray-700 mb-4">{school.description_en}</p>
+        <h1 className="text-3xl font-bold mb-4">{school.name}</h1>
+        <p className="text-gray-700 mb-4">{school.description}</p>
         <div className="mb-4">
           <strong>Contact Email:</strong>{' '}
           <a href={`mailto:${school.contactEmail}`} className="text-blue-500 hover:underline">
@@ -160,7 +148,5 @@ const SchoolDetailPage = async ({ params }: { params: Params }) => {
       </div>
     </div>
   );
-};
+}
 
-// **Export the Component**
-export default SchoolDetailPage;
