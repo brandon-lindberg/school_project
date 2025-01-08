@@ -18,6 +18,8 @@ jest.mock("@/lib/prisma", () => ({
       create: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
     },
@@ -27,6 +29,15 @@ jest.mock("@/lib/prisma", () => ({
 describe("Browsing History API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Set up default mock implementation for findFirst
+    (prisma.browsingHistory.findFirst as jest.Mock).mockResolvedValue(null);
+    // Set up default mock implementation for update
+    (prisma.browsingHistory.update as jest.Mock).mockResolvedValue({
+      history_id: 1,
+      user_id: 1,
+      school_id: 123,
+      viewed_at: new Date(),
+    });
   });
 
   const mockUser = {
@@ -39,9 +50,10 @@ describe("Browsing History API", () => {
   };
 
   describe("POST /api/browsing", () => {
-    it("should create a browsing history entry", async () => {
+    it("should create a browsing history entry when none exists", async () => {
       mockGetServerSession.mockResolvedValue(mockSession);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.browsingHistory.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.browsingHistory.create as jest.Mock).mockResolvedValue({
         history_id: 1,
         user_id: 1,
@@ -59,11 +71,56 @@ describe("Browsing History API", () => {
 
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("history_id");
+      expect(prisma.browsingHistory.findFirst).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          school_id: 123,
+        },
+      });
       expect(prisma.browsingHistory.create).toHaveBeenCalledWith({
         data: {
           user_id: 1,
           school_id: 123,
         },
+      });
+    });
+
+    it("should update existing browsing history entry", async () => {
+      const now = new Date();
+      const existingEntry = {
+        history_id: 1,
+        user_id: 1,
+        school_id: 123,
+        viewed_at: now,
+      };
+
+      mockGetServerSession.mockResolvedValue(mockSession);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.browsingHistory.findFirst as jest.Mock).mockResolvedValue(existingEntry);
+      (prisma.browsingHistory.update as jest.Mock).mockResolvedValue({
+        ...existingEntry,
+        viewed_at: now,
+      });
+
+      const request = new Request("http://localhost:3000/api/browsing", {
+        method: "POST",
+        body: JSON.stringify({ schoolId: 123 }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toHaveProperty("history_id");
+      expect(prisma.browsingHistory.findFirst).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          school_id: 123,
+        },
+      });
+      expect(prisma.browsingHistory.update).toHaveBeenCalledWith({
+        where: { history_id: 1 },
+        data: { viewed_at: expect.any(Date) },
       });
     });
 

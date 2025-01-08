@@ -6,10 +6,9 @@ import './styles/scrollbar.css';
 interface SchoolListProps {
   schools: School[];
   searchQuery?: string;
-  userId?: number;
 }
 
-const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '', userId }) => {
+const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '' }) => {
   return (
     <>
       {schools.length === 0 ? (
@@ -20,7 +19,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '', user
         >
           {schools.map((school) => (
             <div key={school.school_id} className="flex-shrink-0">
-              <SchoolCard school={school} searchQuery={searchQuery} userId={userId} />
+              <SchoolCard school={school} searchQuery={searchQuery} />
             </div>
           ))}
         </div>

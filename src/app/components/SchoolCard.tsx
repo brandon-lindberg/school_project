@@ -4,29 +4,40 @@ import React from 'react';
 import Link from 'next/link';
 import { School } from '../../interfaces/School';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 interface SchoolCardProps {
   school: School;
   searchQuery?: string;
-  userId?: number | undefined;
 }
 
-const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '' }) => {
+const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleCardClick = () => {
     router.push(`/schools/${school.school_id}`);
   };
 
-  const handleAddToList = async () => {
+  const handleAddToList = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking the add button
+
     try {
+      const userResponse = await fetch('/api/user');
+      const userData = await userResponse.json();
+
+      if (!userData.userId) {
+        alert('Please log in to add schools to your list');
+        return;
+      }
+
       const response = await fetch('/api/userLists', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: userId,
+          userId: userData.userId,
           schoolId: school.school_id
         }),
       });
@@ -79,7 +90,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '
 
   return (
     <div
-      className="border rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow w-full max-w-xs sm:max-w-sm md:max-w-md"
+      className="border rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow w-full max-w-xs sm:max-w-sm md:max-w-md relative overflow-hidden"
       style={{ height: '66.67vh', maxHeight: '32.125rem' }}
       onClick={handleCardClick}
       onKeyPress={handleKeyPress}
@@ -92,23 +103,41 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '
         alt={`${school.name_en || 'School'} Image`}
         className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-t-lg"
       />
-      <div className="relative p-4 flex flex-col flex-grow">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 flex items-center">
+      <div className="relative p-4 flex flex-col flex-grow overflow-y-auto">
+        <div className="flex items-center mb-2">
           <img
             src={school.logo_id ? `/logos/${school.logo_id}.png` : "https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172"}
             alt="Logo"
-            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-2"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-2 flex-shrink-0"
           />
-          {highlightText(school.name_en || 'Unnamed School', searchQuery)}
-        </h2>
-        <p className="text-gray-600 mb-4 text-sm sm:text-base flex-grow">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold truncate">
+              {highlightText(school.name_jp || school.name_en || 'Unnamed School', searchQuery)}
+            </h2>
+            {school.name_en && school.name_jp && (
+              <h3 className="text-sm sm:text-base text-gray-600 truncate">
+                {highlightText(school.name_en, searchQuery)}
+              </h3>
+            )}
+          </div>
+        </div>
+
+        {(school.location_en || school.location_jp) && (
+          <p className="text-gray-600 mb-2 text-sm truncate">
+            <span className="font-medium">Location:</span>{' '}
+            {school.location_jp || school.location_en}
+          </p>
+        )}
+
+        <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-4">
           {highlightText(school.description_en || school.description_jp || 'No description available.', searchQuery)}
         </p>
-        <div className="mt-auto">
+
+        <div className="mt-auto space-y-1">
           {school.email_en && (
             <Link
               href={`mailto:${school.email_en}`}
-              className="text-blue-500 hover:underline block"
+              className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
               {school.email_en}
@@ -117,7 +146,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '
           {school.phone_en && (
             <Link
               href={`tel:${school.phone_en}`}
-              className="text-blue-500 hover:underline block"
+              className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
               {school.phone_en}
@@ -128,20 +157,18 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, userId, searchQuery = '
               href={school.url_en}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline block"
+              className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
               Visit Website
             </Link>
           )}
         </div>
-        {(typeof userId === 'number' || typeof userId === 'string') && Number(userId) > 0 && (
+        {session && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddToList();
-            }}
-            className="bg-green-500 text-white p-2 rounded mt-2 absolute bottom-4 right-4"
+            onClick={handleAddToList}
+            className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors"
+            title="Add to My Schools"
           >
             +
           </button>

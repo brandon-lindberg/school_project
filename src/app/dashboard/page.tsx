@@ -135,18 +135,6 @@ const DashboardPage: React.FC = () => {
     return null; // Return null since we're redirecting
   }
 
-  const handleCreateList = () => {
-    // Logic to create a new list
-  };
-
-  const handleEditList = (listId: number) => {
-    // Logic to edit a list
-  };
-
-  const handleDeleteList = (listId: number) => {
-    // Logic to delete a list
-  };
-
   const handleDeleteSchoolFromList = async (listId: number, schoolId: number) => {
     try {
       const response = await fetch(`/api/userLists?listId=${listId}&schoolId=${schoolId}`, {
@@ -199,14 +187,6 @@ const DashboardPage: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4 flex justify-end space-x-2">
-                  <button onClick={() => handleEditList(list.list_id)} className="text-blue-500">
-                    Edit
-                  </button>
-                  <button onClick={() => handleDeleteList(list.list_id)} className="text-red-500">
-                    Delete
-                  </button>
-                </div>
               </li>
             ))}
           </ul>

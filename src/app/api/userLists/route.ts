@@ -38,37 +38,85 @@ export async function POST(request: Request) {
       );
     }
 
-    // If no listId is provided, create a new list called "My Schools"
     let userList;
     if (!listId) {
-      userList = await prisma.userList.create({
-        data: {
-          list_name: "My Schools",
+      // First, try to find an existing "My Schools" list for the user
+      userList = await prisma.userList.findFirst({
+        where: {
           user_id: parseInt(userId, 10),
-          schools: {
-            create: {
-              school_id: parseInt(schoolId, 10)
-            }
+          list_name: "My Schools"
+        }
+      });
+
+      if (!userList) {
+        // If no list exists, create a new one
+        userList = await prisma.userList.create({
+          data: {
+            list_name: "My Schools",
+            user_id: parseInt(userId, 10)
           }
-        }
-      });
-    } else {
-      // Add school to existing list
-      userList = await prisma.userListSchools.create({
-        data: {
-          list_id: parseInt(listId, 10),
-          school_id: parseInt(schoolId, 10)
-        }
-      });
+        });
+      }
     }
 
-    return NextResponse.json({ success: true, userList });
+    // Add school to the list (either existing or newly created)
+    const listToUse = listId ? parseInt(listId, 10) : userList?.list_id;
+
+    if (!listToUse) {
+      return NextResponse.json(
+        { error: 'Could not determine list ID.' },
+        { status: 500 }
+      );
+    }
+
+    const userListSchool = await prisma.userListSchools.create({
+      data: {
+        list_id: listToUse,
+        school_id: parseInt(schoolId, 10)
+      }
+    });
+
+    return NextResponse.json({ success: true, userList: userListSchool });
   } catch (error: unknown) {
     let message = 'An unexpected error occurred.';
     if (error instanceof Error) {
       message = error.message;
     }
     console.error('Error in POST /api/userLists:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const listId = url.searchParams.get('listId');
+    const schoolId = url.searchParams.get('schoolId');
+
+    if (!listId || !schoolId) {
+      return NextResponse.json(
+        { error: 'List ID and School ID are required.' },
+        { status: 400 }
+      );
+    }
+
+    // Delete the school from the list
+    await prisma.userListSchools.delete({
+      where: {
+        list_id_school_id: {
+          list_id: parseInt(listId, 10),
+          school_id: parseInt(schoolId, 10)
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    let message = 'An unexpected error occurred.';
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    console.error('Error in DELETE /api/userLists:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
