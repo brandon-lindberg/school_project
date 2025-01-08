@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../app/api/auth/[...nextauth]/auth';
 import FallbackImage from '../../components/FallbackImage';
+import BrowsingHistoryRecorder from '../../components/BrowsingHistoryRecorder';
 
 interface Params {
   id: string;
@@ -60,6 +61,7 @@ export default async function SchoolDetailPage({ params }: { params: Params }) {
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <BrowsingHistoryRecorder schoolId={school.school_id} />
       <Link href="/list" className="text-green-500 hover:underline mb-4 inline-block">
         &larr; Back to School List
       </Link>
