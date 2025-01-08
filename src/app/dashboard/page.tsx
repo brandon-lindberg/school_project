@@ -16,21 +16,14 @@ type UserList = {
 
 // Function to fetch the user ID dynamically
 const getUserId = async (): Promise<number> => {
-  try {
-    const response = await fetch('/api/user');
-    if (!response.ok) {
-      const errorData = await response.json();
-      if (response.status === 401) {
-        throw new Error('Please log in to access this page');
-      }
-      throw new Error(errorData.error || 'Failed to fetch user ID');
-    }
-    const data = await response.json();
-    return data.userId;
-  } catch (error) {
-    console.error('Error fetching user ID:', error);
-    throw error;
+  const response = await fetch('/api/user');
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch user ID');
   }
+
+  return data.userId;
 };
 
 const DashboardPage: React.FC = () => {
@@ -46,7 +39,7 @@ const DashboardPage: React.FC = () => {
     }
 
     if (status === 'unauthenticated') {
-      router.replace('/login');
+      router.replace('/list');
       return;
     }
 
@@ -65,6 +58,7 @@ const DashboardPage: React.FC = () => {
         setUserLists(data.lists);
       } catch (error) {
         console.error('Error fetching data:', error);
+        router.replace('/list');
       } finally {
         setIsLoading(false);
       }
@@ -123,6 +117,7 @@ const DashboardPage: React.FC = () => {
       setUserLists(updatedLists);
     } catch (error) {
       console.error('Error removing school from list:', error);
+      router.replace('/list');
     }
   };
 
