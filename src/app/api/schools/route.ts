@@ -72,63 +72,72 @@ export async function GET(request: Request) {
       ]
     } : {};
 
-    // Get schools with pagination
-    const [schools, total] = await Promise.all([
-      prisma.school.findMany({
-        where: whereClause,
-        take: limit,
-        skip,
-        orderBy: {
-          name_en: 'asc'
-        },
-        select: {
-          school_id: true,
-          name_en: true,
-          name_jp: true,
-          description_en: true,
-          description_jp: true,
-          location_en: true,
-          location_jp: true,
-          logo_id: true,
-          email_en: true,
-          phone_en: true,
-          url_en: true,
-          address_en: true,
-          address_jp: true,
-          region_en: true,
-          region_jp: true,
-          country_en: true,
-          country_jp: true,
-          affiliations_en: true,
-          affiliations_jp: true,
-          accreditation_en: true,
-          accreditation_jp: true,
-          education_programs_offered_en: true,
-          education_programs_offered_jp: true,
-          education_curriculum_en: true,
-          education_curriculum_jp: true,
-          admissions_acceptance_policy_en: true,
-          admissions_acceptance_policy_jp: true,
-          admissions_application_guidelines_en: true,
-          admissions_application_guidelines_jp: true,
-          admissions_fees_en: true,
-          admissions_fees_jp: true,
-          campus_facilities_en: true,
-          campus_facilities_jp: true,
-          campus_virtual_tour_en: true,
-          campus_virtual_tour_jp: true
-        }
-      }),
-      prisma.school.count({ where: whereClause })
-    ]);
+    // Get total count first
+    const total = await prisma.school.count({
+      where: whereClause,
+    });
+
+    // Then get paginated schools with distinct selection
+    const schools = await prisma.school.findMany({
+      where: whereClause,
+      distinct: ['school_id'],
+      take: limit,
+      skip,
+      orderBy: {
+        name_en: 'asc'
+      },
+      select: {
+        school_id: true,
+        name_en: true,
+        name_jp: true,
+        description_en: true,
+        description_jp: true,
+        location_en: true,
+        location_jp: true,
+        logo_id: true,
+        email_en: true,
+        phone_en: true,
+        url_en: true,
+        address_en: true,
+        address_jp: true,
+        region_en: true,
+        region_jp: true,
+        country_en: true,
+        country_jp: true,
+        affiliations_en: true,
+        affiliations_jp: true,
+        accreditation_en: true,
+        accreditation_jp: true,
+        education_programs_offered_en: true,
+        education_programs_offered_jp: true,
+        education_curriculum_en: true,
+        education_curriculum_jp: true,
+        admissions_acceptance_policy_en: true,
+        admissions_acceptance_policy_jp: true,
+        admissions_application_guidelines_en: true,
+        admissions_application_guidelines_jp: true,
+        admissions_fees_en: true,
+        admissions_fees_jp: true,
+        campus_facilities_en: true,
+        campus_facilities_jp: true,
+        campus_virtual_tour_en: true,
+        campus_virtual_tour_jp: true
+      }
+    });
+
+    // Filter out any potential duplicates
+    const uniqueSchools = Array.from(new Map(schools.map(school => [school.school_id, school])).values());
+
+    // Calculate if there are more schools to load
+    const hasMore = skip + uniqueSchools.length < total;
 
     return NextResponse.json({
-      schools,
+      schools: uniqueSchools,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
         currentPage: page,
-        perPage: limit
+        perPage: limit,
+        hasMore
       }
     });
 

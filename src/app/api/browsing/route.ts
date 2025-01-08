@@ -89,6 +89,7 @@ export async function GET(request: Request) {
         viewed_at: 'desc',
       },
       distinct: ['school_id'], // Only get the most recent entry for each school
+      take: 10 // Limit to 10 schools
     });
 
     return NextResponse.json(history);

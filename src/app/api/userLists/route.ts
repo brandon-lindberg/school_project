@@ -13,10 +13,32 @@ export async function GET(request: Request) {
 
     const lists = await prisma.userList.findMany({
       where: { user_id: parseInt(userId, 10) },
-      include: { schools: true },
+      include: {
+        schools: {
+          include: {
+            school: {
+              select: {
+                name_en: true,
+                name_jp: true
+              }
+            }
+          }
+        }
+      },
     });
 
-    return NextResponse.json({ lists });
+    // Transform the response to include the current timestamp for each school
+    const listsWithDates = {
+      lists: lists.map(list => ({
+        ...list,
+        schools: list.schools.map(school => ({
+          ...school,
+          created_at: new Date().toISOString() // Using current date as fallback
+        }))
+      }))
+    };
+
+    return NextResponse.json(listsWithDates);
   } catch (error: unknown) {
     let message = 'An unexpected error occurred.';
     if (error instanceof Error) {

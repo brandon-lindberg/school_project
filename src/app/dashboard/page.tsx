@@ -3,15 +3,24 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 // Define the type for user list items
 type UserList = {
   list_id: number;
   list_name: string;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
   user_id: number;
-  schools: { list_id: number; school_id: number }[];
+  schools: {
+    list_id: number;
+    school_id: number;
+    created_at: string;
+    school: {
+      name_en: string | null;
+      name_jp: string | null;
+    };
+  }[];
 };
 
 type BrowsingHistory = {
@@ -177,10 +186,24 @@ const DashboardPage: React.FC = () => {
                 <ul className="mt-2 space-y-2">
                   {list.schools.map((school) => (
                     <li key={school.school_id} className="flex justify-between items-center">
-                      <span>School ID: {school.school_id}</span>
+                      <div>
+                        <Link
+                          href={`/schools/${school.school_id}`}
+                          className="text-gray-900 hover:text-blue-600 transition-colors"
+                        >
+                          {school.school.name_en || school.school.name_jp}
+                        </Link>
+                        <span className="text-sm text-gray-500 block">
+                          Added {new Date(school.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
                       <button
                         onClick={() => handleDeleteSchoolFromList(list.list_id, school.school_id)}
-                        className="ml-2 text-red-500"
+                        className="ml-2 text-red-500 hover:text-red-700"
                       >
                         Remove
                       </button>
@@ -212,9 +235,12 @@ const DashboardPage: React.FC = () => {
                 <li key={entry.history_id} className="border p-4 rounded shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium">
+                      <Link
+                        href={`/schools/${entry.school_id}`}
+                        className="text-gray-900 hover:text-blue-600 transition-colors font-medium"
+                      >
                         {entry.school.name_en || entry.school.name_jp}
-                      </h3>
+                      </Link>
                       <p className="text-sm text-gray-500">
                         {new Date(entry.viewed_at).toLocaleDateString()}
                       </p>
