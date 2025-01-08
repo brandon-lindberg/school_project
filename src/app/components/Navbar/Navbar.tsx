@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 
 const Navbar = () => {
@@ -16,9 +17,20 @@ const Navbar = () => {
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - smaller on mobile, larger on bigger screens */}
-          <Link href="/" className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 truncate max-w-[200px] sm:max-w-none">
-            International Schools
+          {/* Logo with image - smaller on mobile, larger on bigger screens */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+              <Image
+                src="/logo.png"
+                alt="ISDBJ Logo"
+                fill
+                className="rounded-full object-contain"
+                priority
+              />
+            </div>
+            <span className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 truncate max-w-[200px] sm:max-w-none">
+              ISDBJ - International Schools Database Japan
+            </span>
           </Link>
 
           {/* Hamburger button - visible on small and medium screens */}
