@@ -24,12 +24,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const history = await prisma.browsingHistory.create({
-      data: {
+    // Check if a record already exists for this user and school
+    const existingHistory = await prisma.browsingHistory.findFirst({
+      where: {
         user_id: user.user_id,
         school_id: schoolId,
       },
     });
+
+    let history;
+    if (existingHistory) {
+      // Update the existing record's timestamp
+      history = await prisma.browsingHistory.update({
+        where: { history_id: existingHistory.history_id },
+        data: { viewed_at: new Date() },
+      });
+    } else {
+      // Create a new record
+      history = await prisma.browsingHistory.create({
+        data: {
+          user_id: user.user_id,
+          school_id: schoolId,
+        },
+      });
+    }
 
     return NextResponse.json(history);
   } catch (error) {
@@ -59,8 +77,18 @@ export async function GET(request: Request) {
 
     const history = await prisma.browsingHistory.findMany({
       where: { user_id: user.user_id },
-      include: { school: true },
-      orderBy: { viewed_at: "desc" },
+      include: {
+        school: {
+          select: {
+            name_en: true,
+            name_jp: true,
+          },
+        },
+      },
+      orderBy: {
+        viewed_at: 'desc',
+      },
+      distinct: ['school_id'], // Only get the most recent entry for each school
     });
 
     return NextResponse.json(history);
