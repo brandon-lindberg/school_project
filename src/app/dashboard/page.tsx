@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import DashboardSkeleton from '../components/DashboardSkeleton';
 
 // Define the type for user list items
 type UserList = {
@@ -133,11 +134,7 @@ const DashboardPage: React.FC = () => {
   };
 
   if (status === 'loading' || isLoading) {
-    return (
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <p className="text-center">Loading...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (status === 'unauthenticated') {
