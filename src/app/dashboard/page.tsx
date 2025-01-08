@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import Link from 'next/link';
 import DashboardSkeleton from '../components/DashboardSkeleton';
+import UserLists from '../components/UserLists';
+import BrowsingHistory from '../components/BrowsingHistory';
 
 // Define the type for user list items
 type UserList = {
@@ -24,7 +25,7 @@ type UserList = {
   }[];
 };
 
-type BrowsingHistory = {
+type BrowsingHistoryItem = {
   history_id: number;
   school_id: number;
   viewed_at: Date;
@@ -48,7 +49,7 @@ const getUserId = async (): Promise<number> => {
 
 const DashboardPage: React.FC = () => {
   const [userLists, setUserLists] = useState<UserList[]>([]);
-  const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistory[]>([]);
+  const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -133,14 +134,6 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  if (status === 'loading' || isLoading) {
-    return <DashboardSkeleton />;
-  }
-
-  if (status === 'unauthenticated') {
-    return null; // Return null since we're redirecting
-  }
-
   const handleDeleteSchoolFromList = async (listId: number, schoolId: number) => {
     try {
       const response = await fetch(`/api/userLists?listId=${listId}&schoolId=${schoolId}`, {
@@ -169,90 +162,26 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  if (status === 'loading' || isLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // Return null since we're redirecting
+  }
+
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 text-center sm:text-left">Your Lists</h2>
-          <ul className="space-y-4">
-            {userLists.map((list) => (
-              <li key={list.list_id} className="border p-4 rounded shadow-sm">
-                <span className="block font-medium">{list.list_name}</span>
-                <ul className="mt-2 space-y-2">
-                  {list.schools.map((school) => (
-                    <li key={school.school_id} className="flex justify-between items-center">
-                      <div>
-                        <Link
-                          href={`/schools/${school.school_id}`}
-                          className="text-gray-900 hover:text-blue-600 transition-colors"
-                        >
-                          {school.school.name_en || school.school.name_jp}
-                        </Link>
-                        <span className="text-sm text-gray-500 block">
-                          Added {new Date(school.created_at).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteSchoolFromList(list.list_id, school.school_id)}
-                        className="ml-2 text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Browsing History</h2>
-            {browsingHistory.length > 0 && (
-              <button
-                onClick={handleClearHistory}
-                className="text-sm text-red-500 hover:text-red-700"
-              >
-                Clear All
-              </button>
-            )}
-          </div>
-          {browsingHistory.length === 0 ? (
-            <p className="text-gray-500 text-center">No browsing history</p>
-          ) : (
-            <ul className="space-y-4">
-              {browsingHistory.map((entry) => (
-                <li key={entry.history_id} className="border p-4 rounded shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Link
-                        href={`/schools/${entry.school_id}`}
-                        className="text-gray-900 hover:text-blue-600 transition-colors font-medium"
-                      >
-                        {entry.school.name_en || entry.school.name_jp}
-                      </Link>
-                      <p className="text-sm text-gray-500">
-                        {new Date(entry.viewed_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteHistoryEntry(entry.history_id)}
-                      className="text-sm text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <UserLists
+          userLists={userLists}
+          onDeleteSchool={handleDeleteSchoolFromList}
+        />
+        <BrowsingHistory
+          browsingHistory={browsingHistory}
+          onClearHistory={handleClearHistory}
+          onDeleteEntry={handleDeleteHistoryEntry}
+        />
       </div>
     </div>
   );
