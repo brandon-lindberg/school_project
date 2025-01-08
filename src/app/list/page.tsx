@@ -1,9 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
-import SchoolList from '../components/SchoolList';
-import rawData from '../../../normalized_output.json';
-import { NormalizedDataItem, SubPage } from '../../interfaces/NormalizedData';
 import { School } from '../../interfaces/School';
 import SearchBox from '../components/SearchBox';
 import debounce from 'lodash.debounce';
@@ -11,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 const DEFAULT_LOGO_URL = 'https://www.cisjapan.net/files/libs/1370/202210271551078360.png?1690767172';
+const DEFAULT_SCHOOL_IMAGE = "https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s=";
 
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -21,87 +19,44 @@ const ListPage: React.FC = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const parseSchools = (): School[] => {
-    const parsedSchools: School[] = [];
-    let idCounter = 1;
-
-    ((rawData as unknown) as NormalizedDataItem[]).forEach((item) => {
-      const schoolName = item.source?.title?.split("|")[0]?.trim() || 'Unnamed School';
-      const website = item.source?.url || '#';
-
-      let contactEmail = 'N/A';
-      let contactPhone = 'N/A';
-      let description = 'No description available.';
-
-      const subPages = item.content?.sub_pages || [];
-      if (subPages.length > 0) {
-        const firstSubPage = subPages[0];
-        description = firstSubPage?.data?.length ?
-          (firstSubPage.data.length > 200 ? `${firstSubPage.data.substring(0, 200)}...` : firstSubPage.data)
-          : 'No description available.';
-      }
-
-      subPages.forEach((subPage: SubPage) => {
-        const data = subPage.data || '';
-
-        // Extract Email
-        if (contactEmail === 'N/A') {
-          const emailMatch = data.match(/Email:\s*([\w.+-]+@[\w-]+\.[A-Za-z]{2,})/);
-          if (emailMatch) {
-            contactEmail = emailMatch[1];
-          }
-        }
-
-        // Extract Phone
-        if (contactPhone === 'N/A') {
-          const phoneMatch = data.match(/TEL：[^\d]*(\+?\d{1,3}[-.\s]?)?(\d{2,4}[-.\s]?){2}\d{4}/);
-          if (phoneMatch) {
-            contactPhone = phoneMatch[0];
-          }
-        }
-
-        // If both email and phone are found, no need to continue
-        if (contactEmail !== 'N/A' && contactPhone !== 'N/A') {
-          return;
-        }
-      });
-
-      parsedSchools.push({
-        id: (idCounter++).toString(),
-        name: schoolName,
-        description,
-        contactEmail,
-        contactPhone,
-        website,
-        logo_id: item.source?.id || 'default',
-      });
-    });
-
-    return parsedSchools;
-  };
-
   useEffect(() => {
-    const allSchools = parseSchools();
-    setSchools(allSchools);
-    setFilteredSchools(allSchools.slice(0, 5));
+    const fetchSchools = async () => {
+      try {
+        console.log('Fetching schools...');
+        const response = await fetch('/api/schools?limit=5');
+        console.log('Schools response status:', response.status);
+        const data = await response.json();
+        console.log('Fetched schools data:', data);
+        setSchools(data.schools);
+        setFilteredSchools(data.schools);
+      } catch (error) {
+        console.error('Error fetching schools:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSchools();
   }, []);
 
   const handleSearch = useCallback(
-    debounce((query: string) => {
-      setSearchQuery(query); // Update the search query state
-      if (query === '') {
-        setFilteredSchools(schools.slice(0, 5)); // Reset to initial state
-      } else {
-        const lowerCaseQuery = query.toLowerCase();
-        const filtered = schools.filter(
-          (school) =>
-            school.name.toLowerCase().includes(lowerCaseQuery) ||
-            school.description.toLowerCase().includes(lowerCaseQuery)
-        );
-        setFilteredSchools(filtered);
+    debounce(async (query: string) => {
+      setSearchQuery(query);
+      try {
+        if (query === '') {
+          const response = await fetch('/api/schools?limit=5');
+          const data = await response.json();
+          setFilteredSchools(data.schools);
+        } else {
+          const response = await fetch(`/api/schools?search=${encodeURIComponent(query)}`);
+          const data = await response.json();
+          setFilteredSchools(data.schools);
+        }
+      } catch (error) {
+        console.error('Error searching schools:', error);
       }
-    }, 300), // Delay of 300ms
-    [schools]
+    }, 300),
+    []
   );
 
   const handleSearchInput = (query: string) => {
@@ -152,39 +107,48 @@ const ListPage: React.FC = () => {
       <h1 className="text-3xl font-bold mb-6">School List</h1>
       <div className="mb-6">
         <SearchBox onSearch={handleSearchInput} />
-        {searchQuery && (
-          <div className="bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-10 mt-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent">
-            {filteredSchools.length > 0 ? (
-              <div className="space-y-4">
-                {filteredSchools.map((school) => (
-                  <div
-                    key={school.id}
-                    className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => router.push(`/schools/${school.id}`)}
-                  >
-                    <img
-                      src={`/logos/${school.logo_id}.png`}
-                      onError={(e) => (e.currentTarget.src = DEFAULT_LOGO_URL)}
-                      alt={`${school.name} Logo`}
-                      className="w-10 h-10 mr-4 object-contain"
-                    />
-                    <span>{school.name}</span>
-                  </div>
-                ))}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSchools.map((school) => (
+            <div
+              key={school.school_id}
+              className="bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => {
+                console.log('Clicking school:', school.school_id);
+                router.push(`/schools/${school.school_id}`);
+              }}
+            >
+              <img
+                src={DEFAULT_SCHOOL_IMAGE}
+                alt={`${school.name_jp || school.name_en || 'School'} Building`}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <div className="flex items-center mb-4">
+                  <img
+                    src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
+                    onError={(e) => (e.currentTarget.src = '/logo.png')}
+                    alt={`${school.name_jp || school.name_en || 'School'} Logo`}
+                    className="w-12 h-12 object-contain mr-4"
+                  />
+                  <h2 className="text-xl font-semibold">
+                    {school.name_jp || school.name_en || 'Unnamed School'}
+                  </h2>
+                </div>
+                {school.location_jp && (
+                  <p className="text-gray-600 mb-2">
+                    <span className="font-medium">Location:</span> {school.location_jp}
+                  </p>
+                )}
+                {(school.description_jp || school.description_en) && (
+                  <p className="text-gray-600">
+                    {school.description_jp || school.description_en}
+                  </p>
+                )}
               </div>
-            ) : (
-              <div className="p-2 text-gray-500">No schools found.</div>
-            )}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
-      {!isLoading && (
-        <SchoolList
-          schools={filteredSchools}
-          searchQuery={searchQuery}
-          userId={userId}
-        />
-      )}
     </div>
   );
 };

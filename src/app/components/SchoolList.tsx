@@ -19,7 +19,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ schools, searchQuery = '', user
           className="flex overflow-x-auto space-x-4 p-4 scrollbar"
         >
           {schools.map((school) => (
-            <div key={school.id} className="flex-shrink-0">
+            <div key={school.school_id} className="flex-shrink-0">
               <SchoolCard school={school} searchQuery={searchQuery} userId={userId} />
             </div>
           ))}
