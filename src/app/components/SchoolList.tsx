@@ -9,33 +9,57 @@ interface SchoolListProps {
   searchQuery?: string;
   isLoading?: boolean;
   loadingCount?: number;
+  isDropdown?: boolean;
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({
   schools,
   searchQuery = '',
   isLoading = false,
-  loadingCount = 5
+  loadingCount = 5,
+  isDropdown = false
 }) => {
+  if (schools.length === 0 && !isLoading) {
+    return <p className="p-4">No schools found.</p>;
+  }
+
+  if (isDropdown) {
+    return (
+      <div className="py-1">
+        {schools.map((school) => (
+          <div
+            key={`school-${school.school_id}`}
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            onClick={() => window.location.href = `/schools/${school.school_id}`}
+          >
+            <div className="font-medium">{school.name_en}</div>
+            {school.name_jp && (
+              <div className="text-sm text-gray-500">{school.name_jp}</div>
+            )}
+          </div>
+        ))}
+        {isLoading && Array.from({ length: loadingCount }).map((_, index) => (
+          <div key={`skeleton-${schools.length + index}`} className="px-4 py-2">
+            <SchoolCardSkeleton />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <>
-      {schools.length === 0 && !isLoading ? (
-        <p>No schools found.</p>
-      ) : (
-        <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
-          {schools.map((school) => (
-            <div key={`school-${school.school_id}`} className="flex-shrink-0">
-              <SchoolCard school={school} searchQuery={searchQuery} />
-            </div>
-          ))}
-          {isLoading && Array.from({ length: loadingCount }).map((_, index) => (
-            <div key={`skeleton-${schools.length + index}`} className="flex-shrink-0">
-              <SchoolCardSkeleton />
-            </div>
-          ))}
+    <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
+      {schools.map((school) => (
+        <div key={`school-${school.school_id}`} className="flex-shrink-0">
+          <SchoolCard school={school} searchQuery={searchQuery} />
         </div>
-      )}
-    </>
+      ))}
+      {isLoading && Array.from({ length: loadingCount }).map((_, index) => (
+        <div key={`skeleton-${schools.length + index}`} className="flex-shrink-0">
+          <SchoolCardSkeleton />
+        </div>
+      ))}
+    </div>
   );
 };
 

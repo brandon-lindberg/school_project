@@ -57,7 +57,6 @@ const ListPage: React.FC = () => {
 
   useEffect(() => {
     const loadInitialSchools = async () => {
-      setIsInitialLoad(true);
       const { schools: initialSchools, hasMore: hasMoreSchools } = await fetchSchools(1);
       setSchools(initialSchools);
       setHasMore(hasMoreSchools);
@@ -69,17 +68,20 @@ const ListPage: React.FC = () => {
 
   const handleSearch = useCallback(
     debounce(async (query: string) => {
-      setSearchQuery(query);
-      setIsInitialLoad(true);
-      setPage(1);
-
+      setIsLoading(true);
       const { schools: searchResults, hasMore: hasMoreSchools } = await fetchSchools(1, query);
       setSchools(searchResults);
       setHasMore(hasMoreSchools);
-      setIsInitialLoad(false);
+      setPage(1);
+      setIsLoading(false);
     }, 300),
     []
   );
+
+  const handleSearchInput = (query: string) => {
+    setSearchQuery(query);
+    handleSearch(query);
+  };
 
   const loadMoreSchools = async () => {
     if (!hasMore || isLoading) return;
@@ -125,10 +127,6 @@ const ListPage: React.FC = () => {
     };
   }, [hasMore, isLoading, page, searchQuery, isInitialLoad]);
 
-  const handleSearchInput = (query: string) => {
-    handleSearch(query);
-  };
-
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {isInitialLoad ? (
@@ -136,21 +134,37 @@ const ListPage: React.FC = () => {
       ) : (
         <>
           <h1 className="text-3xl font-bold mb-6">School List</h1>
-          <div className="mb-6">
-            <SearchBox onSearch={handleSearchInput} />
+          <div className="mb-20">
+            <div className="relative">
+              <SearchBox onSearch={handleSearchInput} />
+              {searchQuery.trim().length > 0 && (
+                <div className="absolute w-full z-50">
+                  <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
+                    <SchoolList
+                      schools={schools}
+                      searchQuery={searchQuery}
+                      isLoading={isLoading}
+                      loadingCount={SCHOOLS_PER_PAGE}
+                      isDropdown={true}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Featured Schools</h2>
+            <SchoolList
+              schools={schools}
+              searchQuery={searchQuery}
+              isLoading={isInitialLoad || isLoading}
+              loadingCount={SCHOOLS_PER_PAGE}
+              isDropdown={false}
+            />
+            {hasMore && <div ref={loadingRef} className="h-10" />}
           </div>
         </>
       )}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Featured Schools</h2>
-        <SchoolList
-          schools={schools}
-          searchQuery={searchQuery}
-          isLoading={isInitialLoad || isLoading}
-          loadingCount={SCHOOLS_PER_PAGE}
-        />
-        {hasMore && <div ref={loadingRef} className="h-10" />}
-      </div>
     </div>
   );
 };
