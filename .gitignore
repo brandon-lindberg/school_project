@@ -43,3 +43,7 @@ next-env.d.ts
 # prisma
 prisma/dev.db
 normalized_output.json
+normalized_japanese_schools.json
+
+# scripts
+scripts/
