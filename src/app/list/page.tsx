@@ -10,6 +10,21 @@ import SchoolList from '../components/SchoolList';
 
 const SCHOOLS_PER_PAGE = 5;
 
+const ListPageSkeleton = () => (
+  <div className="animate-pulse">
+    {/* Header placeholder */}
+    <div className="h-8 bg-gray-200 rounded w-48 mb-6" />
+
+    {/* Search box placeholder */}
+    <div className="mb-6">
+      <div className="h-12 bg-gray-200 rounded w-full max-w-md" />
+    </div>
+
+    {/* Section title placeholder */}
+    <div className="h-7 bg-gray-200 rounded w-40 mb-4" />
+  </div>
+);
+
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,19 +131,25 @@ const ListPage: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold mb-6">School List</h1>
-      <div className="mb-6">
-        <SearchBox onSearch={handleSearchInput} />
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Featured Schools</h2>
-          <SchoolList
-            schools={schools}
-            searchQuery={searchQuery}
-            isLoading={isInitialLoad || isLoading}
-            loadingCount={SCHOOLS_PER_PAGE}
-          />
-          {hasMore && <div ref={loadingRef} className="h-10" />}
-        </div>
+      {isInitialLoad ? (
+        <ListPageSkeleton />
+      ) : (
+        <>
+          <h1 className="text-3xl font-bold mb-6">School List</h1>
+          <div className="mb-6">
+            <SearchBox onSearch={handleSearchInput} />
+          </div>
+        </>
+      )}
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Featured Schools</h2>
+        <SchoolList
+          schools={schools}
+          searchQuery={searchQuery}
+          isLoading={isInitialLoad || isLoading}
+          loadingCount={SCHOOLS_PER_PAGE}
+        />
+        {hasMore && <div ref={loadingRef} className="h-10" />}
       </div>
     </div>
   );
