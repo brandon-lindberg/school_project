@@ -2,15 +2,30 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { language } = useLanguage();
   const [email, setEmail] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+
+  const translations = {
+    title: language === 'en' ? 'Register' : '新規登録',
+    email: language === 'en' ? 'Email' : 'メールアドレス',
+    familyName: language === 'en' ? 'Family Name' : '姓',
+    firstName: language === 'en' ? 'First Name' : '名',
+    phoneNumber: language === 'en' ? 'Phone Number' : '電話番号',
+    password: language === 'en' ? 'Password' : 'パスワード',
+    signUpButton: language === 'en' ? 'Sign Up' : '登録',
+    unknownError: language === 'en' ? 'An unknown error occurred' : '不明なエラーが発生しました',
+    somethingWrong: language === 'en' ? 'Something went wrong' : 'エラーが発生しました',
+    successMessage: language === 'en' ? 'Success! Your user ID: ' : '登録完了！ユーザーID: ',
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,19 +40,16 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // handle error
-        setMessage(data.error || 'Something went wrong');
+        setMessage(data.error || translations.somethingWrong);
       } else {
-        // success
-        setMessage(`Success! Your user ID: ${data.userId}`);
+        setMessage(`${translations.successMessage}${data.userId}`);
         router.push('/list');
       }
     } catch (err: unknown) {
-      // Use a fallback message unless it's an instance of Error
       if (err instanceof Error) {
         setMessage(err.message);
       } else {
-        setMessage('An unknown error occurred');
+        setMessage(translations.unknownError);
       }
     }
   };
@@ -45,10 +57,10 @@ export default function RegisterPage() {
   return (
     <main className="flex items-center justify-center min-h-screen p-4 bg-[var(--background)] text-black">
       <div className="max-w-lg w-full">
-        <h1 className="text-2xl font-bold mb-4">Register</h1>
+        <h1 className="text-2xl font-bold mb-4">{translations.title}</h1>
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <label className="flex flex-col">
-            Email
+            {translations.email}
             <input
               type="email"
               value={email}
@@ -59,7 +71,7 @@ export default function RegisterPage() {
           </label>
 
           <label className="flex flex-col">
-            Family Name
+            {translations.familyName}
             <input
               type="text"
               value={familyName}
@@ -69,7 +81,7 @@ export default function RegisterPage() {
           </label>
 
           <label className="flex flex-col">
-            First Name
+            {translations.firstName}
             <input
               type="text"
               value={firstName}
@@ -79,7 +91,7 @@ export default function RegisterPage() {
           </label>
 
           <label className="flex flex-col">
-            Phone Number
+            {translations.phoneNumber}
             <input
               type="text"
               value={phoneNumber}
@@ -89,7 +101,7 @@ export default function RegisterPage() {
           </label>
 
           <label className="flex flex-col">
-            Password
+            {translations.password}
             <input
               type="password"
               value={password}
@@ -100,7 +112,7 @@ export default function RegisterPage() {
           </label>
 
           <button type="submit" className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-            Sign Up
+            {translations.signUpButton}
           </button>
         </form>
 

@@ -7,6 +7,8 @@ import debounce from 'lodash.debounce';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import SchoolList from '../components/SchoolList';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedContent } from '@/utils/language';
 
 const SCHOOLS_PER_PAGE = 5;
 
@@ -61,6 +63,29 @@ const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { language } = useLanguage();
+
+  // Translations
+  const translations = {
+    schools: language === 'en' ? 'Schools' : '学校',
+    searchResults: language === 'en' ? 'Search Results' : '検索結果',
+    noResults: language === 'en' ? 'No results found' : '結果が見つかりません',
+    regions: {
+      Tokyo: language === 'en' ? 'Tokyo' : '東京',
+      Kansai: language === 'en' ? 'Kansai' : '関西',
+      Aichi: language === 'en' ? 'Aichi' : '愛知県',
+      Ibaraki: language === 'en' ? 'Ibaraki' : '茨城県',
+      Nagano: language === 'en' ? 'Nagano' : '長野県',
+      Hokkaido: language === 'en' ? 'Hokkaido' : '北海道',
+      Okinawa: language === 'en' ? 'Okinawa' : '沖縄県',
+      Miyagi: language === 'en' ? 'Miyagi' : '宮城県',
+      Hiroshima: language === 'en' ? 'Hiroshima' : '広島県',
+      Fukuoka: language === 'en' ? 'Fukuoka' : '福岡県',
+      Iwate: language === 'en' ? 'Iwate' : '岩手県',
+      Yamanashi: language === 'en' ? 'Yamanashi' : '山梨県',
+      Other: language === 'en' ? 'Other' : 'その他'
+    }
+  };
 
   // Predefined location order
   const LOCATION_ORDER = [
@@ -83,20 +108,21 @@ const ListPage: React.FC = () => {
     // First, group schools by their location
     const grouped = schools.reduce((acc: { [key: string]: School[] }, school) => {
       // Check both English and Japanese locations
-      let location = school.location_en || school.location_jp || 'Other';
+      let location = getLocalizedContent(school.location_en, school.location_jp, language) || 'Other';
 
       // Handle special cases for region matching
-      if (location.includes('Kyoto') || location.includes('Osaka') || location.includes('Kobe')) {
+      if (location.includes('Kyoto') || location.includes('Osaka') || location.includes('Kobe') ||
+        location.includes('京都') || location.includes('大阪') || location.includes('神戸')) {
         location = 'Kansai';
-      } else if (location.includes('Nagoya')) {
+      } else if (location.includes('Nagoya') || location.includes('名古屋')) {
         location = 'Aichi';
-      } else if (location.includes('Tsukuba')) {
+      } else if (location.includes('Tsukuba') || location.includes('つくば')) {
         location = 'Ibaraki';
-      } else if (location.includes('Sendai')) {
+      } else if (location.includes('Sendai') || location.includes('仙台')) {
         location = 'Miyagi';
-      } else if (location.includes('Appi Kogen')) {
+      } else if (location.includes('Appi Kogen') || location.includes('安比高原')) {
         location = 'Iwate';
-      } else if (location.includes('Kofu')) {
+      } else if (location.includes('Kofu') || location.includes('甲府')) {
         location = 'Yamanashi';
       }
 
@@ -183,7 +209,6 @@ const ListPage: React.FC = () => {
         <ListPageSkeleton />
       ) : (
         <>
-          <h1 className="text-3xl font-bold mb-6">School List</h1>
           <div className="mb-8">
             <div className="relative">
               <SearchBox onSearch={handleSearchInput} />
@@ -208,7 +233,10 @@ const ListPage: React.FC = () => {
               Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
                 <div key={location} className="mb-12">
                   <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
-                    {location} <span className="text-gray-500 text-lg">({locationSchools.length} Schools)</span>
+                    {translations.regions[location as keyof typeof translations.regions]}{' '}
+                    <span className="text-gray-500 text-lg">
+                      ({locationSchools.length} {translations.schools})
+                    </span>
                   </h2>
                   <SchoolList
                     schools={locationSchools}
@@ -221,7 +249,10 @@ const ListPage: React.FC = () => {
             ) : (
               // Display search results without grouping
               <div>
-                <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
+                <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
+                {schools.length === 0 && !isLoading && (
+                  <p className="text-gray-500">{translations.noResults}</p>
+                )}
                 <SchoolList
                   schools={schools}
                   searchQuery={searchQuery}

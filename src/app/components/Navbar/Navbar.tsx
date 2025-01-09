@@ -4,13 +4,24 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session } = useSession();
+  const { language } = useLanguage();
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
+  };
+
+  const navText = {
+    schools: language === 'en' ? 'Schools' : '学校',
+    dashboard: language === 'en' ? 'Dashboard' : 'ダッシュボード',
+    login: language === 'en' ? 'Login' : 'ログイン',
+    register: language === 'en' ? 'Register' : '登録',
+    logout: language === 'en' ? 'Logout' : 'ログアウト',
   };
 
   return (
@@ -29,7 +40,7 @@ const Navbar = () => {
               />
             </div>
             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 truncate max-w-[200px] sm:max-w-none">
-              ISDBJ - International Schools Database Japan
+              {language === 'en' ? 'ISDBJ - International Schools Database Japan' : 'ISDBJ - 日本のインターナショナルスクールデータベース'}
             </span>
           </Link>
 
@@ -45,32 +56,33 @@ const Navbar = () => {
           </button>
 
           {/* Desktop menu - only visible on large screens */}
-          <div className="hidden lg:flex space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             <Link href="/list" className="text-gray-700 hover:text-blue-600">
-              Schools
+              {navText.schools}
             </Link>
             {session ? (
               <>
                 <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
-                  Dashboard
+                  {navText.dashboard}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="text-gray-700 hover:text-blue-600"
                 >
-                  Logout
+                  {navText.logout}
                 </button>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-gray-700 hover:text-blue-600">
-                  Login
+                  {navText.login}
                 </Link>
                 <Link href="/register" className="text-gray-700 hover:text-blue-600">
-                  Register
+                  {navText.register}
                 </Link>
               </>
             )}
+            <LanguageSwitcher />
           </div>
         </div>
 
@@ -78,30 +90,33 @@ const Navbar = () => {
         <div className={`lg:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
           <div className="flex flex-col space-y-3 py-4 px-4 sm:px-6">
             <Link href="/list" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-              Schools
+              {navText.schools}
             </Link>
             {session ? (
               <>
                 <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-                  Dashboard
+                  {navText.dashboard}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1 text-left"
                 >
-                  Logout
+                  {navText.logout}
                 </button>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-                  Login
+                  {navText.login}
                 </Link>
                 <Link href="/register" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
-                  Register
+                  {navText.register}
                 </Link>
               </>
             )}
+            <div className="py-1">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </div>

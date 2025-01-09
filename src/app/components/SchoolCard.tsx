@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { School } from '../../interfaces/School';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedContent } from '@/utils/language';
 
 interface SchoolCardProps {
   school: School;
@@ -14,6 +16,7 @@ interface SchoolCardProps {
 const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => {
   const router = useRouter();
   const { data: session } = useSession();
+  const { language } = useLanguage();
 
   const handleCardClick = () => {
     router.push(`/schools/${school.school_id}`);
@@ -27,7 +30,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
       const userData = await userResponse.json();
 
       if (!userData.userId) {
-        alert('Please log in to add schools to your list');
+        alert(language === 'en' ? 'Please log in to add schools to your list' : 'リストに学校を追加するにはログインしてください');
         return;
       }
 
@@ -47,10 +50,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
       }
 
       const data = await response.json();
-      alert('School added to your list!');
+      alert(language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！');
     } catch (error) {
       console.error('Error adding school to list:', error);
-      alert('Failed to add school to list. Please try again.');
+      alert(language === 'en' ? 'Failed to add school to list. Please try again.' : '学校をリストに追加できませんでした。もう一度お試しください。');
     }
   };
 
@@ -88,6 +91,14 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   };
 
+  // Get localized content
+  const name = getLocalizedContent(school.name_en, school.name_jp, language);
+  const description = getLocalizedContent(school.description_en, school.description_jp, language);
+  const location = getLocalizedContent(school.location_en, school.location_jp, language);
+  const email = getLocalizedContent(school.email_en, school.email_jp, language);
+  const phone = getLocalizedContent(school.phone_en, school.phone_jp, language);
+  const url = getLocalizedContent(school.url_en, school.url_jp, language);
+
   return (
     <div
       className="border rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow w-full max-w-xs sm:max-w-sm md:max-w-md relative overflow-hidden"
@@ -99,8 +110,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
       aria-pressed="false"
     >
       <img
-         src={school.logo_id ? `/logos/${school.logo_id}.png` : "https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s="}
-        alt={`${school.name_en || 'School'} Image`}
+        src={school.logo_id ? `/logos/${school.logo_id}.png` : "https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s="}
+        alt={`${name || 'School'} Image`}
         className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-t-lg"
       />
       <div className="relative p-4 flex flex-col flex-grow overflow-y-auto">
@@ -112,55 +123,60 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
           />
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold truncate">
-              {highlightText(school.name_jp || school.name_en || 'Unnamed School', searchQuery)}
+              {highlightText(name || (language === 'en' ? 'Unnamed School' : '名称未設定の学校'), searchQuery)}
             </h2>
-            {school.name_en && school.name_jp && (
+            {school.name_en && school.name_jp && language === 'jp' && (
               <h3 className="text-sm sm:text-base text-gray-600 truncate">
                 {highlightText(school.name_en, searchQuery)}
+              </h3>
+            )}
+            {school.name_en && school.name_jp && language === 'en' && (
+              <h3 className="text-sm sm:text-base text-gray-600 truncate">
+                {highlightText(school.name_jp, searchQuery)}
               </h3>
             )}
           </div>
         </div>
 
-        {(school.location_en || school.location_jp) && (
+        {location && (
           <p className="text-gray-600 mb-2 text-sm truncate">
-            <span className="font-medium">Location:</span>{' '}
-            {school.location_jp || school.location_en}
+            <span className="font-medium">{language === 'en' ? 'Location:' : '場所：'}</span>{' '}
+            {location}
           </p>
         )}
 
         <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-4">
-          {highlightText(school.description_en || school.description_jp || 'No description available.', searchQuery)}
+          {highlightText(description || (language === 'en' ? 'No description available.' : '説明がありません。'), searchQuery)}
         </p>
 
         <div className="mt-auto space-y-1">
-          {school.email_en && (
+          {email && (
             <Link
-              href={`mailto:${school.email_en}`}
+              href={`mailto:${email}`}
               className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
-              {school.email_en}
+              {email}
             </Link>
           )}
-          {school.phone_en && (
+          {phone && (
             <Link
-              href={`tel:${school.phone_en}`}
+              href={`tel:${phone}`}
               className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
-              {school.phone_en}
+              {phone}
             </Link>
           )}
-          {school.url_en && (
+          {url && (
             <Link
-              href={school.url_en}
+              href={url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 hover:underline block text-sm truncate"
               onClick={(e) => e.stopPropagation()}
             >
-              Visit Website
+              {language === 'en' ? 'Visit Website' : 'ウェブサイトを見る'}
             </Link>
           )}
         </div>
@@ -168,7 +184,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
           <button
             onClick={handleAddToList}
             className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors"
-            title="Add to My Schools"
+            title={language === 'en' ? 'Add to My Schools' : '私の学校に追加'}
           >
             +
           </button>
