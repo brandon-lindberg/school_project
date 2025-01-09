@@ -60,6 +60,33 @@ interface Notification {
   message: string;
 }
 
+const REGIONS_CONFIG = {
+  Tokyo: { en: 'Tokyo', jp: '東京' },
+  Kansai: { en: 'Kansai', jp: '関西' },
+  Aichi: { en: 'Aichi', jp: '愛知県' },
+  Ibaraki: { en: 'Ibaraki', jp: '茨城県' },
+  Nagano: { en: 'Nagano', jp: '長野県' },
+  Hokkaido: { en: 'Hokkaido', jp: '北海道' },
+  Okinawa: { en: 'Okinawa', jp: '沖縄県' },
+  Miyagi: { en: 'Miyagi', jp: '宮城県' },
+  Hiroshima: { en: 'Hiroshima', jp: '広島県' },
+  Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
+  Iwate: { en: 'Iwate', jp: '岩手県' },
+  Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
+  Other: { en: 'Other', jp: 'その他' }
+};
+
+const LOCATION_ORDER = Object.keys(REGIONS_CONFIG).filter(region => region !== 'Other');
+
+const getDefaultCollapsedState = () => {
+  return Object.keys(REGIONS_CONFIG).reduce((acc, region) => {
+    if (region !== 'Tokyo') {
+      acc[region] = true;
+    }
+    return acc;
+  }, {} as { [key: string]: boolean });
+};
+
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
@@ -71,12 +98,12 @@ const ListPage: React.FC = () => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('collapsedSections');
-        return saved ? JSON.parse(saved) : {};
+        return saved ? JSON.parse(saved) : getDefaultCollapsedState();
       } catch {
-        return {};
+        return getDefaultCollapsedState();
       }
     }
-    return {};
+    return getDefaultCollapsedState();
   });
   const { language } = useLanguage();
 
@@ -85,38 +112,11 @@ const ListPage: React.FC = () => {
     schools: language === 'en' ? 'Schools' : '学校',
     searchResults: language === 'en' ? 'Search Results' : '検索結果',
     noResults: language === 'en' ? 'No results found' : '結果が見つかりません',
-    regions: {
-      Tokyo: language === 'en' ? 'Tokyo' : '東京',
-      Kansai: language === 'en' ? 'Kansai' : '関西',
-      Aichi: language === 'en' ? 'Aichi' : '愛知県',
-      Ibaraki: language === 'en' ? 'Ibaraki' : '茨城県',
-      Nagano: language === 'en' ? 'Nagano' : '長野県',
-      Hokkaido: language === 'en' ? 'Hokkaido' : '北海道',
-      Okinawa: language === 'en' ? 'Okinawa' : '沖縄県',
-      Miyagi: language === 'en' ? 'Miyagi' : '宮城県',
-      Hiroshima: language === 'en' ? 'Hiroshima' : '広島県',
-      Fukuoka: language === 'en' ? 'Fukuoka' : '福岡県',
-      Iwate: language === 'en' ? 'Iwate' : '岩手県',
-      Yamanashi: language === 'en' ? 'Yamanashi' : '山梨県',
-      Other: language === 'en' ? 'Other' : 'その他'
-    }
+    regions: Object.entries(REGIONS_CONFIG).reduce((acc: Record<string, string>, [key, value]) => {
+      acc[key] = language === 'en' ? value.en : value.jp;
+      return acc;
+    }, {})
   };
-
-  // Predefined location order
-  const LOCATION_ORDER = [
-    'Tokyo',
-    'Kansai',
-    'Aichi',
-    'Ibaraki',
-    'Nagano',
-    'Hokkaido',
-    'Okinawa',
-    'Miyagi',
-    'Hiroshima',
-    'Fukuoka',
-    'Iwate',
-    'Yamanashi'
-  ];
 
   // Group schools by location with predefined order
   const groupSchoolsByLocation = (schools: School[]) => {
