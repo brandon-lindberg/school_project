@@ -66,6 +66,17 @@ const ListPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('collapsedSections');
+        return saved ? JSON.parse(saved) : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
   const { language } = useLanguage();
 
   // Translations
@@ -215,6 +226,23 @@ const ListPage: React.FC = () => {
     }, 5000);
   };
 
+  const toggleSection = (location: string) => {
+    setCollapsedSections((prev: { [key: string]: boolean }) => {
+      const newState = {
+        ...prev,
+        [location]: !prev[location]
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('collapsedSections', JSON.stringify(newState));
+        } catch (error) {
+          console.error('Failed to save collapsed sections state:', error);
+        }
+      }
+      return newState;
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {notification && (
@@ -252,19 +280,46 @@ const ListPage: React.FC = () => {
               {searchQuery.trim().length === 0 ? (
                 Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
                   <div key={location} className="mb-12">
-                    <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
-                      {translations.regions[location as keyof typeof translations.regions]}{' '}
-                      <span className="text-gray-500 text-lg">
-                        ({locationSchools.length} {translations.schools})
-                      </span>
-                    </h2>
-                    <SchoolList
-                      schools={locationSchools}
-                      isLoading={isInitialLoad || isLoading}
-                      loadingCount={5}
-                      isDropdown={false}
-                      onNotification={handleNotification}
-                    />
+                    <div
+                      className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200 cursor-pointer"
+                      onClick={() => toggleSection(location)}
+                    >
+                      <h2 className="text-2xl font-semibold">
+                        {translations.regions[location as keyof typeof translations.regions]}{' '}
+                        <span className="text-gray-500 text-lg">
+                          ({locationSchools.length} {translations.schools})
+                        </span>
+                      </h2>
+                      <button
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        aria-label={collapsedSections[location] ? "Expand section" : "Collapse section"}
+                      >
+                        <svg
+                          className={`w-6 h-6 transform transition-transform ${collapsedSections[location] ? 'rotate-180' : ''
+                            }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+                      }`}>
+                      <SchoolList
+                        schools={locationSchools}
+                        isLoading={isInitialLoad || isLoading}
+                        loadingCount={5}
+                        isDropdown={false}
+                        onNotification={handleNotification}
+                      />
+                    </div>
                   </div>
                 ))
               ) : (
