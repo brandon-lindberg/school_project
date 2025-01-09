@@ -1,5 +1,4 @@
 import React from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
 
 export type NotificationType = 'success' | 'error';
 
