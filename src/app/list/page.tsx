@@ -62,6 +62,7 @@ interface Notification {
 
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
+  const [allSchools, setAllSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -196,6 +197,7 @@ const ListPage: React.FC = () => {
     const loadInitialSchools = async () => {
       const initialSchools = await fetchAllSchools();
       setSchools(initialSchools);
+      setAllSchools(initialSchools);
       setIsInitialLoad(false);
     };
 
@@ -215,7 +217,13 @@ const ListPage: React.FC = () => {
 
   const handleSearchInput = (query: string) => {
     setSearchQuery(query);
-    debouncedSearch(query);
+    if (query.trim() === '') {
+      debouncedSearch.cancel(); // Cancel any pending debounced searches
+      setSchools(allSchools);
+      setIsLoading(false);
+    } else {
+      debouncedSearch(query);
+    }
   };
 
   const handleNotification = (type: NotificationType, message: string) => {
