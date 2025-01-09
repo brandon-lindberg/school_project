@@ -7,6 +7,7 @@ import debounce from 'lodash.debounce';
 import SchoolList from '../components/SchoolList';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
+import NotificationBanner, { NotificationType } from '../components/NotificationBanner';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -54,11 +55,17 @@ const ListPageSkeleton = () => (
   </div>
 );
 
+interface Notification {
+  type: NotificationType;
+  message: string;
+}
+
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [notification, setNotification] = useState<Notification | null>(null);
   const { language } = useLanguage();
 
   // Translations
@@ -200,8 +207,23 @@ const ListPage: React.FC = () => {
     debouncedSearch(query);
   };
 
+  const handleNotification = (type: NotificationType, message: string) => {
+    setNotification({ type, message });
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      {notification && (
+        <NotificationBanner
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
         {isInitialLoad ? (
           <ListPageSkeleton />
@@ -219,6 +241,7 @@ const ListPage: React.FC = () => {
                         isLoading={isLoading}
                         loadingCount={5}
                         isDropdown={true}
+                        onNotification={handleNotification}
                       />
                     </div>
                   </div>
@@ -227,7 +250,6 @@ const ListPage: React.FC = () => {
             </div>
             <div className="space-y-16">
               {searchQuery.trim().length === 0 ? (
-                // Display all schools grouped by location
                 Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
                   <div key={location} className="mb-12">
                     <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
@@ -241,11 +263,11 @@ const ListPage: React.FC = () => {
                       isLoading={isInitialLoad || isLoading}
                       loadingCount={5}
                       isDropdown={false}
+                      onNotification={handleNotification}
                     />
                   </div>
                 ))
               ) : (
-                // Display search results without grouping
                 <div>
                   <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
                   {schools.length === 0 && !isLoading && (
@@ -257,6 +279,7 @@ const ListPage: React.FC = () => {
                     isLoading={isLoading}
                     loadingCount={5}
                     isDropdown={false}
+                    onNotification={handleNotification}
                   />
                 </div>
               )}

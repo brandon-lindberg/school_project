@@ -2,6 +2,7 @@ import React from 'react';
 import SchoolCard from './SchoolCard';
 import SchoolCardSkeleton from './SchoolCardSkeleton';
 import { School } from '../../interfaces/School';
+import { NotificationType } from './NotificationBanner';
 import './styles/scrollbar.css';
 
 interface SchoolListProps {
@@ -10,6 +11,7 @@ interface SchoolListProps {
   isLoading?: boolean;
   loadingCount?: number;
   isDropdown?: boolean;
+  onNotification?: (type: NotificationType, message: string) => void;
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({
@@ -17,7 +19,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
   searchQuery = '',
   isLoading = false,
   loadingCount = 5,
-  isDropdown = false
+  isDropdown = false,
+  onNotification
 }) => {
   if (schools.length === 0 && !isLoading) {
     return <p className="p-4">No schools found.</p>;
@@ -51,7 +54,11 @@ const SchoolList: React.FC<SchoolListProps> = ({
     <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
       {schools.map((school) => (
         <div key={`school-${school.school_id}`} className="flex-shrink-0">
-          <SchoolCard school={school} searchQuery={searchQuery} />
+          <SchoolCard
+            school={school}
+            searchQuery={searchQuery}
+            onNotification={onNotification}
+          />
         </div>
       ))}
       {isLoading && Array.from({ length: loadingCount }).map((_, index) => (

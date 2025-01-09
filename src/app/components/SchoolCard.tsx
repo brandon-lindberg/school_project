@@ -12,9 +12,10 @@ import { getLocalizedContent } from '@/utils/language';
 interface SchoolCardProps {
   school: School;
   searchQuery?: string;
+  onNotification?: (type: 'success' | 'error', message: string) => void;
 }
 
-const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => {
+const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNotification }) => {
   const router = useRouter();
   const { data: session } = useSession();
   const { language } = useLanguage();
@@ -31,7 +32,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
       const userData = await userResponse.json();
 
       if (!userData.userId) {
-        alert(language === 'en' ? 'Please log in to add schools to your list' : 'リストに学校を追加するにはログインしてください');
+        onNotification?.('error', language === 'en' ? 'Please log in to add schools to your list' : 'リストに学校を追加するにはログインしてください');
         return;
       }
 
@@ -50,10 +51,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
         throw new Error('Failed to add school to list');
       }
 
-      alert(language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！');
+      onNotification?.('success', language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！');
     } catch (error) {
       console.error('Error adding school to list:', error);
-      alert(language === 'en' ? 'Failed to add school to list. Please try again.' : '学校をリストに追加できませんでした。もう一度お試しください。');
+      onNotification?.('error', language === 'en' ? 'Failed to add school to list. Please try again.' : '学校をリストに追加できませんでした。もう一度お試しください。');
     }
   };
 
@@ -187,10 +188,13 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '' }) => 
         {session && (
           <button
             onClick={handleAddToList}
-            className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-2"
             title={language === 'en' ? 'Add to My Schools' : '私の学校に追加'}
           >
-            +
+            <span className="text-xl">+</span>
+            <span className="text-sm whitespace-nowrap">
+              {language === 'en' ? 'Add to List' : 'リストに追加'}
+            </span>
           </button>
         )}
       </div>
