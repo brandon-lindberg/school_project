@@ -60,7 +60,8 @@ export async function POST(request: Request) {
 }
 
 // GET /api/browsing - Get browsing history for the current user
-export async function GET() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
