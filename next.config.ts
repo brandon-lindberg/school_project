@@ -10,7 +10,12 @@ const nextConfig: NextConfig = {
     // ignoreBuildErrors: true,
   },
   images: {
-    domains: ['media.istockphoto.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'media.istockphoto.com',
+      },
+    ],
   },
   /* Other Next.js config options can go here */
 };
