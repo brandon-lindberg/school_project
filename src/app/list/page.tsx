@@ -30,36 +30,101 @@ const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const loadingRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const { data: session } = useSession();
 
-  const fetchSchools = async (pageNum: number, query: string = '') => {
+  // Predefined location order
+  const LOCATION_ORDER = [
+    'Tokyo',
+    'Kansai',
+    'Aichi',
+    'Ibaraki',
+    'Nagano',
+    'Hokkaido',
+    'Okinawa',
+    'Miyagi',
+    'Hiroshima',
+    'Fukuoka',
+    'Iwate',
+    'Yamanashi'
+  ];
+
+  // Group schools by location with predefined order
+  const groupSchoolsByLocation = (schools: School[]) => {
+    // First, group schools by their location
+    const grouped = schools.reduce((acc: { [key: string]: School[] }, school) => {
+      // Check both English and Japanese locations
+      let location = school.location_en || school.location_jp || 'Other';
+
+      // Handle special cases for region matching
+      if (location.includes('Kyoto') || location.includes('Osaka') || location.includes('Kobe')) {
+        location = 'Kansai';
+      } else if (location.includes('Nagoya')) {
+        location = 'Aichi';
+      } else if (location.includes('Tsukuba')) {
+        location = 'Ibaraki';
+      } else if (location.includes('Sendai')) {
+        location = 'Miyagi';
+      } else if (location.includes('Appi Kogen')) {
+        location = 'Iwate';
+      } else if (location.includes('Kofu')) {
+        location = 'Yamanashi';
+      }
+
+      if (!acc[location]) {
+        acc[location] = [];
+      }
+      acc[location].push(school);
+      return acc;
+    }, {});
+
+    // Create an ordered object based on LOCATION_ORDER
+    const orderedLocations = LOCATION_ORDER.reduce((acc: { [key: string]: School[] }, location) => {
+      if (grouped[location]) {
+        acc[location] = grouped[location];
+      }
+      return acc;
+    }, {});
+
+    // Add any remaining locations not in the predefined order
+    Object.entries(grouped).forEach(([location, schools]) => {
+      if (!orderedLocations[location] && location !== 'Other') {
+        orderedLocations[location] = schools;
+      }
+    });
+
+    // Add 'Other' category at the end if it exists
+    if (grouped['Other']) {
+      orderedLocations['Other'] = grouped['Other'];
+    }
+
+    return orderedLocations;
+  };
+
+  const fetchAllSchools = async () => {
     try {
-      const endpoint = query
-        ? `/api/schools?search=${encodeURIComponent(query)}&page=${pageNum}&limit=${SCHOOLS_PER_PAGE}`
-        : `/api/schools?page=${pageNum}&limit=${SCHOOLS_PER_PAGE}`;
-
-      const response = await fetch(endpoint);
+      const response = await fetch('/api/schools?limit=1000'); // Fetch all schools at once
       const data = await response.json();
-
-      return {
-        schools: data.schools,
-        hasMore: data.pagination.hasMore
-      };
+      return data.schools;
     } catch (error) {
       console.error('Error fetching schools:', error);
-      return { schools: [], hasMore: false };
+      return [];
+    }
+  };
+
+  const fetchSearchResults = async (query: string) => {
+    try {
+      const response = await fetch(`/api/schools?search=${encodeURIComponent(query)}&limit=20`);
+      const data = await response.json();
+      return data.schools;
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+      return [];
     }
   };
 
   useEffect(() => {
     const loadInitialSchools = async () => {
-      const { schools: initialSchools, hasMore: hasMoreSchools } = await fetchSchools(1);
+      const initialSchools = await fetchAllSchools();
       setSchools(initialSchools);
-      setHasMore(hasMoreSchools);
       setIsInitialLoad(false);
     };
 
@@ -69,10 +134,8 @@ const ListPage: React.FC = () => {
   const handleSearch = useCallback(
     debounce(async (query: string) => {
       setIsLoading(true);
-      const { schools: searchResults, hasMore: hasMoreSchools } = await fetchSchools(1, query);
+      const searchResults = await fetchSearchResults(query);
       setSchools(searchResults);
-      setHasMore(hasMoreSchools);
-      setPage(1);
       setIsLoading(false);
     }, 300),
     []
@@ -83,50 +146,6 @@ const ListPage: React.FC = () => {
     handleSearch(query);
   };
 
-  const loadMoreSchools = async () => {
-    if (!hasMore || isLoading) return;
-
-    setIsLoading(true);
-    const nextPage = page + 1;
-    const { schools: newSchools, hasMore: hasMoreSchools } = await fetchSchools(nextPage, searchQuery);
-
-    if (newSchools.length > 0) {
-      setSchools(prevSchools => {
-        // Create a Set of existing school IDs for efficient lookup
-        const existingIds = new Set(prevSchools.map((school: School) => school.school_id));
-        // Filter out any duplicates from new schools
-        const uniqueNewSchools = newSchools.filter((school: School) => !existingIds.has(school.school_id));
-        return [...prevSchools, ...uniqueNewSchools];
-      });
-      setPage(nextPage);
-      setHasMore(hasMoreSchools);
-    } else {
-      setHasMore(false);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isInitialLoad) {
-          loadMoreSchools();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
-
-    return () => {
-      if (loadingRef.current) {
-        observer.unobserve(loadingRef.current);
-      }
-    };
-  }, [hasMore, isLoading, page, searchQuery, isInitialLoad]);
-
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {isInitialLoad ? (
@@ -134,7 +153,7 @@ const ListPage: React.FC = () => {
       ) : (
         <>
           <h1 className="text-3xl font-bold mb-6">School List</h1>
-          <div className="mb-20">
+          <div className="mb-8">
             <div className="relative">
               <SearchBox onSearch={handleSearchInput} />
               {searchQuery.trim().length > 0 && (
@@ -144,7 +163,7 @@ const ListPage: React.FC = () => {
                       schools={schools}
                       searchQuery={searchQuery}
                       isLoading={isLoading}
-                      loadingCount={SCHOOLS_PER_PAGE}
+                      loadingCount={5}
                       isDropdown={true}
                     />
                   </div>
@@ -152,16 +171,35 @@ const ListPage: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Featured Schools</h2>
-            <SchoolList
-              schools={schools}
-              searchQuery={searchQuery}
-              isLoading={isInitialLoad || isLoading}
-              loadingCount={SCHOOLS_PER_PAGE}
-              isDropdown={false}
-            />
-            {hasMore && <div ref={loadingRef} className="h-10" />}
+          <div className="space-y-16">
+            {searchQuery.trim().length === 0 ? (
+              // Display all schools grouped by location
+              Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
+                <div key={location} className="mb-12">
+                  <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
+                    {location} <span className="text-gray-500 text-lg">({locationSchools.length} Schools)</span>
+                  </h2>
+                  <SchoolList
+                    schools={locationSchools}
+                    isLoading={isInitialLoad || isLoading}
+                    loadingCount={5}
+                    isDropdown={false}
+                  />
+                </div>
+              ))
+            ) : (
+              // Display search results without grouping
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
+                <SchoolList
+                  schools={schools}
+                  searchQuery={searchQuery}
+                  isLoading={isLoading}
+                  loadingCount={5}
+                  isDropdown={false}
+                />
+              </div>
+            )}
           </div>
         </>
       )}
