@@ -209,7 +209,7 @@ const ListPage: React.FC = () => {
           <>
             <div className="mb-8">
               <div className="relative">
-                <SearchBox onSearch={handleSearchInput} />
+                <SearchBox onSearch={handleSearchInput} language={language} />
                 {searchQuery.trim().length > 0 && (
                   <div className="absolute w-full z-50">
                     <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
