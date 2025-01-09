@@ -16,12 +16,43 @@ const ListPageSkeleton = () => (
     <div className="h-8 bg-gray-200 rounded w-48 mb-6" />
 
     {/* Search box placeholder */}
-    <div className="mb-6">
+    <div className="mb-8">
       <div className="h-12 bg-gray-200 rounded w-full max-w-md" />
     </div>
 
-    {/* Section title placeholder */}
-    <div className="h-7 bg-gray-200 rounded w-40 mb-4" />
+    {/* Region sections */}
+    <div className="space-y-16">
+      {[
+        'Tokyo',
+        'Kansai',
+        'Aichi',
+        'Ibaraki',
+        'Nagano',
+        'Hokkaido',
+        'Okinawa',
+        'Miyagi',
+        'Hiroshima',
+        'Fukuoka',
+        'Iwate',
+        'Yamanashi'
+      ].map((region) => (
+        <div key={region} className="mb-12">
+          {/* Region header placeholder */}
+          <div className="mb-6 pb-2 border-b border-gray-200">
+            <div className="h-8 bg-gray-200 rounded w-64" />
+          </div>
+
+          {/* School cards placeholder */}
+          <div className="flex overflow-x-auto space-x-4 p-4">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="flex-shrink-0 w-[300px]">
+                <div className="bg-gray-200 rounded-lg h-[200px]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 );
 
