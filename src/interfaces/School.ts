@@ -13,7 +13,11 @@ export interface School {
   address_jp?: string;
   curriculum_en?: string;
   curriculum_jp?: string;
-  structured_data?: Record<string, any>;
+  structured_data?: {
+    [key: string]: {
+      [key: string]: string | number | boolean | null | undefined;
+    };
+  };
   url_en?: string;
   url_jp?: string;
   logo_id?: string;

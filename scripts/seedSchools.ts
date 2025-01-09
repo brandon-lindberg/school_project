@@ -7,7 +7,9 @@ const prisma = new PrismaClient();
 
 function extractFromStructuredData(data: School, section: string, field: string): string | null {
   try {
-    return data.structured_data?.[section]?.[field] || null;
+    const value = data.structured_data?.[section]?.[field];
+    if (value == null) return null;
+    return String(value);
   } catch {
     return null;
   }

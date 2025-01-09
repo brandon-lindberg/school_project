@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Since NextAuth handles the actual session cleanup,
     // this endpoint is mainly for testing purposes and

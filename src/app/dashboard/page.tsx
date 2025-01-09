@@ -50,7 +50,6 @@ const getUserId = async (): Promise<number> => {
 const DashboardPage: React.FC = () => {
   const [userLists, setUserLists] = useState<UserList[]>([]);
   const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
-  const [userId, setUserId] = useState<number | null>(null);
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +69,6 @@ const DashboardPage: React.FC = () => {
         setIsLoading(true);
         // Get the actual userId using the getUserId function
         const fetchedUserId = await getUserId();
-        setUserId(fetchedUserId);
 
         // Fetch user lists
         const listsResponse = await fetch(`/api/userLists?userId=${fetchedUserId}`);

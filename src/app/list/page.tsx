@@ -1,17 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { School } from '../../interfaces/School';
 import SearchBox from '../components/SearchBox';
 import debounce from 'lodash.debounce';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import SchoolList from '../components/SchoolList';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
-import Navbar from '../components/Navbar/Navbar';
-
-const SCHOOLS_PER_PAGE = 5;
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -189,19 +184,20 @@ const ListPage: React.FC = () => {
     loadInitialSchools();
   }, []);
 
-  const handleSearch = useCallback(
-    debounce(async (query: string) => {
-      setIsLoading(true);
-      const searchResults = await fetchSearchResults(query);
-      setSchools(searchResults);
-      setIsLoading(false);
-    }, 300),
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        setIsLoading(true);
+        const searchResults = await fetchSearchResults(query);
+        setSchools(searchResults);
+        setIsLoading(false);
+      }, 300),
     []
   );
 
   const handleSearchInput = (query: string) => {
     setSearchQuery(query);
-    handleSearch(query);
+    debouncedSearch(query);
   };
 
   return (

@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { POST, GET, DELETE } from "./route";
 import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";

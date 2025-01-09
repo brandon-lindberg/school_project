@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import { NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
 // Create password hash before mocking
 const TEST_PASSWORD_HASH = bcrypt.hashSync('password123', 10);

@@ -53,7 +53,7 @@ async function getSchool(id: string): Promise<School | null> {
 export default function SchoolDetailPage({ params }: { params: Promise<Params> }) {
   const resolvedParams = React.use(params);
   const { language } = useLanguage();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [school, setSchool] = useState<School | null>(null);
 
   const translations = {
@@ -616,6 +616,114 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
             </div>
           )}
         </div>
+
+        {/* Programs Section */}
+        {programs.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.programsOffered}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {programs.map((program, index) => (
+                <li key={index}>{program}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Facilities Section */}
+        {facilities.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.facilities}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {facilities.map((facility, index) => (
+                <li key={index}>{facility}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Support Services Section */}
+        {supportServices.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.supportServices}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {supportServices.map((service, index) => (
+                <li key={index}>{service}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Academic Support Section */}
+        {academicSupport.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.academicSupportTitle}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {academicSupport.map((support, index) => (
+                <li key={index}>{support}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Extracurricular Activities Section */}
+        {extracurricular.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.extracurricular}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {extracurricular.map((activity, index) => (
+                <li key={index}>{activity}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Staff Section */}
+        {staffList.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.staff}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {staffList.map((staff, index) => (
+                <li key={index}>{staff}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Board Members Section */}
+        {boardMembers.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.boardMembers}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {boardMembers.map((member, index) => (
+                <li key={index}>{member}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Open Positions Section */}
+        {openPositions.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.openPositions}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {openPositions.map((position, index) => (
+                <li key={index}>{position}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Events Section */}
+        {events.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.events}</h3>
+            <ul className="list-disc list-inside text-gray-700">
+              {events.map((event, index) => (
+                <li key={index}>{event}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 import type { NextAuthOptions } from "next-auth";
-import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
