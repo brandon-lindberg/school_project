@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react';
 import SchoolList from '../components/SchoolList';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
+import Navbar from '../components/Navbar/Navbar';
 
 const SCHOOLS_PER_PAGE = 5;
 
@@ -204,67 +205,69 @@ const ListPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      {isInitialLoad ? (
-        <ListPageSkeleton />
-      ) : (
-        <>
-          <div className="mb-8">
-            <div className="relative">
-              <SearchBox onSearch={handleSearchInput} />
-              {searchQuery.trim().length > 0 && (
-                <div className="absolute w-full z-50">
-                  <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        {isInitialLoad ? (
+          <ListPageSkeleton />
+        ) : (
+          <>
+            <div className="mb-8">
+              <div className="relative">
+                <SearchBox onSearch={handleSearchInput} />
+                {searchQuery.trim().length > 0 && (
+                  <div className="absolute w-full z-50">
+                    <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
+                      <SchoolList
+                        schools={schools}
+                        searchQuery={searchQuery}
+                        isLoading={isLoading}
+                        loadingCount={5}
+                        isDropdown={true}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="space-y-16">
+              {searchQuery.trim().length === 0 ? (
+                // Display all schools grouped by location
+                Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
+                  <div key={location} className="mb-12">
+                    <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
+                      {translations.regions[location as keyof typeof translations.regions]}{' '}
+                      <span className="text-gray-500 text-lg">
+                        ({locationSchools.length} {translations.schools})
+                      </span>
+                    </h2>
                     <SchoolList
-                      schools={schools}
-                      searchQuery={searchQuery}
-                      isLoading={isLoading}
+                      schools={locationSchools}
+                      isLoading={isInitialLoad || isLoading}
                       loadingCount={5}
-                      isDropdown={true}
+                      isDropdown={false}
                     />
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="space-y-16">
-            {searchQuery.trim().length === 0 ? (
-              // Display all schools grouped by location
-              Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
-                <div key={location} className="mb-12">
-                  <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-200">
-                    {translations.regions[location as keyof typeof translations.regions]}{' '}
-                    <span className="text-gray-500 text-lg">
-                      ({locationSchools.length} {translations.schools})
-                    </span>
-                  </h2>
+                ))
+              ) : (
+                // Display search results without grouping
+                <div>
+                  <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
+                  {schools.length === 0 && !isLoading && (
+                    <p className="text-gray-500">{translations.noResults}</p>
+                  )}
                   <SchoolList
-                    schools={locationSchools}
-                    isLoading={isInitialLoad || isLoading}
+                    schools={schools}
+                    searchQuery={searchQuery}
+                    isLoading={isLoading}
                     loadingCount={5}
                     isDropdown={false}
                   />
                 </div>
-              ))
-            ) : (
-              // Display search results without grouping
-              <div>
-                <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
-                {schools.length === 0 && !isLoading && (
-                  <p className="text-gray-500">{translations.noResults}</p>
-                )}
-                <SchoolList
-                  schools={schools}
-                  searchQuery={searchQuery}
-                  isLoading={isLoading}
-                  loadingCount={5}
-                  isDropdown={false}
-                />
-              </div>
-            )}
-          </div>
-        </>
-      )}
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

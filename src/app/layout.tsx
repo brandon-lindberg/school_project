@@ -39,7 +39,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <Navbar />
+          <div className="sticky top-0 z-50">
+            <Navbar />
+          </div>
           <main className="min-h-[calc(100vh-64px)]">
             {children}
           </main>
