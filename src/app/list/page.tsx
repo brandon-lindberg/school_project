@@ -91,7 +91,8 @@ const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
     curriculum: ['all']
   });
@@ -236,7 +237,7 @@ const ListPage: React.FC = () => {
 
   const handleSearchInput = (query: string, filters: SearchFilters) => {
     setSearchQuery(query);
-    setSearchFilters(filters);
+    setFilters(filters);
 
     if (query.trim() === '' &&
       filters.region.includes('all') &&

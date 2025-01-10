@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+const QUERY_MODE: Prisma.QueryMode = 'insensitive';
 
 // Define region mappings similar to the list page
 const REGION_MAPPINGS = {
@@ -17,7 +19,7 @@ const REGION_MAPPINGS = {
   'Fukuoka': ['Fukuoka', '福岡', 'Hakata', '博多'],
   'Iwate': ['Appi Kogen', '安比高原', 'Morioka', '盛岡'],
   'Yamanashi': ['Kofu', '甲府']
-};
+} as const;
 
 export async function GET(request: Request) {
   try {
@@ -81,55 +83,55 @@ export async function GET(request: Request) {
     }
 
     // Build the where clause for search and filters
-    const whereClause: any = {};
-    const conditions = [];
+    const whereClause: Prisma.SchoolWhereInput = {};
+    const conditions: Prisma.SchoolWhereInput[] = [];
 
     if (search) {
       conditions.push({
         OR: [
-          { name_en: { contains: search, mode: 'insensitive' as const } },
-          { name_jp: { contains: search, mode: 'insensitive' as const } },
-          { description_en: { contains: search, mode: 'insensitive' as const } },
-          { description_jp: { contains: search, mode: 'insensitive' as const } }
+          { name_en: { contains: search, mode: QUERY_MODE } },
+          { name_jp: { contains: search, mode: QUERY_MODE } },
+          { description_en: { contains: search, mode: QUERY_MODE } },
+          { description_jp: { contains: search, mode: QUERY_MODE } }
         ]
       });
     }
 
     // Handle multiple region selections
     if (regions.length > 0 && !regions.includes('all')) {
-      const regionConditions = regions.map(region => {
+      regions.forEach(region => {
         const cityMappings = REGION_MAPPINGS[region as keyof typeof REGION_MAPPINGS] || [];
-        return [
-          { region_en: { equals: region, mode: 'insensitive' as const } },
-          { region_jp: { equals: region, mode: 'insensitive' as const } },
-          ...cityMappings.map(city => ([
-            { location_en: { contains: city, mode: 'insensitive' as const } },
-            { location_jp: { contains: city, mode: 'insensitive' as const } },
-            { address_en: { contains: city, mode: 'insensitive' as const } },
-            { address_jp: { contains: city, mode: 'insensitive' as const } }
-          ])).flat()
-        ];
-      }).flat();
-
-      conditions.push({
-        OR: regionConditions
+        conditions.push({
+          OR: [
+            { region_en: { equals: region, mode: QUERY_MODE } },
+            { region_jp: { equals: region, mode: QUERY_MODE } },
+            ...cityMappings.map(city => ({
+              OR: [
+                { location_en: { contains: city, mode: QUERY_MODE } },
+                { location_jp: { contains: city, mode: QUERY_MODE } },
+                { address_en: { contains: city, mode: QUERY_MODE } },
+                { address_jp: { contains: city, mode: QUERY_MODE } }
+              ]
+            }))
+          ]
+        });
       });
     }
 
     // Handle multiple curriculum selections
     if (curriculums.length > 0 && !curriculums.includes('all')) {
-      const curriculumConditions = curriculums.map(curriculum => ([
-        { education_curriculum_en: { contains: curriculum, mode: 'insensitive' as const } },
-        { education_curriculum_jp: { contains: curriculum, mode: 'insensitive' as const } }
-      ])).flat();
-
       conditions.push({
-        OR: curriculumConditions
+        OR: curriculums.map(curriculum => ({
+          OR: [
+            { education_curriculum_en: { contains: curriculum, mode: QUERY_MODE } },
+            { education_curriculum_jp: { contains: curriculum, mode: QUERY_MODE } }
+          ]
+        }))
       });
     }
 
     if (conditions.length > 0) {
-      whereClause.AND = conditions;
+      whereClause.OR = conditions;
     }
 
     // Get total count first
