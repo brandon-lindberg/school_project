@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { School } from '../../interfaces/School';
-import SearchBox from '../components/SearchBox';
+import SearchBox, { SearchFilters } from '../components/SearchBox';
 import debounce from 'lodash.debounce';
 import SchoolList from '../components/SchoolList';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -91,6 +91,10 @@ const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    region: 'all',
+    curriculum: 'all'
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -182,9 +186,15 @@ const ListPage: React.FC = () => {
     }
   };
 
-  const fetchSearchResults = async (query: string) => {
+  const fetchSearchResults = async (query: string, filters: SearchFilters) => {
     try {
-      const response = await fetch(`/api/schools?search=${encodeURIComponent(query)}&limit=20`);
+      const queryParams = new URLSearchParams();
+      if (query) queryParams.append('search', query);
+      if (filters.region && filters.region !== 'all') queryParams.append('region', filters.region);
+      if (filters.curriculum && filters.curriculum !== 'all') queryParams.append('curriculum', filters.curriculum);
+      queryParams.append('limit', '20');
+
+      const response = await fetch(`/api/schools?${queryParams.toString()}`);
       const data = await response.json();
       return data.schools;
     } catch (error) {
@@ -206,23 +216,25 @@ const ListPage: React.FC = () => {
 
   const debouncedSearch = useMemo(
     () =>
-      debounce(async (query: string) => {
+      debounce(async (query: string, filters: SearchFilters) => {
         setIsLoading(true);
-        const searchResults = await fetchSearchResults(query);
+        const searchResults = await fetchSearchResults(query, filters);
         setSchools(searchResults);
         setIsLoading(false);
       }, 300),
     []
   );
 
-  const handleSearchInput = (query: string) => {
+  const handleSearchInput = (query: string, filters: SearchFilters) => {
     setSearchQuery(query);
-    if (query.trim() === '') {
-      debouncedSearch.cancel(); // Cancel any pending debounced searches
+    setSearchFilters(filters);
+
+    if (query.trim() === '' && filters.region === 'all' && filters.curriculum === 'all') {
+      debouncedSearch.cancel();
       setSchools(allSchools);
       setIsLoading(false);
     } else {
-      debouncedSearch(query);
+      debouncedSearch(query, filters);
     }
   };
 

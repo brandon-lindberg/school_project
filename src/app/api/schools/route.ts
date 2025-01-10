@@ -8,6 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const search = searchParams.get('search');
+    const region = searchParams.get('region');
+    const curriculum = searchParams.get('curriculum');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
@@ -62,15 +64,44 @@ export async function GET(request: Request) {
       return NextResponse.json(school);
     }
 
-    // Build the where clause for search
-    const whereClause = search ? {
-      OR: [
-        { name_en: { contains: search, mode: 'insensitive' as const } },
-        { name_jp: { contains: search, mode: 'insensitive' as const } },
-        { description_en: { contains: search, mode: 'insensitive' as const } },
-        { description_jp: { contains: search, mode: 'insensitive' as const } }
-      ]
-    } : {};
+    // Build the where clause for search and filters
+    const whereClause: any = {};
+    const conditions = [];
+
+    if (search) {
+      conditions.push({
+        OR: [
+          { name_en: { contains: search, mode: 'insensitive' as const } },
+          { name_jp: { contains: search, mode: 'insensitive' as const } },
+          { description_en: { contains: search, mode: 'insensitive' as const } },
+          { description_jp: { contains: search, mode: 'insensitive' as const } }
+        ]
+      });
+    }
+
+    if (region && region !== 'all') {
+      conditions.push({
+        OR: [
+          { region_en: { contains: region, mode: 'insensitive' as const } },
+          { region_jp: { contains: region, mode: 'insensitive' as const } },
+          { location_en: { contains: region, mode: 'insensitive' as const } },
+          { location_jp: { contains: region, mode: 'insensitive' as const } }
+        ]
+      });
+    }
+
+    if (curriculum && curriculum !== 'all') {
+      conditions.push({
+        OR: [
+          { education_curriculum_en: { contains: curriculum, mode: 'insensitive' as const } },
+          { education_curriculum_jp: { contains: curriculum, mode: 'insensitive' as const } }
+        ]
+      });
+    }
+
+    if (conditions.length > 0) {
+      whereClause.AND = conditions;
+    }
 
     // Get total count first
     const total = await prisma.school.count({
