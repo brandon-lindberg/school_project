@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getLocalizedContent } from '@/utils/language';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 type UserList = {
   list_id: number;
@@ -22,59 +22,66 @@ type UserList = {
   }[];
 };
 
-interface UserListsProps {
+type UserListsProps = {
   userLists: UserList[];
   onDeleteSchool: (listId: number, schoolId: number) => Promise<void>;
-}
+};
 
 const UserLists: React.FC<UserListsProps> = ({ userLists, onDeleteSchool }) => {
   const { language } = useLanguage();
 
-  const translations = {
-    title: language === 'en' ? 'Your Lists' : 'マイリスト',
-    added: language === 'en' ? 'Added' : '追加日',
-    remove: language === 'en' ? 'Remove' : '削除',
+  const getSchoolName = (school: { name_en: string | null; name_jp: string | null }) => {
+    if (language === 'en') {
+      return school.name_en || school.name_jp || 'Unnamed School';
+    }
+    return school.name_jp || school.name_en || '名称未設定の学校';
   };
 
+  if (userLists.length === 0) {
+    return (
+      <div className="text-gray-500 text-center py-8">
+        {language === 'en' ? 'No lists created yet.' : 'リストがまだ作成されていません。'}
+      </div>
+    );
+  }
+
   return (
-    <section>
-      <h2 className="text-2xl font-semibold mb-4 text-center sm:text-left">{translations.title}</h2>
-      <ul className="space-y-4">
-        {userLists.map((list) => (
-          <li key={list.list_id} className="border p-4 rounded shadow-sm">
-            <span className="block font-medium">{list.list_name}</span>
-            <ul className="mt-2 space-y-2">
-              {list.schools.map((school) => (
-                <li key={school.school_id} className="flex justify-between items-center">
-                  <div>
-                    <Link
-                      href={`/schools/${school.school_id}`}
-                      className="text-gray-900 hover:text-blue-600 transition-colors"
-                    >
-                      {getLocalizedContent(school.school.name_en, school.school.name_jp, language) ||
-                        (language === 'en' ? 'Unnamed School' : '名称未設定の学校')}
-                    </Link>
-                    <span className="text-sm text-gray-500 block">
-                      {translations.added} {new Date(school.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'ja-JP', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onDeleteSchool(list.list_id, school.school_id)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                  >
-                    {translations.remove}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="space-y-6">
+      {userLists.map((list) => (
+        <div
+          key={list.list_id}
+          className="bg-white rounded-lg border border-gray-100 overflow-hidden transition-shadow hover:shadow-md"
+        >
+          <div className="divide-y divide-gray-100">
+            {list.schools.map((school) => (
+              <div
+                key={school.school_id}
+                className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <Link
+                  href={`/schools/${school.school_id}`}
+                  className="text-[#0057B7] hover:text-[#004494] transition-colors"
+                >
+                  {getSchoolName(school.school)}
+                </Link>
+                <button
+                  onClick={() => onDeleteSchool(list.list_id, school.school_id)}
+                  className="p-2 text-[#D9534F] hover:bg-red-50 rounded-full transition-colors"
+                  aria-label="Remove school from list"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              </div>
+            ))}
+            {list.schools.length === 0 && (
+              <div className="px-4 py-3 text-gray-500 text-center">
+                {language === 'en' ? 'No schools in this list' : 'このリストに学校がありません'}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 

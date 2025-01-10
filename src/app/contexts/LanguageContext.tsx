@@ -7,6 +7,7 @@ type Language = 'en' | 'jp';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
+  toggleLanguage: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -31,6 +32,10 @@ function getBrowserLanguage(): Language {
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('jp'); // Default to Japanese
 
+  const toggleLanguage = () => {
+    setLanguage(prevLang => prevLang === 'en' ? 'jp' : 'en');
+  };
+
   // Load language preference on mount
   useEffect(() => {
     // First check localStorage
@@ -51,7 +56,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage }}>
       {children}
     </LanguageContext.Provider>
   );

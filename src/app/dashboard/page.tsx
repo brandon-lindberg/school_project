@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import UserLists from '../components/UserLists';
 import BrowsingHistory from '../components/BrowsingHistory';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Define the type for user list items
 type UserList = {
@@ -53,6 +54,7 @@ const DashboardPage: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (status === 'loading') {
@@ -165,21 +167,40 @@ const DashboardPage: React.FC = () => {
   }
 
   if (status === 'unauthenticated') {
-    return null; // Return null since we're redirecting
+    return null;
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <UserLists
-          userLists={userLists}
-          onDeleteSchool={handleDeleteSchoolFromList}
-        />
-        <BrowsingHistory
-          browsingHistory={browsingHistory}
-          onClearHistory={handleClearHistory}
-          onDeleteEntry={handleDeleteHistoryEntry}
-        />
+    <div className="min-h-screen bg-[#F5F5F5] font-sans">
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - My Lists */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+                {language === 'en' ? 'My Lists' : 'マイリスト'}
+              </h2>
+              <UserLists
+                userLists={userLists}
+                onDeleteSchool={handleDeleteSchoolFromList}
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Browsing History */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+                {language === 'en' ? 'Browsing History' : '閲覧履歴'}
+              </h2>
+              <BrowsingHistory
+                browsingHistory={browsingHistory}
+                onClearHistory={handleClearHistory}
+                onDeleteEntry={handleDeleteHistoryEntry}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
