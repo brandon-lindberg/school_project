@@ -92,8 +92,8 @@ const ListPage: React.FC = () => {
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    region: 'all',
-    curriculum: 'all'
+    region: ['all'],
+    curriculum: ['all']
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -190,9 +190,18 @@ const ListPage: React.FC = () => {
     try {
       const queryParams = new URLSearchParams();
       if (query) queryParams.append('search', query);
-      if (filters.region && filters.region !== 'all') queryParams.append('region', filters.region);
-      if (filters.curriculum && filters.curriculum !== 'all') queryParams.append('curriculum', filters.curriculum);
-      queryParams.append('limit', '20');
+
+      // Handle multiple region selections
+      if (filters.region && !filters.region.includes('all')) {
+        filters.region.forEach(region => queryParams.append('region', region));
+      }
+
+      // Handle multiple curriculum selections
+      if (filters.curriculum && !filters.curriculum.includes('all')) {
+        filters.curriculum.forEach(curriculum => queryParams.append('curriculum', curriculum));
+      }
+
+      queryParams.append('limit', '1000');
 
       const response = await fetch(`/api/schools?${queryParams.toString()}`);
       const data = await response.json();
@@ -229,7 +238,9 @@ const ListPage: React.FC = () => {
     setSearchQuery(query);
     setSearchFilters(filters);
 
-    if (query.trim() === '' && filters.region === 'all' && filters.curriculum === 'all') {
+    if (query.trim() === '' &&
+      filters.region.includes('all') &&
+      filters.curriculum.includes('all')) {
       debouncedSearch.cancel();
       setSchools(allSchools);
       setIsLoading(false);

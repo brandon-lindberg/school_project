@@ -3,15 +3,31 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Define region mappings similar to the list page
+const REGION_MAPPINGS = {
+  'Tokyo': ['Tokyo', '東京', 'Shibuya', '渋谷', 'Shinjuku', '新宿', 'Minato', '港区'],
+  'Kansai': ['Kyoto', 'Osaka', 'Kobe', '京都', '大阪', '神戸'],
+  'Aichi': ['Nagoya', '名古屋'],
+  'Ibaraki': ['Tsukuba', 'つくば'],
+  'Nagano': ['Nagano', '長野', 'Karuizawa', '軽井沢'],
+  'Hokkaido': ['Sapporo', '札幌', 'Niseko', 'ニセコ'],
+  'Okinawa': ['Naha', '那覇', 'Okinawa', '沖縄'],
+  'Miyagi': ['Sendai', '仙台'],
+  'Hiroshima': ['Hiroshima', '広島'],
+  'Fukuoka': ['Fukuoka', '福岡', 'Hakata', '博多'],
+  'Iwate': ['Appi Kogen', '安比高原', 'Morioka', '盛岡'],
+  'Yamanashi': ['Kofu', '甲府']
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const search = searchParams.get('search');
-    const region = searchParams.get('region');
-    const curriculum = searchParams.get('curriculum');
+    const regions = searchParams.getAll('region');
+    const curriculums = searchParams.getAll('curriculum');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '1000');
     const skip = (page - 1) * limit;
 
     // If ID is provided, return single school
@@ -79,23 +95,36 @@ export async function GET(request: Request) {
       });
     }
 
-    if (region && region !== 'all') {
+    // Handle multiple region selections
+    if (regions.length > 0 && !regions.includes('all')) {
+      const regionConditions = regions.map(region => {
+        const cityMappings = REGION_MAPPINGS[region as keyof typeof REGION_MAPPINGS] || [];
+        return [
+          { region_en: { equals: region, mode: 'insensitive' as const } },
+          { region_jp: { equals: region, mode: 'insensitive' as const } },
+          ...cityMappings.map(city => ([
+            { location_en: { contains: city, mode: 'insensitive' as const } },
+            { location_jp: { contains: city, mode: 'insensitive' as const } },
+            { address_en: { contains: city, mode: 'insensitive' as const } },
+            { address_jp: { contains: city, mode: 'insensitive' as const } }
+          ])).flat()
+        ];
+      }).flat();
+
       conditions.push({
-        OR: [
-          { region_en: { contains: region, mode: 'insensitive' as const } },
-          { region_jp: { contains: region, mode: 'insensitive' as const } },
-          { location_en: { contains: region, mode: 'insensitive' as const } },
-          { location_jp: { contains: region, mode: 'insensitive' as const } }
-        ]
+        OR: regionConditions
       });
     }
 
-    if (curriculum && curriculum !== 'all') {
+    // Handle multiple curriculum selections
+    if (curriculums.length > 0 && !curriculums.includes('all')) {
+      const curriculumConditions = curriculums.map(curriculum => ([
+        { education_curriculum_en: { contains: curriculum, mode: 'insensitive' as const } },
+        { education_curriculum_jp: { contains: curriculum, mode: 'insensitive' as const } }
+      ])).flat();
+
       conditions.push({
-        OR: [
-          { education_curriculum_en: { contains: curriculum, mode: 'insensitive' as const } },
-          { education_curriculum_jp: { contains: curriculum, mode: 'insensitive' as const } }
-        ]
+        OR: curriculumConditions
       });
     }
 
@@ -108,7 +137,7 @@ export async function GET(request: Request) {
       where: whereClause,
     });
 
-    // Then get paginated schools with distinct selection
+    // Then get schools with distinct selection
     const schools = await prisma.school.findMany({
       where: whereClause,
       distinct: ['school_id'],
