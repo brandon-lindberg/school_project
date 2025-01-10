@@ -302,6 +302,7 @@ const ListPage: React.FC = () => {
                         loadingCount={5}
                         isDropdown={true}
                         onNotification={handleNotification}
+                        language={language}
                       />
                     </div>
                   </div>
@@ -350,6 +351,7 @@ const ListPage: React.FC = () => {
                         loadingCount={5}
                         isDropdown={false}
                         onNotification={handleNotification}
+                        language={language}
                       />
                     </div>
                   </div>
@@ -367,6 +369,7 @@ const ListPage: React.FC = () => {
                     loadingCount={5}
                     isDropdown={false}
                     onNotification={handleNotification}
+                    language={language}
                   />
                 </div>
               )}

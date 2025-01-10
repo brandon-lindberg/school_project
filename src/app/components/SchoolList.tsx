@@ -4,6 +4,7 @@ import SchoolCardSkeleton from './SchoolCardSkeleton';
 import { School } from '../../interfaces/School';
 import { NotificationType } from './NotificationBanner';
 import './styles/scrollbar.css';
+import { getLocalizedContent } from '@/utils/language';
 
 interface SchoolListProps {
   schools: School[];
@@ -12,6 +13,7 @@ interface SchoolListProps {
   loadingCount?: number;
   isDropdown?: boolean;
   onNotification?: (type: NotificationType, message: string) => void;
+  language: 'en' | 'jp';
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({
@@ -20,10 +22,15 @@ const SchoolList: React.FC<SchoolListProps> = ({
   isLoading = false,
   loadingCount = 5,
   isDropdown = false,
-  onNotification
+  onNotification,
+  language
 }) => {
-  if (schools.length === 0 && !isLoading) {
-    return <p className="p-4">No schools found.</p>;
+  if (!schools || schools.length === 0) {
+    return (
+      <p className="p-4">
+        {getLocalizedContent('No schools found.', '学校が見つかりませんでした。', language)}
+      </p>
+    );
   }
 
   if (isDropdown) {

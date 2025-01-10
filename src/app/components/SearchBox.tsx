@@ -150,89 +150,98 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
       </div>
 
       {/* Filters Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Region Filter */}
-        <div className="flex flex-col sm:col-span-2">
-          <button
-            onClick={() => setIsRegionExpanded(!isRegionExpanded)}
-            className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <div>
-              <span className="text-sm font-medium text-gray-700">{regionLabel}</span>
-              {getSelectedCount('region') > 0 && (
-                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                  {getSelectedCount('region')}
-                </span>
-              )}
-            </div>
-            <svg
-              className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${isRegionExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium text-gray-900">
+          {getLocalizedContent('Filters', 'フィルター', language)}
+        </h2>
+        <div className="grid grid-cols-1 gap-4">
+          {/* Region Filter */}
+          <div className="flex flex-col">
+            <button
+              onClick={() => setIsRegionExpanded(!isRegionExpanded)}
+              className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isRegionExpanded ? 'max-h-[400px]' : 'max-h-0'}`}>
-            <div className="p-2 border border-gray-200 rounded-lg mt-2">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {Object.entries(REGIONS).map(([value, labels]) => (
+              <div className="flex items-center justify-between flex-grow">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-700">{regionLabel}</span>
+                  {getSelectedCount('region') > 0 && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                      {getSelectedCount('region')}
+                    </span>
+                  )}
+                </div>
+                <svg
+                  className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${isRegionExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isRegionExpanded ? 'max-h-[400px]' : 'max-h-0'}`}>
+              <div className="p-2 border border-gray-200 rounded-lg mt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {Object.entries(REGIONS).map(([value, labels]) => (
+                    <label key={value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={filters.region.includes(value)}
+                        onChange={() => handleCheckboxChange('region', value)}
+                        className="rounded text-blue-500 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700 truncate">
+                        {language === 'en' ? labels.en : labels.jp}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Curriculum Filter */}
+          <div className="flex flex-col">
+            <button
+              onClick={() => setIsCurriculumExpanded(!isCurriculumExpanded)}
+              className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <div className="flex items-center justify-between flex-grow">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-700">{curriculumLabel}</span>
+                  {getSelectedCount('curriculum') > 0 && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                      {getSelectedCount('curriculum')}
+                    </span>
+                  )}
+                </div>
+                <svg
+                  className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${isCurriculumExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCurriculumExpanded ? 'max-h-60' : 'max-h-0'}`}>
+              <div className="space-y-2 p-2 border border-gray-200 rounded-lg mt-2">
+                {Object.entries(CURRICULUMS).map(([value, labels]) => (
                   <label key={value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                     <input
                       type="checkbox"
-                      checked={filters.region.includes(value)}
-                      onChange={() => handleCheckboxChange('region', value)}
+                      checked={filters.curriculum.includes(value)}
+                      onChange={() => handleCheckboxChange('curriculum', value)}
                       className="rounded text-blue-500 focus:ring-blue-500"
                     />
-                    <span className="text-sm text-gray-700 truncate">
+                    <span className="text-sm text-gray-700">
                       {language === 'en' ? labels.en : labels.jp}
                     </span>
                   </label>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Curriculum Filter */}
-        <div className="flex flex-col sm:col-span-2 md:col-span-1">
-          <button
-            onClick={() => setIsCurriculumExpanded(!isCurriculumExpanded)}
-            className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <div>
-              <span className="text-sm font-medium text-gray-700">{curriculumLabel}</span>
-              {getSelectedCount('curriculum') > 0 && (
-                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                  {getSelectedCount('curriculum')}
-                </span>
-              )}
-            </div>
-            <svg
-              className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${isCurriculumExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCurriculumExpanded ? 'max-h-60' : 'max-h-0'}`}>
-            <div className="space-y-2 p-2 border border-gray-200 rounded-lg mt-2">
-              {Object.entries(CURRICULUMS).map(([value, labels]) => (
-                <label key={value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                  <input
-                    type="checkbox"
-                    checked={filters.curriculum.includes(value)}
-                    onChange={() => handleCheckboxChange('curriculum', value)}
-                    className="rounded text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">
-                    {language === 'en' ? labels.en : labels.jp}
-                  </span>
-                </label>
-              ))}
             </div>
           </div>
         </div>
