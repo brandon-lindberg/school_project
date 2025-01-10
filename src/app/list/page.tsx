@@ -144,6 +144,9 @@ const ListPage: React.FC = () => {
         location = 'Iwate';
       } else if (location.includes('Kofu') || location.includes('甲府')) {
         location = 'Yamanashi';
+      } else if (location.includes('Sapporo') || location.includes('札幌') ||
+        location.includes('Niseko') || location.includes('ニセコ')) {
+        location = 'Hokkaido';
       }
 
       if (!acc[location]) {
