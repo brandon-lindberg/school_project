@@ -99,9 +99,10 @@ export async function GET(request: Request) {
 
     // Handle multiple region selections
     if (regions.length > 0 && !regions.includes('all')) {
+      const regionConditions: Prisma.SchoolWhereInput[] = [];
       regions.forEach(region => {
         const cityMappings = REGION_MAPPINGS[region as keyof typeof REGION_MAPPINGS] || [];
-        conditions.push({
+        regionConditions.push({
           OR: [
             { region_en: { equals: region, mode: QUERY_MODE } },
             { region_jp: { equals: region, mode: QUERY_MODE } },
@@ -116,22 +117,22 @@ export async function GET(request: Request) {
           ]
         });
       });
+      conditions.push({ OR: regionConditions });
     }
 
     // Handle multiple curriculum selections
     if (curriculums.length > 0 && !curriculums.includes('all')) {
-      conditions.push({
-        OR: curriculums.map(curriculum => ({
-          OR: [
-            { education_curriculum_en: { contains: curriculum, mode: QUERY_MODE } },
-            { education_curriculum_jp: { contains: curriculum, mode: QUERY_MODE } }
-          ]
-        }))
-      });
+      const curriculumConditions = curriculums.map(curriculum => ({
+        OR: [
+          { education_curriculum_en: { contains: curriculum, mode: QUERY_MODE } },
+          { education_curriculum_jp: { contains: curriculum, mode: QUERY_MODE } }
+        ]
+      }));
+      conditions.push({ OR: curriculumConditions });
     }
 
     if (conditions.length > 0) {
-      whereClause.OR = conditions;
+      whereClause.AND = conditions;
     }
 
     // Get total count first
