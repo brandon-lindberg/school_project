@@ -19,11 +19,11 @@ export async function GET(request: Request) {
             school: {
               select: {
                 name_en: true,
-                name_jp: true
-              }
-            }
-          }
-        }
+                name_jp: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -33,9 +33,9 @@ export async function GET(request: Request) {
         ...list,
         schools: list.schools.map(school => ({
           ...school,
-          created_at: new Date().toISOString() // Using current date as fallback
-        }))
-      }))
+          created_at: new Date().toISOString(), // Using current date as fallback
+        })),
+      })),
     };
 
     return NextResponse.json(listsWithDates);
@@ -54,10 +54,7 @@ export async function POST(request: Request) {
     const { userId, schoolId, listId } = body;
 
     if (!userId || !schoolId) {
-      return NextResponse.json(
-        { error: 'User ID and School ID are required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'User ID and School ID are required.' }, { status: 400 });
     }
 
     let userList;
@@ -66,17 +63,17 @@ export async function POST(request: Request) {
       userList = await prisma.userList.findFirst({
         where: {
           user_id: parseInt(userId, 10),
-          list_name: "My Schools"
-        }
+          list_name: 'My Schools',
+        },
       });
 
       if (!userList) {
         // If no list exists, create a new one
         userList = await prisma.userList.create({
           data: {
-            list_name: "My Schools",
-            user_id: parseInt(userId, 10)
-          }
+            list_name: 'My Schools',
+            user_id: parseInt(userId, 10),
+          },
         });
       }
     }
@@ -85,17 +82,14 @@ export async function POST(request: Request) {
     const listToUse = listId ? parseInt(listId, 10) : userList?.list_id;
 
     if (!listToUse) {
-      return NextResponse.json(
-        { error: 'Could not determine list ID.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Could not determine list ID.' }, { status: 500 });
     }
 
     const userListSchool = await prisma.userListSchools.create({
       data: {
         list_id: listToUse,
-        school_id: parseInt(schoolId, 10)
-      }
+        school_id: parseInt(schoolId, 10),
+      },
     });
 
     return NextResponse.json({ success: true, userList: userListSchool });
@@ -116,10 +110,7 @@ export async function DELETE(request: Request) {
     const schoolId = url.searchParams.get('schoolId');
 
     if (!listId || !schoolId) {
-      return NextResponse.json(
-        { error: 'List ID and School ID are required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'List ID and School ID are required.' }, { status: 400 });
     }
 
     // Delete the school from the list
@@ -127,9 +118,9 @@ export async function DELETE(request: Request) {
       where: {
         list_id_school_id: {
           list_id: parseInt(listId, 10),
-          school_id: parseInt(schoolId, 10)
-        }
-      }
+          school_id: parseInt(schoolId, 10),
+        },
+      },
     });
 
     return NextResponse.json({ success: true });

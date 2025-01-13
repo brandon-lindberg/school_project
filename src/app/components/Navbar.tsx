@@ -12,7 +12,7 @@ import {
   ArrowLeftOnRectangleIcon,
   GlobeAltIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const Navbar: React.FC = () => {
@@ -32,9 +32,7 @@ const Navbar: React.FC = () => {
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <HomeIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">
-          {language === 'en' ? 'Home' : 'ホーム'}
-        </span>
+        <span className="group-hover:text-[#0057B7]">{language === 'en' ? 'Home' : 'ホーム'}</span>
       </Link>
 
       <Link
@@ -43,9 +41,7 @@ const Navbar: React.FC = () => {
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <BuildingLibraryIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">
-          {language === 'en' ? 'Schools' : '学校'}
-        </span>
+        <span className="group-hover:text-[#0057B7]">{language === 'en' ? 'Schools' : '学校'}</span>
       </Link>
 
       <Link
@@ -85,9 +81,7 @@ const Navbar: React.FC = () => {
           className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-          <span>
-            {language === 'en' ? 'Logout' : 'ログアウト'}
-          </span>
+          <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
         </button>
       )}
     </>
@@ -100,13 +94,7 @@ const Navbar: React.FC = () => {
         {/* Logo Section */}
         <div className="p-6 border-b border-gray-100">
           <Link href="/" className="flex items-center space-x-3">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
+            <Image src="/logo.png" alt="Logo" width={40} height={40} className="w-10 h-10" />
             <span className="text-[#0057B7] font-semibold text-lg leading-tight">
               International Schools Database Japan
             </span>
@@ -131,21 +119,10 @@ const Navbar: React.FC = () => {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8"
-              />
-              <span className="text-[#0057B7] font-semibold text-sm">
-                ISDB Japan
-              </span>
+              <Image src="/logo.png" alt="Logo" width={32} height={32} className="w-8 h-8" />
+              <span className="text-[#0057B7] font-semibold text-sm">ISDB Japan</span>
             </Link>
-            <button
-              onClick={toggleMobileMenu}
-              className="p-2 rounded-lg hover:bg-gray-100"
-            >
+            <button onClick={toggleMobileMenu} className="p-2 rounded-lg hover:bg-gray-100">
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-6 h-6" />
               ) : (

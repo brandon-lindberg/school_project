@@ -13,10 +13,7 @@ export async function POST(request: NextRequest) {
 
     // Basic validation
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
     // Check if user already exists
@@ -24,10 +21,7 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'Email is already in use.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is already in use.' }, { status: 400 });
     }
 
     // Hash the password
@@ -39,9 +33,9 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         password_hash: passwordHash,
-        family_name: familyName ?? null,      // Changed from familyName to family_name
-        first_name: firstName ?? null,        // Changed from firstName to first_name
-        phone_number: phoneNumber ?? null,    // Changed from phoneNumber to phone_number
+        family_name: familyName ?? null, // Changed from familyName to family_name
+        first_name: firstName ?? null, // Changed from firstName to first_name
+        phone_number: phoneNumber ?? null, // Changed from phoneNumber to phone_number
       },
     });
 
@@ -54,4 +48,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

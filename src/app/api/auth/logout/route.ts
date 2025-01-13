@@ -6,7 +6,7 @@ export async function POST() {
     // this endpoint is mainly for testing purposes and
     // to provide a consistent API response
     return NextResponse.json({
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
     });
   } catch (error: unknown) {
     let message = 'Something went wrong.';

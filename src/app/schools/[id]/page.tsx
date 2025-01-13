@@ -73,12 +73,15 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
       programsOffered: language === 'en' ? 'Programs Offered' : '提供プログラム',
       noProgramsListed: language === 'en' ? 'No programs listed' : 'プログラムの記載なし',
       curriculum: language === 'en' ? 'Curriculum' : 'カリキュラム',
-      noCurriculum: language === 'en' ? 'No curriculum information available' : 'カリキュラム情報なし',
+      noCurriculum:
+        language === 'en' ? 'No curriculum information available' : 'カリキュラム情報なし',
       admissions: language === 'en' ? 'Admissions' : '入学',
       acceptancePolicy: language === 'en' ? 'Acceptance Policy' : '入学方針',
-      noAcceptancePolicy: language === 'en' ? 'No acceptance policy information available' : '入学方針情報なし',
+      noAcceptancePolicy:
+        language === 'en' ? 'No acceptance policy information available' : '入学方針情報なし',
       applicationGuidelines: language === 'en' ? 'Application Guidelines' : '出願ガイドライン',
-      noGuidelines: language === 'en' ? 'No application guidelines available' : '出願ガイドラインなし',
+      noGuidelines:
+        language === 'en' ? 'No application guidelines available' : '出願ガイドラインなし',
       feesOverview: language === 'en' ? 'Fees Overview' : '費用概要',
       noFees: language === 'en' ? 'No fees information available' : '費用情報なし',
       detailedFees: language === 'en' ? 'Detailed Fee Structure' : '詳細な費用構成',
@@ -97,7 +100,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
       supportServices: language === 'en' ? 'Support Services' : 'サポートサービス',
       library: language === 'en' ? 'Library' : '図書館',
       calendar: language === 'en' ? 'Academic Calendar' : '学年暦',
-      academicSupport: language === 'en' ? 'Academic Support & Activities' : '学習支援とアクティビティ',
+      academicSupport:
+        language === 'en' ? 'Academic Support & Activities' : '学習支援とアクティビティ',
       academicSupportTitle: language === 'en' ? 'Academic Support' : '学習支援',
       extracurricular: language === 'en' ? 'Extracurricular Activities' : '課外活動',
       staffEmployment: language === 'en' ? 'Staff & Employment' : 'スタッフと採用',
@@ -109,7 +113,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
       policies: language === 'en' ? 'School Policies' : '学校方針',
       privacyPolicy: language === 'en' ? 'Privacy Policy' : 'プライバシーポリシー',
       termsOfUse: language === 'en' ? 'Terms of Use' : '利用規約',
-    }
+    },
   };
 
   useEffect(() => {
@@ -148,15 +152,51 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
 
   // Get localized arrays
   const affiliations = getLocalizedArray(school.affiliations_en, school.affiliations_jp, language);
-  const accreditations = getLocalizedArray(school.accreditation_en, school.accreditation_jp, language);
-  const programs = getLocalizedArray(school.education_programs_offered_en, school.education_programs_offered_jp, language);
-  const facilities = getLocalizedArray(school.campus_facilities_en, school.campus_facilities_jp, language);
-  const supportServices = getLocalizedArray(school.student_life_support_services_en, school.student_life_support_services_jp, language);
-  const academicSupport = getLocalizedArray(school.education_academic_support_en, school.education_academic_support_jp, language);
-  const extracurricular = getLocalizedArray(school.education_extracurricular_activities_en, school.education_extracurricular_activities_jp, language);
-  const staffList = getLocalizedArray(school.staff_staff_list_en, school.staff_staff_list_jp, language);
-  const boardMembers = getLocalizedArray(school.staff_board_members_en, school.staff_board_members_jp, language);
-  const openPositions = getLocalizedArray(school.employment_open_positions_en, school.employment_open_positions_jp, language);
+  const accreditations = getLocalizedArray(
+    school.accreditation_en,
+    school.accreditation_jp,
+    language
+  );
+  const programs = getLocalizedArray(
+    school.education_programs_offered_en,
+    school.education_programs_offered_jp,
+    language
+  );
+  const facilities = getLocalizedArray(
+    school.campus_facilities_en,
+    school.campus_facilities_jp,
+    language
+  );
+  const supportServices = getLocalizedArray(
+    school.student_life_support_services_en,
+    school.student_life_support_services_jp,
+    language
+  );
+  const academicSupport = getLocalizedArray(
+    school.education_academic_support_en,
+    school.education_academic_support_jp,
+    language
+  );
+  const extracurricular = getLocalizedArray(
+    school.education_extracurricular_activities_en,
+    school.education_extracurricular_activities_jp,
+    language
+  );
+  const staffList = getLocalizedArray(
+    school.staff_staff_list_en,
+    school.staff_staff_list_jp,
+    language
+  );
+  const boardMembers = getLocalizedArray(
+    school.staff_board_members_en,
+    school.staff_board_members_jp,
+    language
+  );
+  const openPositions = getLocalizedArray(
+    school.employment_open_positions_en,
+    school.employment_open_positions_jp,
+    language
+  );
   const events = getLocalizedArray(school.events_en, school.events_jp, language);
 
   return (
@@ -214,7 +254,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
                 {url && (
                   <div>
                     <strong>{translations.sections.website}:</strong>{' '}
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
                       {translations.sections.visitWebsite}
                     </a>
                   </div>
@@ -228,7 +273,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
         <div className="border rounded-lg p-6 shadow-md bg-white">
           <h2 className="text-2xl font-semibold mb-4">{translations.sections.aboutSchool}</h2>
           <p className="text-gray-700 mb-4">
-            {description || (language === 'en' ? 'No description available.' : '説明がありません。')}
+            {description ||
+              (language === 'en' ? 'No description available.' : '説明がありません。')}
           </p>
 
           {/* Affiliations & Accreditations */}
@@ -246,7 +292,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
 
             {accreditations.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.accreditations}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {translations.sections.accreditations}
+                </h3>
                 <ul className="list-disc list-inside text-gray-700">
                   {accreditations.map((accreditation, index) => (
                     <li key={index}>{accreditation}</li>
@@ -259,7 +307,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
             {(school.campus_virtual_tour_jp || school.campus_virtual_tour_en) && (
               <div className="mt-4">
                 <a
-                  href={getLocalizedContent(school.campus_virtual_tour_en, school.campus_virtual_tour_jp, language) || '#'}
+                  href={
+                    getLocalizedContent(
+                      school.campus_virtual_tour_en,
+                      school.campus_virtual_tour_jp,
+                      language
+                    ) || '#'
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
@@ -276,11 +330,19 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           <h2 className="text-2xl font-semibold mb-4">{translations.sections.education}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-semibold mb-2">{translations.sections.programsOffered}</h3>
-              {((school.education_programs_offered_jp && school.education_programs_offered_jp.length > 0) ||
-                (school.education_programs_offered_en && school.education_programs_offered_en.length > 0)) ? (
+              <h3 className="text-lg font-semibold mb-2">
+                {translations.sections.programsOffered}
+              </h3>
+              {(school.education_programs_offered_jp &&
+                school.education_programs_offered_jp.length > 0) ||
+              (school.education_programs_offered_en &&
+                school.education_programs_offered_en.length > 0) ? (
                 <ul className="list-disc list-inside text-gray-700">
-                  {(school.education_programs_offered_jp || school.education_programs_offered_en || []).map((program, index) => (
+                  {(
+                    school.education_programs_offered_jp ||
+                    school.education_programs_offered_en ||
+                    []
+                  ).map((program, index) => (
                     <li key={index}>{program}</li>
                   ))}
                 </ul>
@@ -292,7 +354,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
             <div>
               <h3 className="text-lg font-semibold mb-2">{translations.sections.curriculum}</h3>
               <p className="text-gray-700">
-                {school.education_curriculum_jp || school.education_curriculum_en || translations.sections.noCurriculum}
+                {school.education_curriculum_jp ||
+                  school.education_curriculum_en ||
+                  translations.sections.noCurriculum}
               </p>
             </div>
           </div>
@@ -304,21 +368,29 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           <div>
             <h3 className="text-lg font-semibold mb-2">{translations.sections.acceptancePolicy}</h3>
             <p className="text-gray-700">
-              {school.admissions_acceptance_policy_jp || school.admissions_acceptance_policy_en || translations.sections.noAcceptancePolicy}
+              {school.admissions_acceptance_policy_jp ||
+                school.admissions_acceptance_policy_en ||
+                translations.sections.noAcceptancePolicy}
             </p>
           </div>
 
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">{translations.sections.applicationGuidelines}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {translations.sections.applicationGuidelines}
+            </h3>
             <p className="text-gray-700">
-              {school.admissions_application_guidelines_jp || school.admissions_application_guidelines_en || translations.sections.noGuidelines}
+              {school.admissions_application_guidelines_jp ||
+                school.admissions_application_guidelines_en ||
+                translations.sections.noGuidelines}
             </p>
           </div>
 
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-2">{translations.sections.feesOverview}</h3>
             <p className="text-gray-700">
-              {school.admissions_fees_jp || school.admissions_fees_en || translations.sections.noFees}
+              {school.admissions_fees_jp ||
+                school.admissions_fees_en ||
+                translations.sections.noFees}
             </p>
           </div>
         </div>
@@ -328,11 +400,15 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           <h2 className="text-2xl font-semibold mb-4">{translations.sections.detailedFees}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Application Fee */}
-            {(school.admissions_breakdown_fees_application_fee_jp || school.admissions_breakdown_fees_application_fee_en) && (
+            {(school.admissions_breakdown_fees_application_fee_jp ||
+              school.admissions_breakdown_fees_application_fee_en) && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.applicationFee}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {translations.sections.applicationFee}
+                </h3>
                 <p className="text-gray-700">
-                  {school.admissions_breakdown_fees_application_fee_jp || school.admissions_breakdown_fees_application_fee_en}
+                  {school.admissions_breakdown_fees_application_fee_jp ||
+                    school.admissions_breakdown_fees_application_fee_en}
                 </p>
               </div>
             )}
@@ -344,21 +420,36 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
               school.admissions_breakdown_fees_day_care_fee_registration_fee_en ||
               school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp ||
               school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{translations.sections.dayCare}</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {(school.admissions_breakdown_fees_day_care_fee_tuition_jp || school.admissions_breakdown_fees_day_care_fee_tuition_en) && (
-                      <li><strong>{translations.sections.tuition}:</strong> {school.admissions_breakdown_fees_day_care_fee_tuition_jp || school.admissions_breakdown_fees_day_care_fee_tuition_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_day_care_fee_registration_fee_jp || school.admissions_breakdown_fees_day_care_fee_registration_fee_en) && (
-                      <li><strong>{translations.sections.registration}:</strong> {school.admissions_breakdown_fees_day_care_fee_registration_fee_jp || school.admissions_breakdown_fees_day_care_fee_registration_fee_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp || school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en) && (
-                      <li><strong>{translations.sections.maintenance}:</strong> {school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp || school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en}</li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{translations.sections.dayCare}</h3>
+                <ul className="space-y-2 text-gray-700">
+                  {(school.admissions_breakdown_fees_day_care_fee_tuition_jp ||
+                    school.admissions_breakdown_fees_day_care_fee_tuition_en) && (
+                    <li>
+                      <strong>{translations.sections.tuition}:</strong>{' '}
+                      {school.admissions_breakdown_fees_day_care_fee_tuition_jp ||
+                        school.admissions_breakdown_fees_day_care_fee_tuition_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_day_care_fee_registration_fee_jp ||
+                    school.admissions_breakdown_fees_day_care_fee_registration_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.registration}:</strong>{' '}
+                      {school.admissions_breakdown_fees_day_care_fee_registration_fee_jp ||
+                        school.admissions_breakdown_fees_day_care_fee_registration_fee_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp ||
+                    school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.maintenance}:</strong>{' '}
+                      {school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp ||
+                        school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             {/* Elementary School Fees */}
             {(school.admissions_breakdown_fees_grade_elementary_tuition_jp ||
@@ -367,21 +458,36 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
               school.admissions_breakdown_fees_grade_elementary_registration_fee_en ||
               school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp ||
               school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{translations.sections.elementary}</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {(school.admissions_breakdown_fees_grade_elementary_tuition_jp || school.admissions_breakdown_fees_grade_elementary_tuition_en) && (
-                      <li><strong>{translations.sections.tuition}:</strong> {school.admissions_breakdown_fees_grade_elementary_tuition_jp || school.admissions_breakdown_fees_grade_elementary_tuition_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_elementary_registration_fee_jp || school.admissions_breakdown_fees_grade_elementary_registration_fee_en) && (
-                      <li><strong>{translations.sections.registration}:</strong> {school.admissions_breakdown_fees_grade_elementary_registration_fee_jp || school.admissions_breakdown_fees_grade_elementary_registration_fee_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp || school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en) && (
-                      <li><strong>{translations.sections.maintenance}:</strong> {school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp || school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en}</li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{translations.sections.elementary}</h3>
+                <ul className="space-y-2 text-gray-700">
+                  {(school.admissions_breakdown_fees_grade_elementary_tuition_jp ||
+                    school.admissions_breakdown_fees_grade_elementary_tuition_en) && (
+                    <li>
+                      <strong>{translations.sections.tuition}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_elementary_tuition_jp ||
+                        school.admissions_breakdown_fees_grade_elementary_tuition_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_elementary_registration_fee_jp ||
+                    school.admissions_breakdown_fees_grade_elementary_registration_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.registration}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_elementary_registration_fee_jp ||
+                        school.admissions_breakdown_fees_grade_elementary_registration_fee_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp ||
+                    school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.maintenance}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp ||
+                        school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             {/* Junior High School Fees */}
             {(school.admissions_breakdown_fees_grade_junior_high_tuition_jp ||
@@ -390,21 +496,36 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
               school.admissions_breakdown_fees_grade_junior_high_registration_fee_en ||
               school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp ||
               school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{translations.sections.juniorHigh}</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {(school.admissions_breakdown_fees_grade_junior_high_tuition_jp || school.admissions_breakdown_fees_grade_junior_high_tuition_en) && (
-                      <li><strong>{translations.sections.tuition}:</strong> {school.admissions_breakdown_fees_grade_junior_high_tuition_jp || school.admissions_breakdown_fees_grade_junior_high_tuition_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp || school.admissions_breakdown_fees_grade_junior_high_registration_fee_en) && (
-                      <li><strong>{translations.sections.registration}:</strong> {school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp || school.admissions_breakdown_fees_grade_junior_high_registration_fee_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp || school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en) && (
-                      <li><strong>{translations.sections.maintenance}:</strong> {school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp || school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en}</li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{translations.sections.juniorHigh}</h3>
+                <ul className="space-y-2 text-gray-700">
+                  {(school.admissions_breakdown_fees_grade_junior_high_tuition_jp ||
+                    school.admissions_breakdown_fees_grade_junior_high_tuition_en) && (
+                    <li>
+                      <strong>{translations.sections.tuition}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_junior_high_tuition_jp ||
+                        school.admissions_breakdown_fees_grade_junior_high_tuition_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp ||
+                    school.admissions_breakdown_fees_grade_junior_high_registration_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.registration}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp ||
+                        school.admissions_breakdown_fees_grade_junior_high_registration_fee_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp ||
+                    school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.maintenance}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp ||
+                        school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             {/* High School Fees */}
             {(school.admissions_breakdown_fees_grade_high_school_tuition_jp ||
@@ -413,33 +534,50 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
               school.admissions_breakdown_fees_grade_high_school_registration_fee_en ||
               school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp ||
               school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{translations.sections.highSchool}</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {(school.admissions_breakdown_fees_grade_high_school_tuition_jp || school.admissions_breakdown_fees_grade_high_school_tuition_en) && (
-                      <li><strong>{translations.sections.tuition}:</strong> {school.admissions_breakdown_fees_grade_high_school_tuition_jp || school.admissions_breakdown_fees_grade_high_school_tuition_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_high_school_registration_fee_jp || school.admissions_breakdown_fees_grade_high_school_registration_fee_en) && (
-                      <li><strong>{translations.sections.registration}:</strong> {school.admissions_breakdown_fees_grade_high_school_registration_fee_jp || school.admissions_breakdown_fees_grade_high_school_registration_fee_en}</li>
-                    )}
-                    {(school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp || school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en) && (
-                      <li><strong>{translations.sections.maintenance}:</strong> {school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp || school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en}</li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{translations.sections.highSchool}</h3>
+                <ul className="space-y-2 text-gray-700">
+                  {(school.admissions_breakdown_fees_grade_high_school_tuition_jp ||
+                    school.admissions_breakdown_fees_grade_high_school_tuition_en) && (
+                    <li>
+                      <strong>{translations.sections.tuition}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_high_school_tuition_jp ||
+                        school.admissions_breakdown_fees_grade_high_school_tuition_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_high_school_registration_fee_jp ||
+                    school.admissions_breakdown_fees_grade_high_school_registration_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.registration}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_high_school_registration_fee_jp ||
+                        school.admissions_breakdown_fees_grade_high_school_registration_fee_en}
+                    </li>
+                  )}
+                  {(school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp ||
+                    school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en) && (
+                    <li>
+                      <strong>{translations.sections.maintenance}:</strong>{' '}
+                      {school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp ||
+                        school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Campus Facilities Section */}
         <div className="border rounded-lg p-6 shadow-md bg-white">
           <h2 className="text-2xl font-semibold mb-4">{translations.sections.facilities}</h2>
-          {((school.campus_facilities_jp && school.campus_facilities_jp.length > 0) ||
-            (school.campus_facilities_en && school.campus_facilities_en.length > 0)) ? (
+          {(school.campus_facilities_jp && school.campus_facilities_jp.length > 0) ||
+          (school.campus_facilities_en && school.campus_facilities_en.length > 0) ? (
             <ul className="list-disc list-inside text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(school.campus_facilities_jp || school.campus_facilities_en || []).map((facility, index) => (
-                <li key={index}>{facility}</li>
-              ))}
+              {(school.campus_facilities_jp || school.campus_facilities_en || []).map(
+                (facility, index) => (
+                  <li key={index}>{facility}</li>
+                )
+              )}
             </ul>
           ) : (
             <p className="text-gray-500">{translations.sections.noFacilities}</p>
@@ -461,17 +599,25 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           )}
 
           {/* Support Services */}
-          {((school.student_life_support_services_jp && school.student_life_support_services_jp.length > 0) ||
-            (school.student_life_support_services_en && school.student_life_support_services_en.length > 0)) && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.supportServices}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.student_life_support_services_jp || school.student_life_support_services_en || []).map((service, index) => (
-                    <li key={index}>{service}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {((school.student_life_support_services_jp &&
+            school.student_life_support_services_jp.length > 0) ||
+            (school.student_life_support_services_en &&
+              school.student_life_support_services_en.length > 0)) && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">
+                {translations.sections.supportServices}
+              </h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(
+                  school.student_life_support_services_jp ||
+                  school.student_life_support_services_en ||
+                  []
+                ).map((service, index) => (
+                  <li key={index}>{service}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Library */}
           {(school.student_life_library_jp || school.student_life_library_en) && (
@@ -499,30 +645,46 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           <h2 className="text-2xl font-semibold mb-4">{translations.sections.academicSupport}</h2>
 
           {/* Academic Support */}
-          {((school.education_academic_support_jp && school.education_academic_support_jp.length > 0) ||
-            (school.education_academic_support_en && school.education_academic_support_en.length > 0)) && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.academicSupportTitle}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.education_academic_support_jp || school.education_academic_support_en || []).map((support, index) => (
-                    <li key={index}>{support}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {((school.education_academic_support_jp &&
+            school.education_academic_support_jp.length > 0) ||
+            (school.education_academic_support_en &&
+              school.education_academic_support_en.length > 0)) && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">
+                {translations.sections.academicSupportTitle}
+              </h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(
+                  school.education_academic_support_jp ||
+                  school.education_academic_support_en ||
+                  []
+                ).map((support, index) => (
+                  <li key={index}>{support}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Extracurricular Activities */}
-          {((school.education_extracurricular_activities_jp && school.education_extracurricular_activities_jp.length > 0) ||
-            (school.education_extracurricular_activities_en && school.education_extracurricular_activities_en.length > 0)) && (
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.extracurricular}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.education_extracurricular_activities_jp || school.education_extracurricular_activities_en || []).map((activity, index) => (
-                    <li key={index}>{activity}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {((school.education_extracurricular_activities_jp &&
+            school.education_extracurricular_activities_jp.length > 0) ||
+            (school.education_extracurricular_activities_en &&
+              school.education_extracurricular_activities_en.length > 0)) && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">
+                {translations.sections.extracurricular}
+              </h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(
+                  school.education_extracurricular_activities_jp ||
+                  school.education_extracurricular_activities_en ||
+                  []
+                ).map((activity, index) => (
+                  <li key={index}>{activity}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Staff & Employment */}
@@ -532,48 +694,62 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
           {/* Staff List */}
           {((school.staff_staff_list_jp && school.staff_staff_list_jp.length > 0) ||
             (school.staff_staff_list_en && school.staff_staff_list_en.length > 0)) && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.staff}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.staff_staff_list_jp || school.staff_staff_list_en || []).map((staff, index) => (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">{translations.sections.staff}</h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(school.staff_staff_list_jp || school.staff_staff_list_en || []).map(
+                  (staff, index) => (
                     <li key={index}>{staff}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  )
+                )}
+              </ul>
+            </div>
+          )}
 
           {/* Board Members */}
           {((school.staff_board_members_jp && school.staff_board_members_jp.length > 0) ||
             (school.staff_board_members_en && school.staff_board_members_en.length > 0)) && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.boardMembers}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.staff_board_members_jp || school.staff_board_members_en || []).map((member, index) => (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">{translations.sections.boardMembers}</h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(school.staff_board_members_jp || school.staff_board_members_en || []).map(
+                  (member, index) => (
                     <li key={index}>{member}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  )
+                )}
+              </ul>
+            </div>
+          )}
 
           {/* Employment Opportunities */}
-          {((school.employment_open_positions_jp && school.employment_open_positions_jp.length > 0) ||
-            (school.employment_open_positions_en && school.employment_open_positions_en.length > 0)) && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{translations.sections.openPositions}</h3>
-                <ul className="list-disc list-inside text-gray-700">
-                  {(school.employment_open_positions_jp || school.employment_open_positions_en || []).map((position, index) => (
-                    <li key={index}>{position}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {((school.employment_open_positions_jp &&
+            school.employment_open_positions_jp.length > 0) ||
+            (school.employment_open_positions_en &&
+              school.employment_open_positions_en.length > 0)) && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">{translations.sections.openPositions}</h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {(
+                  school.employment_open_positions_jp ||
+                  school.employment_open_positions_en ||
+                  []
+                ).map((position, index) => (
+                  <li key={index}>{position}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Application Process */}
-          {(school.employment_application_process_jp || school.employment_application_process_en) && (
+          {(school.employment_application_process_jp ||
+            school.employment_application_process_en) && (
             <div>
-              <h3 className="text-lg font-semibold mb-2">{translations.sections.applicationProcess}</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {translations.sections.applicationProcess}
+              </h3>
               <p className="text-gray-700">
-                {school.employment_application_process_jp || school.employment_application_process_en}
+                {school.employment_application_process_jp ||
+                  school.employment_application_process_en}
               </p>
             </div>
           )}
@@ -582,15 +758,15 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
         {/* Events */}
         {((school.events_jp && school.events_jp.length > 0) ||
           (school.events_en && school.events_en.length > 0)) && (
-            <div className="border rounded-lg p-6 shadow-md bg-white">
-              <h2 className="text-2xl font-semibold mb-4">{translations.sections.events}</h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {(school.events_jp || school.events_en || []).map((event, index) => (
-                  <li key={index}>{event}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="border rounded-lg p-6 shadow-md bg-white">
+            <h2 className="text-2xl font-semibold mb-4">{translations.sections.events}</h2>
+            <ul className="list-disc list-inside text-gray-700">
+              {(school.events_jp || school.events_en || []).map((event, index) => (
+                <li key={index}>{event}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Policies */}
         <div className="border rounded-lg p-6 shadow-md bg-white">
@@ -656,7 +832,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
         {/* Academic Support Section */}
         {academicSupport.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">{translations.sections.academicSupportTitle}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {translations.sections.academicSupportTitle}
+            </h3>
             <ul className="list-disc list-inside text-gray-700">
               {academicSupport.map((support, index) => (
                 <li key={index}>{support}</li>
@@ -728,4 +906,3 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
     </div>
   );
 }
-

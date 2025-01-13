@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
     // 1. Find user by email
@@ -21,19 +18,13 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
     // 2. Compare password
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return NextResponse.json(
-        { error: 'Invalid email or password.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
     // For now, just respond with a success message + user info

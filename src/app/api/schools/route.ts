@@ -7,18 +7,18 @@ const QUERY_MODE: Prisma.QueryMode = 'insensitive';
 
 // Define region mappings similar to the list page
 const REGION_MAPPINGS = {
-  'Tokyo': ['Tokyo', '東京', 'Shibuya', '渋谷', 'Shinjuku', '新宿', 'Minato', '港区'],
-  'Kansai': ['Kyoto', 'Osaka', 'Kobe', '京都', '大阪', '神戸'],
-  'Aichi': ['Nagoya', '名古屋'],
-  'Ibaraki': ['Tsukuba', 'つくば'],
-  'Nagano': ['Nagano', '長野', 'Karuizawa', '軽井沢'],
-  'Hokkaido': ['Sapporo', '札幌', 'Niseko', 'ニセコ'],
-  'Okinawa': ['Naha', '那覇', 'Okinawa', '沖縄'],
-  'Miyagi': ['Sendai', '仙台'],
-  'Hiroshima': ['Hiroshima', '広島'],
-  'Fukuoka': ['Fukuoka', '福岡', 'Hakata', '博多'],
-  'Iwate': ['Appi Kogen', '安比高原', 'Morioka', '盛岡'],
-  'Yamanashi': ['Kofu', '甲府']
+  Tokyo: ['Tokyo', '東京', 'Shibuya', '渋谷', 'Shinjuku', '新宿', 'Minato', '港区'],
+  Kansai: ['Kyoto', 'Osaka', 'Kobe', '京都', '大阪', '神戸'],
+  Aichi: ['Nagoya', '名古屋'],
+  Ibaraki: ['Tsukuba', 'つくば'],
+  Nagano: ['Nagano', '長野', 'Karuizawa', '軽井沢'],
+  Hokkaido: ['Sapporo', '札幌', 'Niseko', 'ニセコ'],
+  Okinawa: ['Naha', '那覇', 'Okinawa', '沖縄'],
+  Miyagi: ['Sendai', '仙台'],
+  Hiroshima: ['Hiroshima', '広島'],
+  Fukuoka: ['Fukuoka', '福岡', 'Hakata', '博多'],
+  Iwate: ['Appi Kogen', '安比高原', 'Morioka', '盛岡'],
+  Yamanashi: ['Kofu', '甲府'],
 } as const;
 
 export async function GET(request: Request) {
@@ -71,8 +71,8 @@ export async function GET(request: Request) {
           campus_facilities_en: true,
           campus_facilities_jp: true,
           campus_virtual_tour_en: true,
-          campus_virtual_tour_jp: true
-        }
+          campus_virtual_tour_jp: true,
+        },
       });
 
       if (!school) {
@@ -92,8 +92,8 @@ export async function GET(request: Request) {
           { name_en: { contains: search, mode: QUERY_MODE } },
           { name_jp: { contains: search, mode: QUERY_MODE } },
           { description_en: { contains: search, mode: QUERY_MODE } },
-          { description_jp: { contains: search, mode: QUERY_MODE } }
-        ]
+          { description_jp: { contains: search, mode: QUERY_MODE } },
+        ],
       });
     }
 
@@ -111,10 +111,10 @@ export async function GET(request: Request) {
                 { location_en: { contains: city, mode: QUERY_MODE } },
                 { location_jp: { contains: city, mode: QUERY_MODE } },
                 { address_en: { contains: city, mode: QUERY_MODE } },
-                { address_jp: { contains: city, mode: QUERY_MODE } }
-              ]
-            }))
-          ]
+                { address_jp: { contains: city, mode: QUERY_MODE } },
+              ],
+            })),
+          ],
         });
       });
       conditions.push({ OR: regionConditions });
@@ -125,8 +125,8 @@ export async function GET(request: Request) {
       const curriculumConditions = curriculums.map(curriculum => ({
         OR: [
           { education_curriculum_en: { contains: curriculum, mode: QUERY_MODE } },
-          { education_curriculum_jp: { contains: curriculum, mode: QUERY_MODE } }
-        ]
+          { education_curriculum_jp: { contains: curriculum, mode: QUERY_MODE } },
+        ],
       }));
       conditions.push({ OR: curriculumConditions });
     }
@@ -147,7 +147,7 @@ export async function GET(request: Request) {
       take: limit,
       skip,
       orderBy: {
-        name_en: 'asc'
+        name_en: 'asc',
       },
       select: {
         school_id: true,
@@ -184,12 +184,14 @@ export async function GET(request: Request) {
         campus_facilities_en: true,
         campus_facilities_jp: true,
         campus_virtual_tour_en: true,
-        campus_virtual_tour_jp: true
-      }
+        campus_virtual_tour_jp: true,
+      },
     });
 
     // Filter out any potential duplicates
-    const uniqueSchools = Array.from(new Map(schools.map(school => [school.school_id, school])).values());
+    const uniqueSchools = Array.from(
+      new Map(schools.map(school => [school.school_id, school])).values()
+    );
 
     // Calculate if there are more schools to load
     const hasMore = skip + uniqueSchools.length < total;
@@ -200,15 +202,11 @@ export async function GET(request: Request) {
         total,
         currentPage: page,
         perPage: limit,
-        hasMore
-      }
+        hasMore,
+      },
     });
-
   } catch (error: unknown) {
     console.error('Error in GET /api/schools:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch schools' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch schools' }, { status: 500 });
   }
 }

@@ -54,7 +54,7 @@ const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
         </button>
       </div>
       <div className="divide-y divide-gray-100">
-        {browsingHistory.map((entry) => (
+        {browsingHistory.map(entry => (
           <div
             key={entry.history_id}
             className="py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"

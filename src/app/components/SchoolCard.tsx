@@ -32,7 +32,12 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
       const userData = await userResponse.json();
 
       if (!userData.userId) {
-        onNotification?.('error', language === 'en' ? 'Please log in to add schools to your list' : 'リストに学校を追加するにはログインしてください');
+        onNotification?.(
+          'error',
+          language === 'en'
+            ? 'Please log in to add schools to your list'
+            : 'リストに学校を追加するにはログインしてください'
+        );
         return;
       }
 
@@ -43,7 +48,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
         },
         body: JSON.stringify({
           userId: userData.userId,
-          schoolId: school.school_id
+          schoolId: school.school_id,
         }),
       });
 
@@ -51,10 +56,18 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
         throw new Error('Failed to add school to list');
       }
 
-      onNotification?.('success', language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！');
+      onNotification?.(
+        'success',
+        language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！'
+      );
     } catch (error) {
       console.error('Error adding school to list:', error);
-      onNotification?.('error', language === 'en' ? 'Failed to add school to list. Please try again.' : '学校をリストに追加できませんでした。もう一度お試しください。');
+      onNotification?.(
+        'error',
+        language === 'en'
+          ? 'Failed to add school to list. Please try again.'
+          : '学校をリストに追加できませんでした。もう一度お試しください。'
+      );
     }
   };
 
@@ -111,7 +124,11 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
       aria-pressed="false"
     >
       <Image
-        src={school.logo_id ? `/logos/${school.logo_id}.png` : "https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s="}
+        src={
+          school.logo_id
+            ? `/logos/${school.logo_id}.png`
+            : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
+        }
         alt={`${name || 'School'} Image`}
         width={612}
         height={408}
@@ -120,7 +137,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
       <div className="relative p-4 flex flex-col flex-grow overflow-y-auto">
         <div className="flex items-center mb-2">
           <Image
-            src={school.logo_id ? `/logos/${school.logo_id}.png` : "/logo.png"}
+            src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
             alt="Logo"
             width={32}
             height={32}
@@ -128,7 +145,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
           />
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold truncate">
-              {highlightText(name || (language === 'en' ? 'Unnamed School' : '名称未設定の学校'), searchQuery)}
+              {highlightText(
+                name || (language === 'en' ? 'Unnamed School' : '名称未設定の学校'),
+                searchQuery
+              )}
             </h2>
             {school.name_en && school.name_jp && language === 'jp' && (
               <h3 className="text-sm sm:text-base text-gray-600 truncate">
@@ -151,7 +171,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
         )}
 
         <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-4">
-          {highlightText(description || (language === 'en' ? 'No description available.' : '説明がありません。'), searchQuery)}
+          {highlightText(
+            description || (language === 'en' ? 'No description available.' : '説明がありません。'),
+            searchQuery
+          )}
         </p>
 
         <div className="mt-auto space-y-1">
@@ -159,7 +182,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
             <Link
               href={`mailto:${email}`}
               className="text-blue-500 hover:underline block text-sm truncate"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               {email}
             </Link>
@@ -168,7 +191,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
             <Link
               href={`tel:${phone}`}
               className="text-blue-500 hover:underline block text-sm truncate"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               {phone}
             </Link>
@@ -179,7 +202,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 hover:underline block text-sm truncate"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               {language === 'en' ? 'Visit Website' : 'ウェブサイトを見る'}
             </Link>

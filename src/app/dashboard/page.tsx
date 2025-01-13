@@ -145,11 +145,11 @@ const DashboardPage: React.FC = () => {
       }
 
       // Refresh the list after deletion
-      const updatedLists = userLists.map((list) => {
+      const updatedLists = userLists.map(list => {
         if (list.list_id === listId) {
           return {
             ...list,
-            schools: list.schools.filter((school) => school.school_id !== schoolId),
+            schools: list.schools.filter(school => school.school_id !== schoolId),
           };
         }
         return list;
@@ -178,12 +178,9 @@ const DashboardPage: React.FC = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-2xl font-semibold text-[#333333] mb-6">
-                {language === 'en' ? 'My Lists' : 'マイリスト'}
+                {language === 'en' ? 'My List' : 'マイリスト'}
               </h2>
-              <UserLists
-                userLists={userLists}
-                onDeleteSchool={handleDeleteSchoolFromList}
-              />
+              <UserLists userLists={userLists} onDeleteSchool={handleDeleteSchoolFromList} />
             </div>
           </div>
 

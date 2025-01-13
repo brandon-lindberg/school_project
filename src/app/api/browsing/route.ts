@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
-import prisma from "@/lib/prisma";
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
+import prisma from '@/lib/prisma';
 
 // POST /api/browsing - Record a new browsing history entry
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { schoolId } = await request.json();
     if (!schoolId) {
-      return NextResponse.json({ error: "School ID is required" }, { status: 400 });
+      return NextResponse.json({ error: 'School ID is required' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Check if a record already exists for this user and school
@@ -51,11 +51,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(history);
   } catch (error) {
-    console.error("Error recording browsing history:", error);
-    return NextResponse.json(
-      { error: "Failed to record browsing history" },
-      { status: 500 }
-    );
+    console.error('Error recording browsing history:', error);
+    return NextResponse.json({ error: 'Failed to record browsing history' }, { status: 500 });
   }
 }
 
@@ -65,7 +62,7 @@ export async function GET(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -73,7 +70,7 @@ export async function GET(_request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const history = await prisma.browsingHistory.findMany({
@@ -90,16 +87,13 @@ export async function GET(_request: Request) {
         viewed_at: 'desc',
       },
       distinct: ['school_id'], // Only get the most recent entry for each school
-      take: 10 // Limit to 10 schools
+      take: 10, // Limit to 10 schools
     });
 
     return NextResponse.json(history);
   } catch (error) {
-    console.error("Error fetching browsing history:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch browsing history" },
-      { status: 500 }
-    );
+    console.error('Error fetching browsing history:', error);
+    return NextResponse.json({ error: 'Failed to fetch browsing history' }, { status: 500 });
   }
 }
 
@@ -108,7 +102,7 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -116,12 +110,12 @@ export async function DELETE(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Get query parameters
     const url = new URL(request.url);
-    const historyId = url.searchParams.get("historyId");
+    const historyId = url.searchParams.get('historyId');
 
     if (historyId) {
       // Delete specific history entry
@@ -130,11 +124,11 @@ export async function DELETE(request: Request) {
       });
 
       if (!history) {
-        return NextResponse.json({ error: "History entry not found" }, { status: 404 });
+        return NextResponse.json({ error: 'History entry not found' }, { status: 404 });
       }
 
       if (history.user_id !== user.user_id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
       await prisma.browsingHistory.delete({
@@ -147,12 +141,9 @@ export async function DELETE(request: Request) {
       });
     }
 
-    return NextResponse.json({ message: "History deleted successfully" });
+    return NextResponse.json({ message: 'History deleted successfully' });
   } catch (error) {
-    console.error("Error deleting browsing history:", error);
-    return NextResponse.json(
-      { error: "Failed to delete browsing history" },
-      { status: 500 }
-    );
+    console.error('Error deleting browsing history:', error);
+    return NextResponse.json({ error: 'Failed to delete browsing history' }, { status: 500 });
   }
 }

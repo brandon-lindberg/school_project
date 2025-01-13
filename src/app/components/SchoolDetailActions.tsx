@@ -6,7 +6,11 @@ interface SchoolDetailActionsProps {
   website: string;
 }
 
-const SchoolDetailActions: React.FC<SchoolDetailActionsProps> = ({ contactEmail, contactPhone, website }) => {
+const SchoolDetailActions: React.FC<SchoolDetailActionsProps> = ({
+  contactEmail,
+  contactPhone,
+  website,
+}) => {
   return (
     <>
       <div className="mb-4">
@@ -23,7 +27,12 @@ const SchoolDetailActions: React.FC<SchoolDetailActionsProps> = ({ contactEmail,
       </div>
       <div className="mb-4">
         <strong>Website:</strong>{' '}
-        <a href={website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+        <a
+          href={website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
           {website}
         </a>
       </div>

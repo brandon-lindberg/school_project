@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { School } from '../../interfaces/School';
@@ -33,8 +33,8 @@ const ListPageSkeleton = () => (
         'Hiroshima',
         'Fukuoka',
         'Iwate',
-        'Yamanashi'
-      ].map((region) => (
+        'Yamanashi',
+      ].map(region => (
         <div key={region} className="mb-12">
           {/* Region header placeholder */}
           <div className="mb-6 pb-2 border-b border-gray-200">
@@ -73,18 +73,21 @@ const REGIONS_CONFIG = {
   Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
   Iwate: { en: 'Iwate', jp: '岩手県' },
   Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
-  Other: { en: 'Other', jp: 'その他' }
+  Other: { en: 'Other', jp: 'その他' },
 };
 
 const LOCATION_ORDER = Object.keys(REGIONS_CONFIG).filter(region => region !== 'Other');
 
 const getDefaultCollapsedState = () => {
-  return Object.keys(REGIONS_CONFIG).reduce((acc, region) => {
-    if (region !== 'Tokyo') {
-      acc[region] = true;
-    }
-    return acc;
-  }, {} as { [key: string]: boolean });
+  return Object.keys(REGIONS_CONFIG).reduce(
+    (acc, region) => {
+      if (region !== 'Tokyo') {
+        acc[region] = true;
+      }
+      return acc;
+    },
+    {} as { [key: string]: boolean }
+  );
 };
 
 const ListPage: React.FC = () => {
@@ -94,7 +97,7 @@ const ListPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
-    curriculum: ['all']
+    curriculum: ['all'],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -120,7 +123,7 @@ const ListPage: React.FC = () => {
     regions: Object.entries(REGIONS_CONFIG).reduce((acc: Record<string, string>, [key, value]) => {
       acc[key] = language === 'en' ? value.en : value.jp;
       return acc;
-    }, {})
+    }, {}),
   };
 
   // Group schools by location with predefined order
@@ -128,11 +131,18 @@ const ListPage: React.FC = () => {
     // First, group schools by their location
     const grouped = schools.reduce((acc: { [key: string]: School[] }, school) => {
       // Check both English and Japanese locations
-      let location = getLocalizedContent(school.location_en, school.location_jp, language) || 'Other';
+      let location =
+        getLocalizedContent(school.location_en, school.location_jp, language) || 'Other';
 
       // Handle special cases for region matching
-      if (location.includes('Kyoto') || location.includes('Osaka') || location.includes('Kobe') ||
-        location.includes('京都') || location.includes('大阪') || location.includes('神戸')) {
+      if (
+        location.includes('Kyoto') ||
+        location.includes('Osaka') ||
+        location.includes('Kobe') ||
+        location.includes('京都') ||
+        location.includes('大阪') ||
+        location.includes('神戸')
+      ) {
         location = 'Kansai';
       } else if (location.includes('Nagoya') || location.includes('名古屋')) {
         location = 'Aichi';
@@ -144,8 +154,12 @@ const ListPage: React.FC = () => {
         location = 'Iwate';
       } else if (location.includes('Kofu') || location.includes('甲府')) {
         location = 'Yamanashi';
-      } else if (location.includes('Sapporo') || location.includes('札幌') ||
-        location.includes('Niseko') || location.includes('ニセコ')) {
+      } else if (
+        location.includes('Sapporo') ||
+        location.includes('札幌') ||
+        location.includes('Niseko') ||
+        location.includes('ニセコ')
+      ) {
         location = 'Hokkaido';
       }
 
@@ -242,9 +256,11 @@ const ListPage: React.FC = () => {
     setSearchQuery(query);
     setFilters(filters);
 
-    if (query.trim() === '' &&
+    if (
+      query.trim() === '' &&
       filters.region.includes('all') &&
-      filters.curriculum.includes('all')) {
+      filters.curriculum.includes('all')
+    ) {
       debouncedSearch.cancel();
       setSchools(allSchools);
       setIsLoading(false);
@@ -265,7 +281,7 @@ const ListPage: React.FC = () => {
     setCollapsedSections((prev: { [key: string]: boolean }) => {
       const newState = {
         ...prev,
-        [location]: !prev[location]
+        [location]: !prev[location],
       };
       if (typeof window !== 'undefined') {
         try {
@@ -314,51 +330,61 @@ const ListPage: React.FC = () => {
             </div>
             <div className="space-y-16">
               {searchQuery.trim().length === 0 ? (
-                Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
-                  <div key={location} className="mb-12">
-                    <div
-                      className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200 cursor-pointer"
-                      onClick={() => toggleSection(location)}
-                    >
-                      <h2 className="text-2xl font-semibold">
-                        {translations.regions[location as keyof typeof translations.regions]}{' '}
-                        <span className="text-gray-500 text-lg">
-                          ({locationSchools.length} {translations.schools})
-                        </span>
-                      </h2>
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                        aria-label={collapsedSections[location] ? "Expand section" : "Collapse section"}
+                Object.entries(groupSchoolsByLocation(schools)).map(
+                  ([location, locationSchools]) => (
+                    <div key={location} className="mb-12">
+                      <div
+                        className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200 cursor-pointer"
+                        onClick={() => toggleSection(location)}
                       >
-                        <svg
-                          className={`w-6 h-6 transform transition-transform ${collapsedSections[location] ? 'rotate-180' : ''
-                            }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        <h2 className="text-2xl font-semibold">
+                          {translations.regions[location as keyof typeof translations.regions]}{' '}
+                          <span className="text-gray-500 text-lg">
+                            ({locationSchools.length} {translations.schools})
+                          </span>
+                        </h2>
+                        <button
+                          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                          aria-label={
+                            collapsedSections[location] ? 'Expand section' : 'Collapse section'
+                          }
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            className={`w-6 h-6 transform transition-transform ${
+                              collapsedSections[location] ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div
+                        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                          collapsedSections[location]
+                            ? 'max-h-0 opacity-0'
+                            : 'max-h-[2000px] opacity-100'
+                        }`}
+                      >
+                        <SchoolList
+                          schools={locationSchools}
+                          isLoading={isInitialLoad || isLoading}
+                          loadingCount={5}
+                          isDropdown={false}
+                          onNotification={handleNotification}
+                          language={language}
+                        />
+                      </div>
                     </div>
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
-                      }`}>
-                      <SchoolList
-                        schools={locationSchools}
-                        isLoading={isInitialLoad || isLoading}
-                        loadingCount={5}
-                        isDropdown={false}
-                        onNotification={handleNotification}
-                        language={language}
-                      />
-                    </div>
-                  </div>
-                ))
+                  )
+                )
               ) : (
                 <div>
                   <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>

@@ -47,13 +47,13 @@ const UserLists: React.FC<UserListsProps> = ({ userLists, onDeleteSchool }) => {
 
   return (
     <div className="space-y-6">
-      {userLists.map((list) => (
+      {userLists.map(list => (
         <div
           key={list.list_id}
           className="bg-white rounded-lg border border-gray-100 overflow-hidden transition-shadow hover:shadow-md"
         >
           <div className="divide-y divide-gray-100">
-            {list.schools.map((school) => (
+            {list.schools.map(school => (
               <div
                 key={school.school_id}
                 className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"

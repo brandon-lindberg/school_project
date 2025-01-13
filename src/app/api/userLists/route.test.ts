@@ -13,7 +13,7 @@ jest.mock('@prisma/client', () => {
     userListSchools: {
       create: jest.fn(),
       delete: jest.fn(),
-    }
+    },
   };
 
   return { PrismaClient: jest.fn(() => mPrisma) };
@@ -25,43 +25,43 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   // Set up default mock implementations
-  (prisma.userList.findMany as jest.Mock).mockResolvedValue([{
-    list_id: 1,
-    user_id: 1,
-    list_name: 'My Schools',
-    schools: [{ id: 1, name: 'Test School' }]
-  }]);
+  (prisma.userList.findMany as jest.Mock).mockResolvedValue([
+    {
+      list_id: 1,
+      user_id: 1,
+      list_name: 'My Schools',
+      schools: [{ id: 1, name: 'Test School' }],
+    },
+  ]);
 
   (prisma.userList.findFirst as jest.Mock).mockResolvedValue({
     list_id: 1,
     user_id: 1,
     list_name: 'My Schools',
-    schools: [{ id: 1, name: 'Test School' }]
+    schools: [{ id: 1, name: 'Test School' }],
   });
 
   (prisma.userList.create as jest.Mock).mockResolvedValue({
     list_id: 1,
     user_id: 1,
     list_name: 'My Schools',
-    schools: [{ id: 1, name: 'Test School' }]
+    schools: [{ id: 1, name: 'Test School' }],
   });
 
   (prisma.userListSchools.create as jest.Mock).mockResolvedValue({
     list_id: 1,
-    school_id: 1
+    school_id: 1,
   });
 
   (prisma.userListSchools.delete as jest.Mock).mockResolvedValue({
     list_id: 1,
-    school_id: 1
+    school_id: 1,
   });
 });
 
 describe('GET /api/userLists', () => {
   it('should return 400 if userId is missing', async () => {
-    const request = new NextRequest(
-      new Request('http://localhost/api/userLists')
-    );
+    const request = new NextRequest(new Request('http://localhost/api/userLists'));
 
     const response = await GET(request);
     const data = await response.json();
@@ -71,9 +71,7 @@ describe('GET /api/userLists', () => {
   });
 
   it('should return user lists when userId is provided', async () => {
-    const request = new NextRequest(
-      new Request('http://localhost/api/userLists?userId=1')
-    );
+    const request = new NextRequest(new Request('http://localhost/api/userLists?userId=1'));
 
     const response = await GET(request);
     const data = await response.json();
@@ -90,7 +88,7 @@ describe('POST /api/userLists', () => {
       new Request('http://localhost/api/userLists', {
         method: 'POST',
         body: JSON.stringify({ userId: 1 }), // Missing schoolId
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     );
 
@@ -108,7 +106,7 @@ describe('POST /api/userLists', () => {
       new Request('http://localhost/api/userLists', {
         method: 'POST',
         body: JSON.stringify({ userId: 1, schoolId: 1 }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     );
 
@@ -124,7 +122,7 @@ describe('POST /api/userLists', () => {
       new Request('http://localhost/api/userLists', {
         method: 'POST',
         body: JSON.stringify({ userId: 1, schoolId: 1, listId: 1 }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     );
 
@@ -139,9 +137,7 @@ describe('POST /api/userLists', () => {
 
 describe('DELETE /api/userLists', () => {
   it('should return 400 if listId or schoolId is missing', async () => {
-    const request = new NextRequest(
-      new Request('http://localhost/api/userLists')
-    );
+    const request = new NextRequest(new Request('http://localhost/api/userLists'));
 
     const response = await DELETE(request);
     const data = await response.json();
@@ -163,9 +159,7 @@ describe('DELETE /api/userLists', () => {
   });
 
   it('should handle deletion errors gracefully', async () => {
-    (prisma.userListSchools.delete as jest.Mock).mockRejectedValueOnce(
-      new Error('Database error')
-    );
+    (prisma.userListSchools.delete as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
 
     const request = new NextRequest(
       new Request('http://localhost/api/userLists?listId=1&schoolId=1')

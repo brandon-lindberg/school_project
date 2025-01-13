@@ -4,7 +4,7 @@ const ListSkeleton = () => (
   <div className="border p-4 rounded shadow-sm animate-pulse">
     <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
     <div className="space-y-3">
-      {[1, 2, 3].map((i) => (
+      {[1, 2, 3].map(i => (
         <div key={i} className="flex justify-between items-center">
           <div className="space-y-2 flex-1">
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -37,7 +37,7 @@ const DashboardSkeleton = () => {
         <section>
           <div className="h-7 bg-gray-200 rounded w-32 mb-4"></div>
           <div className="space-y-4">
-            {[1, 2].map((i) => (
+            {[1, 2].map(i => (
               <ListSkeleton key={i} />
             ))}
           </div>
@@ -48,7 +48,7 @@ const DashboardSkeleton = () => {
             <div className="h-7 bg-gray-200 rounded w-40"></div>
           </div>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <HistoryItemSkeleton key={i} />
             ))}
           </div>

@@ -40,7 +40,9 @@ const Navbar = () => {
               />
             </div>
             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 truncate max-w-[200px] sm:max-w-none">
-              {language === 'en' ? 'ISDBJ - International Schools Database Japan' : 'ISDBJ - 日本のインターナショナルスクールデータベース'}
+              {language === 'en'
+                ? 'ISDBJ - International Schools Database Japan'
+                : 'ISDBJ - 日本のインターナショナルスクールデータベース'}
             </span>
           </Link>
 
@@ -50,8 +52,18 @@ const Navbar = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
 
@@ -65,10 +77,7 @@ const Navbar = () => {
                 <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
                   {navText.dashboard}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-700 hover:text-blue-600"
-                >
+                <button onClick={handleLogout} className="text-gray-700 hover:text-blue-600">
                   {navText.logout}
                 </button>
               </>
@@ -89,12 +98,18 @@ const Navbar = () => {
         {/* Mobile/Tablet menu - hidden on large screens */}
         <div className={`lg:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
           <div className="flex flex-col space-y-3 py-4 px-4 sm:px-6">
-            <Link href="/list" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+            <Link
+              href="/list"
+              className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1"
+            >
               {navText.schools}
             </Link>
             {session ? (
               <>
-                <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1"
+                >
                   {navText.dashboard}
                 </Link>
                 <button
@@ -106,10 +121,16 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link href="/login" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1"
+                >
                   {navText.login}
                 </Link>
-                <Link href="/register" className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1">
+                <Link
+                  href="/register"
+                  className="text-gray-700 hover:text-blue-600 text-sm sm:text-base py-1"
+                >
                   {navText.register}
                 </Link>
               </>
