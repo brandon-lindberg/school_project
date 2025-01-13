@@ -8,6 +8,8 @@ import SchoolList from '../components/SchoolList';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
 import NotificationBanner, { NotificationType } from '../components/NotificationBanner';
+import BrowsingHistory from '../components/BrowsingHistory';
+import Link from 'next/link';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -90,9 +92,20 @@ const getDefaultCollapsedState = () => {
   );
 };
 
+interface BrowsingHistoryItem {
+  history_id: number;
+  school_id: number;
+  viewed_at: Date;
+  school: {
+    name_en: string | null;
+    name_jp: string | null;
+  };
+}
+
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
+  const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filters, setFilters] = useState<SearchFilters>({
@@ -120,6 +133,7 @@ const ListPage: React.FC = () => {
     schools: language === 'en' ? 'Schools' : '学校',
     searchResults: language === 'en' ? 'Search Results' : '検索結果',
     noResults: language === 'en' ? 'No results found' : '結果が見つかりません',
+    recentlyViewed: language === 'en' ? 'Recently Viewed' : '最近見た学校',
     regions: Object.entries(REGIONS_CONFIG).reduce((acc: Record<string, string>, [key, value]) => {
       acc[key] = language === 'en' ? value.en : value.jp;
       return acc;
@@ -204,6 +218,13 @@ const ListPage: React.FC = () => {
     }
   };
 
+  const loadInitialSchools = async () => {
+    const initialSchools = await fetchAllSchools();
+    setSchools(initialSchools);
+    setAllSchools(initialSchools);
+    setIsInitialLoad(false);
+  };
+
   const fetchSearchResults = async (query: string, filters: SearchFilters) => {
     try {
       const queryParams = new URLSearchParams();
@@ -230,15 +251,52 @@ const ListPage: React.FC = () => {
     }
   };
 
+  const fetchBrowsingHistory = async () => {
+    try {
+      const response = await fetch('/api/browsing');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setBrowsingHistory(data);
+      } else {
+        setBrowsingHistory([]);
+      }
+    } catch (error) {
+      console.error('Error fetching browsing history:', error);
+      handleNotification('error', language === 'en' ? 'Failed to load browsing history' : '閲覧履歴の読み込みに失敗しました');
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      await fetch('/api/browsing', { method: 'DELETE' });
+      setBrowsingHistory([]);
+      handleNotification('success', language === 'en' ? 'History cleared' : '履歴を削除しました');
+    } catch (error) {
+      console.error('Error clearing history:', error);
+      handleNotification('error', language === 'en' ? 'Failed to clear history' : '履歴の削除に失敗しました');
+    }
+  };
+
+  const handleDeleteHistoryEntry = async (historyId: number) => {
+    try {
+      await fetch(`/api/browsing?historyId=${historyId}`, { method: 'DELETE' });
+      setBrowsingHistory(prev => prev.filter(item => item.history_id !== historyId));
+      handleNotification('success', language === 'en' ? 'Entry removed' : 'エントリーを削除しました');
+    } catch (error) {
+      console.error('Error deleting history entry:', error);
+      handleNotification('error', language === 'en' ? 'Failed to remove entry' : 'エントリーの削除に失敗しました');
+    }
+  };
+
   useEffect(() => {
-    const loadInitialSchools = async () => {
-      const initialSchools = await fetchAllSchools();
-      setSchools(initialSchools);
-      setAllSchools(initialSchools);
-      setIsInitialLoad(false);
+    const loadInitialData = async () => {
+      await Promise.all([
+        loadInitialSchools(),
+        fetchBrowsingHistory()
+      ]);
     };
 
-    loadInitialSchools();
+    loadInitialData();
   }, []);
 
   const debouncedSearch = useMemo(
@@ -308,6 +366,63 @@ const ListPage: React.FC = () => {
           <ListPageSkeleton />
         ) : (
           <>
+            {/* Browsing History Section */}
+            {browsingHistory.length > 0 ? (
+              <div className="mb-8">
+                <h2 className="text-lg font-medium mb-3 text-gray-600">{translations.recentlyViewed}</h2>
+                <div className="relative">
+                  <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
+                    {browsingHistory.map((entry) => (
+                      <div
+                        key={entry.history_id}
+                        className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors"
+                        style={{ height: '100px' }}
+                      >
+                        <Link
+                          href={`/schools/${entry.school_id}`}
+                          className="block h-full p-3 relative"
+                        >
+                          <div className="flex flex-col h-full">
+                            <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
+                              {getLocalizedContent(entry.school.name_en, entry.school.name_jp, language)}
+                            </h3>
+                            <div className="absolute bottom-2 left-0 right-0 px-3 flex justify-between items-center">
+                              <p className="text-xs text-gray-400">
+                                {new Date(entry.viewed_at).toLocaleDateString(
+                                  language === 'en' ? 'en-US' : 'ja-JP',
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                  }
+                                )}
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleDeleteHistoryEntry(entry.history_id);
+                                }}
+                                className="text-xs text-gray-400 hover:text-[#D9534F] transition-colors"
+                              >
+                                {language === 'en' ? 'Remove' : '削除'}
+                              </button>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end mt-1">
+                    <button
+                      onClick={handleClearHistory}
+                      className="text-xs text-gray-400 hover:text-[#D9534F] px-2 py-1 transition-colors"
+                    >
+                      {language === 'en' ? 'Clear All' : 'すべて削除'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mb-8">
               <div className="relative">
                 <SearchBox onSearch={handleSearchInput} language={language} />
@@ -350,9 +465,8 @@ const ListPage: React.FC = () => {
                           }
                         >
                           <svg
-                            className={`w-6 h-6 transform transition-transform ${
-                              collapsedSections[location] ? 'rotate-180' : ''
-                            }`}
+                            className={`w-6 h-6 transform transition-transform ${collapsedSections[location] ? 'rotate-180' : ''
+                              }`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -367,11 +481,10 @@ const ListPage: React.FC = () => {
                         </button>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          collapsedSections[location]
-                            ? 'max-h-0 opacity-0'
-                            : 'max-h-[2000px] opacity-100'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
+                          ? 'max-h-0 opacity-0'
+                          : 'max-h-[2000px] opacity-100'
+                          }`}
                       >
                         <SchoolList
                           schools={locationSchools}
