@@ -72,7 +72,7 @@ const Navbar: React.FC = () => {
         </span>
       </button>
 
-      {session && (
+      {session ? (
         <button
           onClick={() => {
             signOut();
@@ -83,6 +83,25 @@ const Navbar: React.FC = () => {
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
           <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
         </button>
+      ) : (
+        <>
+          <Link
+            href="/login"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-[#0057B7] hover:bg-blue-50 rounded-lg transition-colors group"
+          >
+            <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+            <span>{language === 'en' ? 'Login' : 'ログイン'}</span>
+          </Link>
+          <Link
+            href="/register"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors group"
+          >
+            <UserCircleIcon className="w-6 h-6" />
+            <span>{language === 'en' ? 'Register' : '新規登録'}</span>
+          </Link>
+        </>
       )}
     </>
   );
