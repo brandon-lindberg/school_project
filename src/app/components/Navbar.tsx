@@ -44,16 +44,18 @@ const Navbar: React.FC = () => {
         <span className="group-hover:text-[#0057B7]">{language === 'en' ? 'Schools' : '学校'}</span>
       </Link>
 
-      <Link
-        href="/dashboard"
-        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-        onClick={() => setIsMobileMenuOpen(false)}
-      >
-        <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">
-          {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
-        </span>
-      </Link>
+      {session && (
+        <Link
+          href="/dashboard"
+          className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+          <span className="group-hover:text-[#0057B7]">
+            {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
+          </span>
+        </Link>
+      )}
     </>
   );
 
