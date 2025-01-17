@@ -35,12 +35,7 @@ export default function RegionNavigation({
   }, []);
 
   // Only show in list view mode, on large screens, when logged in, and specifically on the list page
-  if (
-    viewMode !== 'list' ||
-    !isLargeScreen ||
-    !session?.user ||
-    pathname !== '/list'
-  ) {
+  if (viewMode !== 'list' || !isLargeScreen || !session?.user || pathname !== '/list') {
     return null;
   }
 
