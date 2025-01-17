@@ -216,19 +216,39 @@ const SchoolList: React.FC<SchoolListProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
-          {schools.map(school => (
-            <div key={`school-${school.school_id}`} className="flex-shrink-0">
-              <SchoolCard school={school} searchQuery={searchQuery} onNotification={onNotification} />
+        <>
+          {/* Mobile view - horizontal scrolling */}
+          <div className="sm:hidden">
+            <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
+              {schools.map(school => (
+                <div key={`school-${school.school_id}`} className="flex-shrink-0 w-[280px]">
+                  <SchoolCard school={school} searchQuery={searchQuery} onNotification={onNotification} />
+                </div>
+              ))}
+              {isLoading &&
+                Array.from({ length: loadingCount }).map((_, index) => (
+                  <div key={`skeleton-${schools.length + index}`} className="flex-shrink-0 w-[280px]">
+                    <SchoolCardSkeleton />
+                  </div>
+                ))}
             </div>
-          ))}
-          {isLoading &&
-            Array.from({ length: loadingCount }).map((_, index) => (
-              <div key={`skeleton-${schools.length + index}`} className="flex-shrink-0">
-                <SchoolCardSkeleton />
+          </div>
+
+          {/* Desktop view - vertical grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {schools.map(school => (
+              <div key={`school-${school.school_id}`}>
+                <SchoolCard school={school} searchQuery={searchQuery} onNotification={onNotification} />
               </div>
             ))}
-        </div>
+            {isLoading &&
+              Array.from({ length: loadingCount }).map((_, index) => (
+                <div key={`skeleton-${schools.length + index}`}>
+                  <SchoolCardSkeleton />
+                </div>
+              ))}
+          </div>
+        </>
       )}
     </div>
   );

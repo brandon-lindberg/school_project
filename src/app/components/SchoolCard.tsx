@@ -263,11 +263,11 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
         {session && (
           <button
             onClick={handleAddToList}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-2"
+            className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-1 sm:gap-2"
             title={language === 'en' ? 'Add to My Schools' : '私の学校に追加'}
           >
-            <span className="text-xl">+</span>
-            <span className="text-sm whitespace-nowrap">
+            <span className="text-lg sm:text-xl">+</span>
+            <span className="text-xs sm:text-sm whitespace-nowrap">
               {language === 'en' ? 'Add to List' : 'リストに追加'}
             </span>
           </button>
