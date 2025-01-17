@@ -14,6 +14,46 @@ import { getLocalizedContent } from '@/utils/language';
 import Link from 'next/link';
 import { BsGrid, BsListUl } from 'react-icons/bs';
 
+type RegionConfig = {
+  en: string;
+  jp: string;
+};
+
+type RegionsConfig = {
+  [key: string]: RegionConfig;
+};
+
+const REGIONS_CONFIG: RegionsConfig = {
+  Tokyo: { en: 'Tokyo', jp: '東京' },
+  Kansai: { en: 'Kansai', jp: '関西' },
+  Aichi: { en: 'Aichi', jp: '愛知県' },
+  Ibaraki: { en: 'Ibaraki', jp: '茨城県' },
+  Nagano: { en: 'Nagano', jp: '長野県' },
+  Hokkaido: { en: 'Hokkaido', jp: '北海道' },
+  Okinawa: { en: 'Okinawa', jp: '沖縄県' },
+  Miyagi: { en: 'Miyagi', jp: '宮城県' },
+  Hiroshima: { en: 'Hiroshima', jp: '広島県' },
+  Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
+  Iwate: { en: 'Iwate', jp: '岩手県' },
+  Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
+  Other: { en: 'Other', jp: 'その他' }
+};
+
+const LOCATION_ORDER = [
+  'Tokyo',
+  'Kansai',
+  'Aichi',
+  'Ibaraki',
+  'Nagano',
+  'Hokkaido',
+  'Okinawa',
+  'Miyagi',
+  'Hiroshima',
+  'Fukuoka',
+  'Iwate',
+  'Yamanashi'
+];
+
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
     {/* Header placeholder */}
@@ -64,24 +104,6 @@ interface Notification {
   type: NotificationType;
   message: string;
 }
-
-const REGIONS_CONFIG = {
-  Tokyo: { en: 'Tokyo', jp: '東京' },
-  Kansai: { en: 'Kansai', jp: '関西' },
-  Aichi: { en: 'Aichi', jp: '愛知県' },
-  Ibaraki: { en: 'Ibaraki', jp: '茨城県' },
-  Nagano: { en: 'Nagano', jp: '長野県' },
-  Hokkaido: { en: 'Hokkaido', jp: '北海道' },
-  Okinawa: { en: 'Okinawa', jp: '沖縄県' },
-  Miyagi: { en: 'Miyagi', jp: '宮城県' },
-  Hiroshima: { en: 'Hiroshima', jp: '広島県' },
-  Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
-  Iwate: { en: 'Iwate', jp: '岩手県' },
-  Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
-  Other: { en: 'Other', jp: 'その他' },
-};
-
-const LOCATION_ORDER = Object.keys(REGIONS_CONFIG).filter(region => region !== 'Other');
 
 const getDefaultCollapsedState = () => {
   return Object.keys(REGIONS_CONFIG).reduce(
@@ -421,12 +443,42 @@ const ListPage: React.FC = () => {
     }
   };
 
-  // Force list view for unauthenticated users
+  // Force list view for unauthenticated users and small screens
   useEffect(() => {
-    if (!session?.user && viewMode === 'grid') {
+    if ((!session?.user || window.innerWidth < 640) && viewMode === 'grid') {
       setViewMode('list');
     }
+
+    // Add resize listener for responsive behavior
+    const handleResize = () => {
+      if (window.innerWidth < 640 && viewMode === 'grid') {
+        setViewMode('list');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [session, viewMode]);
+
+  // Add scroll to top handler
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  // Track scroll position for back to top button
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 500);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -437,6 +489,30 @@ const ListPage: React.FC = () => {
           onClose={() => setNotification(null)}
         />
       )}
+
+      {/* Back to Top Button */}
+      {viewMode === 'list' && showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={language === 'en' ? 'Back to top' : 'トップに戻る'}
+        >
+          <svg
+            className="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 10l7-7m0 0l7 7m-7-7v18"
+            />
+          </svg>
+        </button>
+      )}
+
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
         {/* Search Icon Button */}
         <div className="fixed top-4 right-4 z-50">
@@ -472,19 +548,17 @@ const ListPage: React.FC = () => {
 
         {/* Search Box Overlay */}
         <div
-          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
-            isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
           onClick={() => setIsSearchOpen(false)}
         />
 
         {/* Collapsible Search Box */}
         <div
-          className={`fixed top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
-            isSearchOpen
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 -translate-y-4 pointer-events-none'
-          }`}
+          className={`fixed top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+            }`}
         >
           <SearchBox
             onSearch={handleSearchInput}
@@ -498,7 +572,7 @@ const ListPage: React.FC = () => {
           {session?.user && (
             <button
               onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
-              className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               {viewMode === 'list' ? (
                 <>
@@ -590,45 +664,78 @@ const ListPage: React.FC = () => {
             viewMode={viewMode}
           />
         ) : (
-          <div className="space-y-16">
-            {Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
-              <div key={location} className="mb-12">
-                <div
-                  className="mb-6 pb-2 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-25/50"
-                  onClick={() => toggleSection(location)}
-                >
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold">
-                      {getLocalizedContent(location, location, language)}
-                    </h2>
-                    <span className="text-sm text-gray-500">
-                      ({locationSchools.length} {language === 'en' ? 'Schools' : '校'})
-                    </span>
-                  </div>
-                  <div>
-                    {collapsedSections[location] ? (
-                      <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                    ) : (
-                      <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-                    )}
-                  </div>
-                </div>
-                <div
-                  className={`transition-opacity duration-300 ease-in-out ${
-                    collapsedSections[location] ? 'h-0 opacity-0 invisible' : 'opacity-100 visible'
-                  }`}
-                >
-                  <SchoolList
-                    schools={locationSchools}
-                    searchQuery={searchQuery}
-                    onNotification={handleNotification}
-                    language={language}
-                    viewMode={viewMode}
-                  />
-                </div>
+          <>
+            {/* Region Navigation */}
+            <div className="hidden sm:block sticky top-16 bg-white z-20 -mx-4 px-4 py-2 mb-8 shadow-sm">
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
+                  <button
+                    key={location}
+                    onClick={() => {
+                      setCollapsedSections(prev => ({
+                        ...prev,
+                        [location]: false
+                      }));
+                      const element = document.getElementById(`region-${location}`);
+                      const offset = 140;
+                      if (element) {
+                        const elementPosition = element.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - offset;
+                        window.scrollTo({
+                          top: offsetPosition,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }}
+                    className="px-3 py-1 text-sm rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    {REGIONS_CONFIG[location]?.[language] || location}
+                    <span className="ml-1 text-gray-500">({locationSchools.length})</span>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+
+            {/* Region Sections */}
+            <div className="space-y-16">
+              {Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
+                <div key={location} id={`region-${location}`} className="mb-12">
+                  <div
+                    className="mb-6 pb-2 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-25/50"
+                    onClick={() => toggleSection(location)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-semibold">
+                        {REGIONS_CONFIG[location]?.[language] || location}
+                      </h2>
+                      <span className="text-sm text-gray-500">
+                        ({locationSchools.length} {language === 'en' ? 'Schools' : '校'})
+                      </span>
+                    </div>
+                    <div>
+                      {collapsedSections[location] ? (
+                        <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                      ) : (
+                        <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`transition-opacity duration-300 ease-in-out ${collapsedSections[location] ? 'h-0 opacity-0 invisible' : 'opacity-100 visible'
+                      }`}
+                  >
+                    <SchoolList
+                      schools={locationSchools}
+                      searchQuery={searchQuery}
+                      onNotification={handleNotification}
+                      language={language}
+                      viewMode={viewMode}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
