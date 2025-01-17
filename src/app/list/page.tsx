@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Language } from '../types/language';
 import { SearchFilters } from '../components/SearchBox';
 import { debounce } from 'lodash';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -14,119 +13,9 @@ import { School } from '@/types/school';
 import { getLocalizedContent } from '@/utils/language';
 import Link from 'next/link';
 import { BsGrid, BsListUl } from 'react-icons/bs';
-import Navbar from '../components/Navbar';
-
-// Types and configurations
-type RegionConfig = {
-  en: string;
-  jp: string;
-};
-
-type RegionsConfig = {
-  [key: string]: RegionConfig;
-};
-
-const REGIONS_CONFIG: RegionsConfig = {
-  Tokyo: { en: 'Tokyo', jp: '東京' },
-  Kansai: { en: 'Kansai', jp: '関西' },
-  Aichi: { en: 'Aichi', jp: '愛知県' },
-  Ibaraki: { en: 'Ibaraki', jp: '茨城県' },
-  Nagano: { en: 'Nagano', jp: '長野県' },
-  Hokkaido: { en: 'Hokkaido', jp: '北海道' },
-  Okinawa: { en: 'Okinawa', jp: '沖縄県' },
-  Miyagi: { en: 'Miyagi', jp: '宮城県' },
-  Hiroshima: { en: 'Hiroshima', jp: '広島県' },
-  Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
-  Iwate: { en: 'Iwate', jp: '岩手県' },
-  Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
-  Other: { en: 'Other', jp: 'その他' }
-};
-
-const LOCATION_ORDER = [
-  'Tokyo',
-  'Kansai',
-  'Aichi',
-  'Ibaraki',
-  'Nagano',
-  'Hokkaido',
-  'Okinawa',
-  'Miyagi',
-  'Hiroshima',
-  'Fukuoka',
-  'Iwate',
-  'Yamanashi'
-];
-
-// Export types and configs for navbar
-export type { RegionConfig, RegionsConfig };
-export { REGIONS_CONFIG, LOCATION_ORDER };
-
-// Export the grouping function for use in navbar
-export const groupSchoolsByLocation = (schools: School[], language: Language) => {
-  // First, group schools by their location
-  const grouped = schools.reduce((acc: { [key: string]: School[] }, school) => {
-    // Check both English and Japanese locations
-    let location =
-      getLocalizedContent(school.location_en, school.location_jp, language) || 'Other';
-
-    // Handle special cases for region matching
-    if (
-      location.includes('Kyoto') ||
-      location.includes('Osaka') ||
-      location.includes('Kobe') ||
-      location.includes('京都') ||
-      location.includes('大阪') ||
-      location.includes('神戸')
-    ) {
-      location = 'Kansai';
-    } else if (location.includes('Nagoya') || location.includes('名古屋')) {
-      location = 'Aichi';
-    } else if (location.includes('Tsukuba') || location.includes('つくば')) {
-      location = 'Ibaraki';
-    } else if (location.includes('Sendai') || location.includes('仙台')) {
-      location = 'Miyagi';
-    } else if (location.includes('Appi Kogen') || location.includes('安比高原')) {
-      location = 'Iwate';
-    } else if (location.includes('Kofu') || location.includes('甲府')) {
-      location = 'Yamanashi';
-    } else if (
-      location.includes('Sapporo') ||
-      location.includes('札幌') ||
-      location.includes('Niseko') ||
-      location.includes('ニセコ')
-    ) {
-      location = 'Hokkaido';
-    }
-
-    if (!acc[location]) {
-      acc[location] = [];
-    }
-    acc[location].push(school);
-    return acc;
-  }, {});
-
-  // Create an ordered object based on LOCATION_ORDER
-  const orderedLocations = LOCATION_ORDER.reduce((acc: { [key: string]: School[] }, location) => {
-    if (grouped[location]) {
-      acc[location] = grouped[location];
-    }
-    return acc;
-  }, {});
-
-  // Add any remaining locations not in the predefined order
-  Object.entries(grouped).forEach(([location, schools]) => {
-    if (!orderedLocations[location] && location !== 'Other') {
-      orderedLocations[location] = schools;
-    }
-  });
-
-  // Add 'Other' category at the end if it exists
-  if (grouped['Other']) {
-    orderedLocations['Other'] = grouped['Other'];
-  }
-
-  return orderedLocations;
-};
+import { REGIONS_CONFIG } from '../config/regions';
+import { groupSchoolsByLocation } from '../utils/schools';
+import { useViewMode } from '../contexts/ViewModeContext';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -207,7 +96,7 @@ const ListPage: React.FC = () => {
   const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const { viewMode, updateViewMode } = useViewMode();
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
     curriculum: ['all'],
@@ -410,62 +299,22 @@ const ListPage: React.FC = () => {
     setFilters(newFilters);
   };
 
-  // Fetch user's preferred view mode on component mount
-  useEffect(() => {
-    const fetchPreferredViewMode = async () => {
-      if (session?.user) {
-        try {
-          const response = await fetch('/api/user/preferences');
-          if (response.ok) {
-            const data = await response.json();
-            if (data.preferred_view_mode) {
-              setViewMode(data.preferred_view_mode as 'list' | 'grid');
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching preferred view mode:', error);
-        }
-      }
-    };
-
-    fetchPreferredViewMode();
-  }, [session]);
-
-  // Update view mode and persist preference
-  const handleViewModeChange = async (newMode: 'list' | 'grid') => {
-    setViewMode(newMode);
-
-    if (session?.user) {
-      try {
-        await fetch('/api/user/preferences', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ preferred_view_mode: newMode }),
-        });
-      } catch (error) {
-        console.error('Error updating preferred view mode:', error);
-      }
-    }
-  };
-
   // Force list view for unauthenticated users and small screens
   useEffect(() => {
     if ((!session?.user || window.innerWidth < 640) && viewMode === 'grid') {
-      setViewMode('list');
+      updateViewMode('list');
     }
 
     // Add resize listener for responsive behavior
     const handleResize = () => {
       if (window.innerWidth < 640 && viewMode === 'grid') {
-        setViewMode('list');
+        updateViewMode('list');
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [session, viewMode]);
+  }, [session, viewMode, updateViewMode]);
 
   // Add scroll to top handler
   const scrollToTop = () => {
@@ -487,34 +336,23 @@ const ListPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleExpandRegion = (event: CustomEvent) => {
+      const region = event.detail;
+      setCollapsedSections(prev => ({
+        ...prev,
+        [region]: false,
+      }));
+    };
+
+    window.addEventListener('expandRegion', handleExpandRegion as EventListener);
+    return () => {
+      window.removeEventListener('expandRegion', handleExpandRegion as EventListener);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar
-        schools={schools}
-        onRegionClick={(location) => {
-          // First, ensure the section is expanded
-          setCollapsedSections(prev => ({
-            ...prev,
-            [location]: false
-          }));
-
-          // Wait for the section to expand before scrolling
-          setTimeout(() => {
-            const element = document.getElementById(`region-${location}`);
-            if (element) {
-              const navbarHeight = 0; // No need for offset since navbar is on the side
-              const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-              const offsetPosition = elementPosition - navbarHeight;
-
-              window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-              });
-            }
-          }, 100); // Small delay to ensure the section has expanded
-        }}
-        viewMode={viewMode}
-      />
+    <div className="min-h-screen">
       {notification && (
         <NotificationBanner
           type={notification.type}
@@ -548,7 +386,7 @@ const ListPage: React.FC = () => {
 
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
         {/* Search Icon Button */}
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-20 sm:top-4 right-4 z-50">
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -581,17 +419,19 @@ const ListPage: React.FC = () => {
 
         {/* Search Box Overlay */}
         <div
-          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
+            isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
           onClick={() => setIsSearchOpen(false)}
         />
 
         {/* Collapsible Search Box */}
         <div
-          className={`fixed top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-4 pointer-events-none'
-            }`}
+          className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
+            isSearchOpen
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 -translate-y-4 pointer-events-none'
+          }`}
         >
           <SearchBox
             onSearch={handleSearchInput}
@@ -604,7 +444,7 @@ const ListPage: React.FC = () => {
           <h1 className="text-3xl font-bold">{translations.schools}</h1>
           {session?.user && (
             <button
-              onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
+              onClick={() => updateViewMode(viewMode === 'list' ? 'grid' : 'list')}
               className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               {viewMode === 'list' ? (
@@ -701,44 +541,46 @@ const ListPage: React.FC = () => {
             {/* Region Sections */}
             <div className="space-y-16">
               {Object.entries(groupSchoolsByLocation(schools, language)).map(
-                ([location, locationSchools]) => (
-                  <div key={location} id={`region-${location}`} className="mb-12">
-                    <div
-                      className="mb-6 pb-2 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-25/50"
-                      onClick={() => toggleSection(location)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-semibold">
-                          {REGIONS_CONFIG[location]?.[language] || location}
-                        </h2>
-                        <span className="text-sm text-gray-500">
-                          ({locationSchools.length} {language === 'en' ? 'Schools' : '校'})
-                        </span>
+                ([location, locationSchools]) => {
+                  const schools = locationSchools as School[];
+                  return (
+                    <div key={location} id={location} className="mb-8">
+                      <div
+                        onClick={() => toggleSection(location)}
+                        className="flex items-center justify-between cursor-pointer hover:bg-gray-25/50 p-4 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-xl font-semibold">
+                            {REGIONS_CONFIG[location][language]}
+                          </h2>
+                          <span className="text-gray-500 text-sm">({schools.length} Schools)</span>
+                        </div>
+                        <div>
+                          {collapsedSections[location] ? (
+                            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        {collapsedSections[location] ? (
-                          <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                        ) : (
-                          <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className={`transition-opacity duration-300 ease-in-out ${collapsedSections[location]
-                        ? 'h-0 opacity-0 invisible'
-                        : 'opacity-100 visible'
+                      <div
+                        className={`transition-opacity duration-300 ease-in-out ${
+                          collapsedSections[location]
+                            ? 'h-0 opacity-0 invisible'
+                            : 'opacity-100 visible'
                         }`}
-                    >
-                      <SchoolList
-                        schools={locationSchools}
-                        searchQuery={searchQuery}
-                        onNotification={handleNotification}
-                        language={language}
-                        viewMode={viewMode}
-                      />
+                      >
+                        <SchoolList
+                          schools={schools}
+                          viewMode={viewMode}
+                          language={language}
+                          searchQuery={searchQuery}
+                          onNotification={handleNotification}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )
+                  );
+                }
               )}
             </div>
           </>

@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '../contexts/LanguageContext';
 import RegionNavigation from './RegionNavigation';
-import { REGIONS_CONFIG } from '../list/page';
+import { REGIONS_CONFIG } from '../config/regions';
+import { School } from '@/types/school';
+import { getLocalizedContent } from '@/utils/language';
 import {
   HomeIcon,
   BuildingLibraryIcon,
@@ -16,105 +18,111 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface NavbarProps {
-  schools?: any[];
-  onRegionClick?: (location: string) => void;
+  schools?: School[];
+  onRegionClick?: (region: string) => void;
   viewMode?: 'list' | 'grid';
 }
 
-const Navbar: React.FC<NavbarProps> = ({ schools = [], onRegionClick = () => { }, viewMode = 'list' }) => {
+export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' }: NavbarProps) {
   const { data: session } = useSession();
   const { language, toggleLanguage } = useLanguage();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  console.log('Navbar - received viewMode:', viewMode);
+
+  useEffect(() => {
+    console.log('Navbar - viewMode changed to:', viewMode);
+  }, [viewMode]);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const handleRegionClick = (region: string) => {
+    if (pathname !== '/list') {
+      router.push('/list');
+      // Wait for navigation to complete before trying to scroll
+      setTimeout(() => {
+        const element = document.getElementById(region);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Also expand the section if it's collapsed
+          const event = new CustomEvent('expandRegion', { detail: region });
+          window.dispatchEvent(event);
+        }
+      }, 100);
+    } else if (onRegionClick) {
+      onRegionClick(region);
+    }
   };
 
-  const NavLinks = () => (
-    <>
-      <Link
-        href="/"
-        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-        onClick={() => setIsMobileMenuOpen(false)}
-      >
-        <HomeIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">{language === 'en' ? 'Home' : 'ホーム'}</span>
-      </Link>
-
-      <Link
-        href="/list"
-        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-        onClick={() => setIsMobileMenuOpen(false)}
-      >
-        <BuildingLibraryIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">{language === 'en' ? 'Schools' : '学校'}</span>
-      </Link>
-
-      {session && (
-        <Link
-          href="/dashboard"
-          className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-          <span className="group-hover:text-[#0057B7]">
-            {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
-          </span>
-        </Link>
-      )}
-    </>
-  );
-
-  const BottomActions = () => (
-    <>
-      <button
-        onClick={() => {
-          toggleLanguage();
-          setIsMobileMenuOpen(false);
-        }}
-        className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-      >
-        <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-        <span className="group-hover:text-[#0057B7]">
-          {language === 'en' ? '日本語' : 'English'}
-        </span>
-      </button>
-
-      {session ? (
-        <button
-          onClick={() => {
-            signOut();
-            setIsMobileMenuOpen(false);
-          }}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
-        >
-          <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-          <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
-        </button>
-      ) : (
-        <>
-          <Link
-            href="/login"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-[#0057B7] hover:bg-blue-50 rounded-lg transition-colors group"
-          >
-            <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-            <span>{language === 'en' ? 'Login' : 'ログイン'}</span>
-          </Link>
-          <Link
-            href="/register"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors group"
-          >
-            <UserCircleIcon className="w-6 h-6" />
-            <span>{language === 'en' ? 'Register' : '新規登録'}</span>
-          </Link>
-        </>
-      )}
-    </>
-  );
+  const schoolsByRegion = useMemo(() => {
+    return Object.entries(REGIONS_CONFIG).reduce(
+      (acc, [region]) => {
+        acc[region] = schools.filter(school => {
+          const schoolLocation =
+            getLocalizedContent(school.location_en, school.location_jp, 'en') || '';
+          // Handle special cases for region matching
+          if (
+            region === 'Kansai' &&
+            (schoolLocation.includes('Kyoto') ||
+              schoolLocation.includes('Osaka') ||
+              schoolLocation.includes('Kobe') ||
+              schoolLocation.includes('京都') ||
+              schoolLocation.includes('大阪') ||
+              schoolLocation.includes('神戸'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Aichi' &&
+            (schoolLocation.includes('Nagoya') || schoolLocation.includes('名古屋'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Ibaraki' &&
+            (schoolLocation.includes('Tsukuba') || schoolLocation.includes('つくば'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Miyagi' &&
+            (schoolLocation.includes('Sendai') || schoolLocation.includes('仙台'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Iwate' &&
+            (schoolLocation.includes('Appi Kogen') || schoolLocation.includes('安比高原'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Yamanashi' &&
+            (schoolLocation.includes('Kofu') || schoolLocation.includes('甲府'))
+          ) {
+            return true;
+          }
+          if (
+            region === 'Hokkaido' &&
+            (schoolLocation.includes('Sapporo') ||
+              schoolLocation.includes('札幌') ||
+              schoolLocation.includes('Niseko') ||
+              schoolLocation.includes('ニセコ'))
+          ) {
+            return true;
+          }
+          return schoolLocation === region;
+        }).length;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [schools]);
 
   return (
     <>
@@ -133,22 +141,100 @@ const Navbar: React.FC<NavbarProps> = ({ schools = [], onRegionClick = () => { }
         {/* Navigation Links */}
         <div className="flex-1 py-4 px-4">
           <div className="space-y-2">
-            <NavLinks />
+            <Link
+              href="/"
+              className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <HomeIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+              <span className="group-hover:text-[#0057B7]">
+                {language === 'en' ? 'Home' : 'ホーム'}
+              </span>
+            </Link>
+
+            <Link
+              href="/list"
+              className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <BuildingLibraryIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+              <span className="group-hover:text-[#0057B7]">
+                {language === 'en' ? 'Schools' : '学校'}
+              </span>
+            </Link>
+
+            {session && (
+              <Link
+                href="/dashboard"
+                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                <span className="group-hover:text-[#0057B7]">
+                  {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Region Navigation */}
-          <RegionNavigation
-            schools={schools}
-            language={language}
-            regionsConfig={REGIONS_CONFIG}
-            onRegionClick={onRegionClick}
-            viewMode={viewMode}
-          />
+          {viewMode === 'list' && (
+            <RegionNavigation
+              language={language}
+              regionsConfig={REGIONS_CONFIG}
+              onRegionClick={handleRegionClick}
+              viewMode={viewMode}
+              schoolsByRegion={schoolsByRegion}
+            />
+          )}
         </div>
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-gray-100 space-y-2">
-          <BottomActions />
+          <button
+            onClick={() => {
+              toggleLanguage();
+              setIsMobileMenuOpen(false);
+            }}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+          >
+            <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+            <span className="group-hover:text-[#0057B7]">
+              {language === 'en' ? '日本語' : 'English'}
+            </span>
+          </button>
+
+          {session ? (
+            <button
+              onClick={() => {
+                signOut();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
+            >
+              <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+              <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
+            </button>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-[#0057B7] hover:bg-blue-50 rounded-lg transition-colors group"
+              >
+                <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                <span>{language === 'en' ? 'Login' : 'ログイン'}</span>
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors group"
+              >
+                <UserCircleIcon className="w-6 h-6" />
+                <span>{language === 'en' ? 'Register' : '新規登録'}</span>
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -175,10 +261,86 @@ const Navbar: React.FC<NavbarProps> = ({ schools = [], onRegionClick = () => { }
           <div className="fixed inset-0 top-[60px] bg-white z-40 overflow-y-auto">
             <div className="px-4 py-6 space-y-4">
               <div className="space-y-2">
-                <NavLinks />
+                <Link
+                  href="/"
+                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <HomeIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                  <span className="group-hover:text-[#0057B7]">
+                    {language === 'en' ? 'Home' : 'ホーム'}
+                  </span>
+                </Link>
+
+                <Link
+                  href="/list"
+                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <BuildingLibraryIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                  <span className="group-hover:text-[#0057B7]">
+                    {language === 'en' ? 'Schools' : '学校'}
+                  </span>
+                </Link>
+
+                {session && (
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                    <span className="group-hover:text-[#0057B7]">
+                      {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
+                    </span>
+                  </Link>
+                )}
               </div>
               <div className="pt-4 border-t border-gray-100 space-y-2">
-                <BottomActions />
+                <button
+                  onClick={() => {
+                    toggleLanguage();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                >
+                  <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                  <span className="group-hover:text-[#0057B7]">
+                    {language === 'en' ? '日本語' : 'English'}
+                  </span>
+                </button>
+
+                {session ? (
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
+                  >
+                    <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                    <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full flex items-center space-x-3 px-4 py-3 text-[#0057B7] hover:bg-blue-50 rounded-lg transition-colors group"
+                    >
+                      <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                      <span>{language === 'en' ? 'Login' : 'ログイン'}</span>
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full flex items-center space-x-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors group"
+                    >
+                      <UserCircleIcon className="w-6 h-6" />
+                      <span>{language === 'en' ? 'Register' : '新規登録'}</span>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -186,6 +348,4 @@ const Navbar: React.FC<NavbarProps> = ({ schools = [], onRegionClick = () => { }
       </nav>
     </>
   );
-};
-
-export default Navbar;
+}
