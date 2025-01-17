@@ -70,7 +70,7 @@ describe('User Preferences API', () => {
   });
 
   describe('PUT /api/user/preferences', () => {
-    const mockRequest = (body: any) =>
+    const mockRequest = (body: { preferred_view_mode?: string }) =>
       new NextRequest('http://localhost', {
         method: 'PUT',
         body: JSON.stringify(body),

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { School } from '../../interfaces/School';
+import { School } from '@/types/school';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '../contexts/LanguageContext';

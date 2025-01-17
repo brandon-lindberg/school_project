@@ -1,12 +1,12 @@
 import React from 'react';
+import { School } from '@/types/school';
 import SchoolCard from './SchoolCard';
 import SchoolCardSkeleton from './SchoolCardSkeleton';
-import { School } from '../../interfaces/School';
+import { getLocalizedContent } from '@/utils/language';
+import { Tooltip } from './Tooltip';
+import Image from 'next/image';
 import { NotificationType } from './NotificationBanner';
 import './styles/scrollbar.css';
-import { getLocalizedContent } from '@/utils/language';
-import { BsGrid, BsListUl } from 'react-icons/bs';
-import { Tooltip } from './Tooltip';
 
 interface SchoolListProps {
   schools: School[];
@@ -89,10 +89,12 @@ const SchoolList: React.FC<SchoolListProps> = ({
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
                       alt="Logo"
-                      className="w-[30px] h-[30px] rounded-full"
+                      width={30}
+                      height={30}
+                      className="rounded-full"
                     />
                   </div>
                   <Tooltip

@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { School } from '../../interfaces/School';
-import SearchBox, { SearchFilters } from '../components/SearchBox';
-import debounce from 'lodash.debounce';
-import SchoolList from '../components/SchoolList';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getLocalizedContent } from '@/utils/language';
+import { SearchFilters } from '../components/SearchBox';
+import { debounce } from 'lodash';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import SchoolList from '../components/SchoolList';
+import SearchBox from '../components/SearchBox';
 import NotificationBanner, { NotificationType } from '../components/NotificationBanner';
+import { School } from '@/types/school';
+import { getLocalizedContent } from '@/utils/language';
 import Link from 'next/link';
 import { BsGrid, BsListUl } from 'react-icons/bs';
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
-import { useSession } from 'next-auth/react';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -143,6 +144,7 @@ const ListPage: React.FC = () => {
       acc[key] = language === 'en' ? value.en : value.jp;
       return acc;
     }, {}),
+    clearHistory: language === 'en' ? 'Clear All' : 'すべて削除',
   };
 
   // Group schools by location with predefined order
@@ -324,13 +326,6 @@ const ListPage: React.FC = () => {
     loadInitialData();
   }, [fetchBrowsingHistory, loadInitialSchools]);
 
-  // Add this effect to reapply filters when language changes
-  useEffect(() => {
-    if (searchQuery || !filters.region.includes('all') || !filters.curriculum.includes('all')) {
-      handleSearchInput(searchQuery, filters);
-    }
-  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string, filters: SearchFilters) => {
@@ -358,6 +353,12 @@ const ListPage: React.FC = () => {
       debouncedSearch(query, filters);
     }
   };
+
+  useEffect(() => {
+    if (searchQuery || !filters.region.includes('all') || !filters.curriculum.includes('all')) {
+      handleSearchInput(searchQuery, filters);
+    }
+  }, [language, searchQuery, filters, handleSearchInput]);
 
   const toggleSection = (location: string) => {
     setCollapsedSections((prev: { [key: string]: boolean }) => {
@@ -420,6 +421,13 @@ const ListPage: React.FC = () => {
     }
   };
 
+  // Force list view for unauthenticated users
+  useEffect(() => {
+    if (!session?.user && viewMode === 'grid') {
+      setViewMode('list');
+    }
+  }, [session, viewMode]);
+
   return (
     <div className="min-h-screen flex flex-col">
       {notification && (
@@ -481,30 +489,30 @@ const ListPage: React.FC = () => {
           <SearchBox
             onSearch={handleSearchInput}
             onFiltersChange={handleFiltersChange}
-            isOpen={isSearchOpen}
-            setIsOpen={setIsSearchOpen}
             language={language}
           />
         </div>
 
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">{translations.schools}</h1>
-          <button
-            onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
-            className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
-          >
-            {viewMode === 'list' ? (
-              <>
-                <BsGrid className="w-4 h-4" />
-                <span>{getLocalizedContent('Grid View', 'グリッド表示', language)}</span>
-              </>
-            ) : (
-              <>
-                <BsListUl className="w-4 h-4" />
-                <span>{getLocalizedContent('List View', 'リスト表示', language)}</span>
-              </>
-            )}
-          </button>
+          {session?.user && (
+            <button
+              onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
+              className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              {viewMode === 'list' ? (
+                <>
+                  <BsGrid className="w-4 h-4" />
+                  <span>{getLocalizedContent('Grid View', 'グリッド表示', language)}</span>
+                </>
+              ) : (
+                <>
+                  <BsListUl className="w-4 h-4" />
+                  <span>{getLocalizedContent('List View', 'リスト表示', language)}</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Browsing History Section */}
@@ -558,93 +566,68 @@ const ListPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-end mt-1">
+              {browsingHistory.length > 0 && (
                 <button
                   onClick={handleClearHistory}
-                  className="text-xs text-gray-400 hover:text-[#D9534F] px-2 py-1 transition-colors"
+                  className="absolute -top-8 right-0 text-sm text-gray-500 hover:text-gray-700"
                 >
-                  {language === 'en' ? 'Clear All' : 'すべて削除'}
+                  {translations.clearHistory}
                 </button>
-              </div>
+              )}
             </div>
           </div>
         ) : null}
 
-        {isInitialLoad ? (
+        {/* Schools List */}
+        {isLoading ? (
           <ListPageSkeleton />
-        ) : !searchQuery ? (
-          viewMode === 'grid' ? (
-            <SchoolList
-              schools={schools}
-              isLoading={isInitialLoad || isLoading}
-              loadingCount={5}
-              isDropdown={false}
-              onNotification={handleNotification}
-              language={language}
-              viewMode={viewMode}
-            />
-          ) : (
-            Object.entries(groupSchoolsByLocation(schools)).map(
-              ([location, locationSchools]) =>
-                locationSchools.length > 0 && (
-                  <div key={location} className="mb-12">
-                    <div
-                      className="mb-6 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100/50 rounded transition-colors px-2"
-                      onClick={() => toggleSection(location)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-semibold">
-                          {translations.regions[location] || location}{' '}
-                          <span className="text-gray-500 text-lg">
-                            ({locationSchools.length} {translations.schools})
-                          </span>
-                        </h2>
-                        <div className="text-gray-500">
-                          {collapsedSections[location] ? (
-                            <ChevronDownIcon className="h-5 w-5" />
-                          ) : (
-                            <ChevronUpIcon className="h-5 w-5" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        collapsedSections[location]
-                          ? 'max-h-0 opacity-0'
-                          : 'max-h-[2000px] opacity-100'
-                      }`}
-                    >
-                      <SchoolList
-                        schools={locationSchools}
-                        isLoading={isInitialLoad || isLoading}
-                        loadingCount={5}
-                        isDropdown={false}
-                        onNotification={handleNotification}
-                        language={language}
-                        viewMode={viewMode}
-                      />
-                    </div>
-                  </div>
-                )
-            )
-          )
+        ) : viewMode === 'grid' ? (
+          <SchoolList
+            schools={schools}
+            searchQuery={searchQuery}
+            onNotification={handleNotification}
+            language={language}
+            viewMode={viewMode}
+          />
         ) : (
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
-            {schools.length === 0 && !isLoading && (
-              <p className="text-gray-500">{translations.noResults}</p>
-            )}
-            <SchoolList
-              schools={schools}
-              searchQuery={searchQuery}
-              isLoading={isLoading}
-              loadingCount={5}
-              isDropdown={false}
-              onNotification={handleNotification}
-              language={language}
-              viewMode={viewMode}
-            />
+          <div className="space-y-16">
+            {Object.entries(groupSchoolsByLocation(schools)).map(([location, locationSchools]) => (
+              <div key={location} className="mb-12">
+                <div
+                  className="mb-6 pb-2 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-25/50"
+                  onClick={() => toggleSection(location)}
+                >
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold">
+                      {getLocalizedContent(location, location, language)}
+                    </h2>
+                    <span className="text-sm text-gray-500">
+                      ({locationSchools.length} {language === 'en' ? 'Schools' : '校'})
+                    </span>
+                  </div>
+                  <div>
+                    {collapsedSections[location] ? (
+                      <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                  </div>
+                </div>
+                <div
+                  className={`transition-opacity duration-300 ease-in-out ${
+                    collapsedSections[location] ? 'h-0 opacity-0 invisible' : 'opacity-100 visible'
+                  }`}
+                >
+                  <SchoolList
+                    schools={locationSchools}
+                    searchQuery={searchQuery}
+                    onNotification={handleNotification}
+                    language={language}
+                    viewMode={viewMode}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

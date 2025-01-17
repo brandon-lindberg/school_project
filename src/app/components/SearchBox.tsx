@@ -4,8 +4,6 @@ import { getLocalizedContent } from '@/utils/language';
 interface SearchBoxProps {
   onSearch: (query: string, filters: SearchFilters) => void;
   onFiltersChange?: (filters: SearchFilters) => void;
-  isOpen?: boolean;
-  setIsOpen?: (isOpen: boolean) => void;
   language: 'en' | 'jp';
 }
 
@@ -39,13 +37,7 @@ const CURRICULUMS = {
   Mixed: { en: 'Mixed Curriculum', jp: '混合カリキュラム' },
 };
 
-const SearchBox: React.FC<SearchBoxProps> = ({
-  onSearch,
-  onFiltersChange,
-  isOpen = false,
-  setIsOpen,
-  language,
-}) => {
+const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, onFiltersChange, language }) => {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
