@@ -9,6 +9,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
 import NotificationBanner, { NotificationType } from '../components/NotificationBanner';
 import Link from 'next/link';
+import { BsGrid, BsListUl } from 'react-icons/bs';
+import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -107,6 +109,7 @@ const ListPage: React.FC = () => {
   const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
@@ -364,6 +367,10 @@ const ListPage: React.FC = () => {
     });
   };
 
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {notification && (
@@ -420,167 +427,161 @@ const ListPage: React.FC = () => {
             : 'opacity-0 -translate-y-4 pointer-events-none'
             }`}
         >
-          <div className="relative">
-            <SearchBox onSearch={handleSearchInput} language={language} />
-            {searchQuery.trim().length > 0 && (
-              <div className="absolute w-full z-50">
-                <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
-                  <SchoolList
-                    schools={schools}
-                    searchQuery={searchQuery}
-                    isLoading={isLoading}
-                    loadingCount={5}
-                    isDropdown={true}
-                    onNotification={handleNotification}
-                    language={language}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          <SearchBox
+            onSearch={handleSearchInput}
+            onFiltersChange={handleFiltersChange}
+            isOpen={isSearchOpen}
+            setIsOpen={setIsSearchOpen}
+            language={language}
+          />
         </div>
+
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">{translations.schools}</h1>
+          <button
+            onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+            className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            {viewMode === 'list' ? (
+              <>
+                <BsGrid className="w-4 h-4" />
+                <span>{getLocalizedContent('Grid View', 'グリッド表示', language)}</span>
+              </>
+            ) : (
+              <>
+                <BsListUl className="w-4 h-4" />
+                <span>{getLocalizedContent('List View', 'リスト表示', language)}</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Browsing History Section */}
+        {browsingHistory.length > 0 && !searchQuery ? (
+          <div className="mb-8">
+            <h2 className="text-lg font-medium mb-3 text-gray-600">
+              {translations.recentlyViewed}
+            </h2>
+            <div className="relative">
+              <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
+                {browsingHistory.map(entry => (
+                  <div
+                    key={entry.history_id}
+                    className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors"
+                    style={{ height: '100px' }}
+                  >
+                    <Link
+                      href={`/schools/${entry.school_id}`}
+                      className="block h-full p-3 relative"
+                    >
+                      <div className="flex flex-col h-full">
+                        <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
+                          {getLocalizedContent(
+                            entry.school.name_en,
+                            entry.school.name_jp,
+                            language
+                          )}
+                        </h3>
+                        <div className="absolute bottom-2 left-0 right-0 px-3 flex justify-between items-center">
+                          <p className="text-xs text-gray-400">
+                            {new Date(entry.viewed_at).toLocaleDateString(
+                              language === 'en' ? 'en-US' : 'ja-JP',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                              }
+                            )}
+                          </p>
+                          <button
+                            onClick={e => {
+                              e.preventDefault();
+                              handleDeleteHistoryEntry(entry.history_id);
+                            }}
+                            className="text-xs text-gray-400 hover:text-[#D9534F] transition-colors"
+                          >
+                            {language === 'en' ? 'Remove' : '削除'}
+                          </button>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end mt-1">
+                <button
+                  onClick={handleClearHistory}
+                  className="text-xs text-gray-400 hover:text-[#D9534F] px-2 py-1 transition-colors"
+                >
+                  {language === 'en' ? 'Clear All' : 'すべて削除'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {isInitialLoad ? (
           <ListPageSkeleton />
-        ) : (
-          <>
-            {/* Browsing History Section */}
-            {browsingHistory.length > 0 ? (
-              <div className="mb-8">
-                <h2 className="text-lg font-medium mb-3 text-gray-600">
-                  {translations.recentlyViewed}
-                </h2>
-                <div className="relative">
-                  <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
-                    {browsingHistory.map(entry => (
-                      <div
-                        key={entry.history_id}
-                        className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors"
-                        style={{ height: '100px' }}
-                      >
-                        <Link
-                          href={`/schools/${entry.school_id}`}
-                          className="block h-full p-3 relative"
-                        >
-                          <div className="flex flex-col h-full">
-                            <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
-                              {getLocalizedContent(
-                                entry.school.name_en,
-                                entry.school.name_jp,
-                                language
-                              )}
-                            </h3>
-                            <div className="absolute bottom-2 left-0 right-0 px-3 flex justify-between items-center">
-                              <p className="text-xs text-gray-400">
-                                {new Date(entry.viewed_at).toLocaleDateString(
-                                  language === 'en' ? 'en-US' : 'ja-JP',
-                                  {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  }
-                                )}
-                              </p>
-                              <button
-                                onClick={e => {
-                                  e.preventDefault();
-                                  handleDeleteHistoryEntry(entry.history_id);
-                                }}
-                                className="text-xs text-gray-400 hover:text-[#D9534F] transition-colors"
-                              >
-                                {language === 'en' ? 'Remove' : '削除'}
-                              </button>
-                            </div>
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end mt-1">
-                    <button
-                      onClick={handleClearHistory}
-                      className="text-xs text-gray-400 hover:text-[#D9534F] px-2 py-1 transition-colors"
-                    >
-                      {language === 'en' ? 'Clear All' : 'すべて削除'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="space-y-16">
-              {searchQuery.trim().length === 0 ? (
-                Object.entries(groupSchoolsByLocation(schools)).map(
-                  ([location, locationSchools]) => (
-                    <div key={location} className="mb-12">
-                      <div
-                        className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200 cursor-pointer"
-                        onClick={() => toggleSection(location)}
-                      >
-                        <h2 className="text-2xl font-semibold">
-                          {translations.regions[location as keyof typeof translations.regions]}{' '}
-                          <span className="text-gray-500 text-lg">
-                            ({locationSchools.length} {translations.schools})
-                          </span>
-                        </h2>
-                        <button
-                          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                          aria-label={
-                            collapsedSections[location] ? 'Expand section' : 'Collapse section'
-                          }
-                        >
-                          <svg
-                            className={`w-6 h-6 transform transition-transform ${collapsedSections[location] ? 'rotate-180' : ''
-                              }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <div
-                        className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
-                          ? 'max-h-0 opacity-0'
-                          : 'max-h-[2000px] opacity-100'
-                          }`}
-                      >
-                        <SchoolList
-                          schools={locationSchools}
-                          isLoading={isInitialLoad || isLoading}
-                          loadingCount={5}
-                          isDropdown={false}
-                          onNotification={handleNotification}
-                          language={language}
-                        />
+        ) : !searchQuery ? (
+          Object.entries(groupSchoolsByLocation(schools)).map(
+            ([location, locationSchools]) =>
+              locationSchools.length > 0 && (
+                <div key={location} className="mb-12">
+                  <div
+                    className="mb-6 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100/50 rounded transition-colors px-2"
+                    onClick={() => toggleSection(location)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-2xl font-semibold">
+                        {translations.regions[location] || location}{' '}
+                        <span className="text-gray-500 text-lg">
+                          ({locationSchools.length} {translations.schools})
+                        </span>
+                      </h2>
+                      <div className="text-gray-500">
+                        {collapsedSections[location] ? (
+                          <ChevronDownIcon className="h-5 w-5" />
+                        ) : (
+                          <ChevronUpIcon className="h-5 w-5" />
+                        )}
                       </div>
                     </div>
-                  )
-                )
-              ) : (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
-                  {schools.length === 0 && !isLoading && (
-                    <p className="text-gray-500">{translations.noResults}</p>
-                  )}
-                  <SchoolList
-                    schools={schools}
-                    searchQuery={searchQuery}
-                    isLoading={isLoading}
-                    loadingCount={5}
-                    isDropdown={false}
-                    onNotification={handleNotification}
-                    language={language}
-                  />
+                  </div>
+                  <div
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
+                      ? 'max-h-0 opacity-0'
+                      : 'max-h-[2000px] opacity-100'
+                      }`}
+                  >
+                    <SchoolList
+                      schools={locationSchools}
+                      isLoading={isInitialLoad || isLoading}
+                      loadingCount={5}
+                      isDropdown={false}
+                      onNotification={handleNotification}
+                      language={language}
+                      viewMode={viewMode}
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          </>
+              )
+          )
+        ) : (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">{translations.searchResults}</h2>
+            {schools.length === 0 && !isLoading && (
+              <p className="text-gray-500">{translations.noResults}</p>
+            )}
+            <SchoolList
+              schools={schools}
+              searchQuery={searchQuery}
+              isLoading={isLoading}
+              loadingCount={5}
+              isDropdown={false}
+              onNotification={handleNotification}
+              language={language}
+              viewMode={viewMode}
+            />
+          </div>
         )}
       </div>
     </div>

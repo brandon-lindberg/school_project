@@ -3,6 +3,9 @@ import { getLocalizedContent } from '@/utils/language';
 
 interface SearchBoxProps {
   onSearch: (query: string, filters: SearchFilters) => void;
+  onFiltersChange?: (filters: SearchFilters) => void;
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
   language: 'en' | 'jp';
 }
 
@@ -36,7 +39,13 @@ const CURRICULUMS = {
   Mixed: { en: 'Mixed Curriculum', jp: '混合カリキュラム' },
 };
 
-const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
+const SearchBox: React.FC<SearchBoxProps> = ({
+  onSearch,
+  onFiltersChange,
+  isOpen = false,
+  setIsOpen,
+  language
+}) => {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
@@ -55,18 +64,14 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
     let newValues: string[];
 
     if (value === 'all') {
-      // If 'all' is selected, clear other selections
       newValues = ['all'];
     } else {
       const currentValues = filters[filterType].filter(v => v !== 'all');
       if (currentValues.includes(value)) {
-        // Remove the value if it's already selected
         newValues = currentValues.filter(v => v !== value);
       } else {
-        // Add the value if it's not selected
         newValues = [...currentValues, value];
       }
-      // If no options are selected, default to 'all'
       if (newValues.length === 0) {
         newValues = ['all'];
       }
@@ -75,6 +80,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
     const newFilters = { ...filters, [filterType]: newValues };
     setFilters(newFilters);
     onSearch(query.trim(), newFilters);
+    onFiltersChange?.(newFilters);
   };
 
   const handleClearFilters = () => {
@@ -86,6 +92,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
     setIsRegionExpanded(false);
     setIsCurriculumExpanded(false);
     onSearch(query.trim(), clearedFilters);
+    onFiltersChange?.(clearedFilters);
   };
 
   const searchPlaceholder = getLocalizedContent('Search for schools...', '学校を検索...', language);
@@ -136,11 +143,10 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, language }) => {
         </div>
         <button
           onClick={handleClearFilters}
-          className={`flex items-center px-4 py-2 text-sm font-medium border rounded-lg transition-colors duration-200 ${
-            hasActiveFilters
-              ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'
-              : 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
-          }`}
+          className={`flex items-center px-4 py-2 text-sm font-medium border rounded-lg transition-colors duration-200 ${hasActiveFilters
+            ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'
+            : 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
+            }`}
           disabled={!hasActiveFilters}
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
