@@ -112,13 +112,11 @@ const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
     curriculum: ['all'],
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [notification, setNotification] = useState<Notification | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>(() => {
     if (typeof window !== 'undefined') {
@@ -229,7 +227,6 @@ const ListPage: React.FC = () => {
     const initialSchools = await fetchAllSchools();
     setSchools(initialSchools);
     setAllSchools(initialSchools);
-    setIsInitialLoad(false);
   }, []);
 
   const fetchSearchResults = async (query: string, filters: SearchFilters) => {
@@ -337,22 +334,25 @@ const ListPage: React.FC = () => {
     []
   );
 
-  const handleSearchInput = (query: string, filters: SearchFilters) => {
-    setSearchQuery(query);
-    setFilters(filters);
+  const handleSearchInput = useCallback(
+    (query: string, filters: SearchFilters) => {
+      setSearchQuery(query);
+      setFilters(filters);
 
-    if (
-      query.trim() === '' &&
-      filters.region.includes('all') &&
-      filters.curriculum.includes('all')
-    ) {
-      debouncedSearch.cancel();
-      setSchools(allSchools);
-      setIsLoading(false);
-    } else {
-      debouncedSearch(query, filters);
-    }
-  };
+      if (
+        query.trim() === '' &&
+        filters.region.includes('all') &&
+        filters.curriculum.includes('all')
+      ) {
+        debouncedSearch.cancel();
+        setSchools(allSchools);
+        setIsLoading(false);
+      } else {
+        debouncedSearch(query, filters);
+      }
+    },
+    [debouncedSearch, allSchools]
+  );
 
   useEffect(() => {
     if (searchQuery || !filters.region.includes('all') || !filters.curriculum.includes('all')) {
