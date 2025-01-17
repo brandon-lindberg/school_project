@@ -11,6 +11,7 @@ import NotificationBanner, { NotificationType } from '../components/Notification
 import Link from 'next/link';
 import { BsGrid, BsListUl } from 'react-icons/bs';
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
+import { useSession } from 'next-auth/react';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -130,6 +131,7 @@ const ListPage: React.FC = () => {
     return getDefaultCollapsedState();
   });
   const { language } = useLanguage();
+  const { data: session } = useSession();
 
   // Translations
   const translations = {
@@ -378,6 +380,46 @@ const ListPage: React.FC = () => {
     setFilters(newFilters);
   };
 
+  // Fetch user's preferred view mode on component mount
+  useEffect(() => {
+    const fetchPreferredViewMode = async () => {
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/user/preferences');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.preferred_view_mode) {
+              setViewMode(data.preferred_view_mode as 'list' | 'grid');
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching preferred view mode:', error);
+        }
+      }
+    };
+
+    fetchPreferredViewMode();
+  }, [session]);
+
+  // Update view mode and persist preference
+  const handleViewModeChange = async (newMode: 'list' | 'grid') => {
+    setViewMode(newMode);
+
+    if (session?.user) {
+      try {
+        await fetch('/api/user/preferences', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ preferred_view_mode: newMode }),
+        });
+      } catch (error) {
+        console.error('Error updating preferred view mode:', error);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {notification && (
@@ -446,7 +488,7 @@ const ListPage: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">{translations.schools}</h1>
           <button
-            onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+            onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
             className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
           >
             {viewMode === 'list' ? (
