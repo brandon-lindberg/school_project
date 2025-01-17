@@ -352,7 +352,7 @@ const ListPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col min-h-screen">
       {notification && (
         <NotificationBanner
           type={notification.type}
@@ -384,7 +384,7 @@ const ListPage: React.FC = () => {
         </button>
       )}
 
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+      <div className="flex-1 container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Search Icon Button */}
         <div className="fixed top-20 sm:top-4 right-4 z-50">
           <button
@@ -539,12 +539,16 @@ const ListPage: React.FC = () => {
         ) : (
           <>
             {/* Region Sections */}
-            <div className="space-y-16">
+            <div className="space-y-8">
               {Object.entries(groupSchoolsByLocation(schools, language)).map(
                 ([location, locationSchools]) => {
                   const schools = locationSchools as School[];
                   return (
-                    <div key={location} id={location} className="mb-8">
+                    <div
+                      key={location}
+                      id={location}
+                      className={`${collapsedSections[location] ? 'mb-2' : 'mb-8'}`}
+                    >
                       <div
                         onClick={() => toggleSection(location)}
                         className="flex items-center justify-between cursor-pointer hover:bg-gray-25/50 p-4 rounded-lg"
@@ -564,9 +568,9 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-opacity duration-300 ease-in-out ${
+                        className={`transition-all duration-300 ease-in-out ${
                           collapsedSections[location]
-                            ? 'h-0 opacity-0 invisible'
+                            ? 'h-0 opacity-0 invisible overflow-hidden'
                             : 'opacity-100 visible'
                         }`}
                       >

@@ -64,7 +64,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
     <div className="w-full">
       {viewMode === 'grid' ? (
         <div className="w-full bg-white rounded-lg shadow overflow-hidden">
-          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4">
+          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 max-h-[calc(100vh-200px)]">
             {/* Header - Fixed at top */}
             <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
               <div></div>
