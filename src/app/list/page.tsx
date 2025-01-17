@@ -106,6 +106,7 @@ const ListPage: React.FC = () => {
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filters, setFilters] = useState<SearchFilters>({
     region: ['all'],
@@ -373,6 +374,72 @@ const ListPage: React.FC = () => {
         />
       )}
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        {/* Search Icon Button */}
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+          >
+            <svg
+              className="w-6 h-6 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isSearchOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Search Box Overlay */}
+        <div
+          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          onClick={() => setIsSearchOpen(false)}
+        />
+
+        {/* Collapsible Search Box */}
+        <div
+          className={`fixed top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+            }`}
+        >
+          <div className="relative">
+            <SearchBox onSearch={handleSearchInput} language={language} />
+            {searchQuery.trim().length > 0 && (
+              <div className="absolute w-full z-50">
+                <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
+                  <SchoolList
+                    schools={schools}
+                    searchQuery={searchQuery}
+                    isLoading={isLoading}
+                    loadingCount={5}
+                    isDropdown={true}
+                    onNotification={handleNotification}
+                    language={language}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {isInitialLoad ? (
           <ListPageSkeleton />
         ) : (
@@ -440,26 +507,6 @@ const ListPage: React.FC = () => {
               </div>
             ) : null}
 
-            <div className="mb-8">
-              <div className="relative">
-                <SearchBox onSearch={handleSearchInput} language={language} />
-                {searchQuery.trim().length > 0 && (
-                  <div className="absolute w-full z-50">
-                    <div className="bg-white rounded-md shadow-lg mt-1 max-h-[400px] overflow-y-auto">
-                      <SchoolList
-                        schools={schools}
-                        searchQuery={searchQuery}
-                        isLoading={isLoading}
-                        loadingCount={5}
-                        isDropdown={true}
-                        onNotification={handleNotification}
-                        language={language}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
             <div className="space-y-16">
               {searchQuery.trim().length === 0 ? (
                 Object.entries(groupSchoolsByLocation(schools)).map(
@@ -482,9 +529,8 @@ const ListPage: React.FC = () => {
                           }
                         >
                           <svg
-                            className={`w-6 h-6 transform transition-transform ${
-                              collapsedSections[location] ? 'rotate-180' : ''
-                            }`}
+                            className={`w-6 h-6 transform transition-transform ${collapsedSections[location] ? 'rotate-180' : ''
+                              }`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -499,11 +545,10 @@ const ListPage: React.FC = () => {
                         </button>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          collapsedSections[location]
-                            ? 'max-h-0 opacity-0'
-                            : 'max-h-[2000px] opacity-100'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
+                          ? 'max-h-0 opacity-0'
+                          : 'max-h-[2000px] opacity-100'
+                          }`}
                       >
                         <SchoolList
                           schools={locationSchools}
