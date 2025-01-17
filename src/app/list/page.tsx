@@ -322,6 +322,13 @@ const ListPage: React.FC = () => {
     loadInitialData();
   }, [fetchBrowsingHistory, loadInitialSchools]);
 
+  // Add this effect to reapply filters when language changes
+  useEffect(() => {
+    if (searchQuery || !filters.region.includes('all') || !filters.curriculum.includes('all')) {
+      handleSearchInput(searchQuery, filters);
+    }
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string, filters: SearchFilters) => {
@@ -522,48 +529,60 @@ const ListPage: React.FC = () => {
         {isInitialLoad ? (
           <ListPageSkeleton />
         ) : !searchQuery ? (
-          Object.entries(groupSchoolsByLocation(schools)).map(
-            ([location, locationSchools]) =>
-              locationSchools.length > 0 && (
-                <div key={location} className="mb-12">
-                  <div
-                    className="mb-6 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100/50 rounded transition-colors px-2"
-                    onClick={() => toggleSection(location)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-2xl font-semibold">
-                        {translations.regions[location] || location}{' '}
-                        <span className="text-gray-500 text-lg">
-                          ({locationSchools.length} {translations.schools})
-                        </span>
-                      </h2>
-                      <div className="text-gray-500">
-                        {collapsedSections[location] ? (
-                          <ChevronDownIcon className="h-5 w-5" />
-                        ) : (
-                          <ChevronUpIcon className="h-5 w-5" />
-                        )}
+          viewMode === 'grid' ? (
+            <SchoolList
+              schools={schools}
+              isLoading={isInitialLoad || isLoading}
+              loadingCount={5}
+              isDropdown={false}
+              onNotification={handleNotification}
+              language={language}
+              viewMode={viewMode}
+            />
+          ) : (
+            Object.entries(groupSchoolsByLocation(schools)).map(
+              ([location, locationSchools]) =>
+                locationSchools.length > 0 && (
+                  <div key={location} className="mb-12">
+                    <div
+                      className="mb-6 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100/50 rounded transition-colors px-2"
+                      onClick={() => toggleSection(location)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-semibold">
+                          {translations.regions[location] || location}{' '}
+                          <span className="text-gray-500 text-lg">
+                            ({locationSchools.length} {translations.schools})
+                          </span>
+                        </h2>
+                        <div className="text-gray-500">
+                          {collapsedSections[location] ? (
+                            <ChevronDownIcon className="h-5 w-5" />
+                          ) : (
+                            <ChevronUpIcon className="h-5 w-5" />
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
+                        ? 'max-h-0 opacity-0'
+                        : 'max-h-[2000px] opacity-100'
+                        }`}
+                    >
+                      <SchoolList
+                        schools={locationSchools}
+                        isLoading={isInitialLoad || isLoading}
+                        loadingCount={5}
+                        isDropdown={false}
+                        onNotification={handleNotification}
+                        language={language}
+                        viewMode={viewMode}
+                      />
+                    </div>
                   </div>
-                  <div
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${collapsedSections[location]
-                      ? 'max-h-0 opacity-0'
-                      : 'max-h-[2000px] opacity-100'
-                      }`}
-                  >
-                    <SchoolList
-                      schools={locationSchools}
-                      isLoading={isInitialLoad || isLoading}
-                      loadingCount={5}
-                      isDropdown={false}
-                      onNotification={handleNotification}
-                      language={language}
-                      viewMode={viewMode}
-                    />
-                  </div>
-                </div>
-              )
+                )
+            )
           )
         ) : (
           <div>
