@@ -33,12 +33,6 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  console.log('Navbar - received viewMode:', viewMode);
-
-  useEffect(() => {
-    console.log('Navbar - viewMode changed to:', viewMode);
-  }, [viewMode]);
-
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const handleRegionClick = (region: string) => {

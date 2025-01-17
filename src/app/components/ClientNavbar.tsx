@@ -11,8 +11,6 @@ export default function ClientNavbar() {
   const [schools, setSchools] = useState<School[]>([]);
   const { viewMode } = useViewMode();
 
-  console.log('ClientNavbar - current viewMode:', viewMode);
-
   // Fetch schools
   useEffect(() => {
     const fetchSchools = async () => {

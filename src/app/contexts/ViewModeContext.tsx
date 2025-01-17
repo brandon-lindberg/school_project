@@ -25,7 +25,6 @@ export function ViewModeProvider({ children }: { children: React.ReactNode }) {
           if (response.ok) {
             const data = await response.json();
             if (data.preferred_view_mode) {
-              console.log('ViewModeContext - fetched viewMode:', data.preferred_view_mode);
               setViewMode(data.preferred_view_mode);
             }
           }
@@ -51,7 +50,6 @@ export function ViewModeProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (response.ok) {
-          console.log('ViewModeContext - updated viewMode:', newMode);
           setViewMode(newMode);
         } else {
           console.error('Failed to update view mode preference');

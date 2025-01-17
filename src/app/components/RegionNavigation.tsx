@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Language } from '../types/language';
 import { RegionsConfig } from '../config/regions';
 import './styles/scrollbar.css';
@@ -18,15 +16,9 @@ export default function RegionNavigation({
   regionsConfig,
   onRegionClick,
   viewMode,
-  schoolsByRegion,
+  schoolsByRegion
 }: RegionNavigationProps) {
   const [isLargeScreen, setIsLargeScreen] = useState(false);
-
-  console.log('RegionNavigation - viewMode:', viewMode);
-  console.log('RegionNavigation - conditions:', {
-    viewMode,
-    isLargeScreen,
-  });
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -40,7 +32,6 @@ export default function RegionNavigation({
 
   // Only show in list view mode and on large screens
   if (viewMode !== 'list' || !isLargeScreen) {
-    console.log('RegionNavigation - returning null due to conditions not met');
     return null;
   }
 
@@ -56,7 +47,9 @@ export default function RegionNavigation({
               className="w-full flex items-center justify-between px-4 py-2 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
             >
               <span className="group-hover:text-[#0057B7]">{names[language]}</span>
-              <span className="text-sm text-gray-500">({schoolsByRegion[location] || 0})</span>
+              <span className="text-sm text-gray-500">
+                ({schoolsByRegion[location] || 0})
+              </span>
             </button>
           ))}
       </div>
