@@ -20,6 +20,7 @@ model User {
   family_name   String?
   first_name    String?
   phone_number  String?
+  preferred_view_mode String? @default("list")
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
