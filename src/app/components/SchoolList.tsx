@@ -83,8 +83,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {schools.map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  }`}
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
@@ -94,41 +95,70 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       className="w-[30px] h-[30px] rounded-full"
                     />
                   </div>
-                  <Tooltip content={getLocalizedContent(school.name_en, school.name_jp, language)} className="whitespace-normal">
+                  <Tooltip
+                    content={getLocalizedContent(school.name_en, school.name_jp, language)}
+                    className="whitespace-normal"
+                  >
                     {getLocalizedContent(school.name_en, school.name_jp, language)}
                   </Tooltip>
                   {/* Description */}
                   {getLocalizedContent(school.description_en, school.description_jp, language) ? (
                     <Tooltip
-                      content={getLocalizedContent(school.description_en, school.description_jp, language)}
+                      content={getLocalizedContent(
+                        school.description_en,
+                        school.description_jp,
+                        language
+                      )}
                       className="truncate"
                     >
                       {getLocalizedContent(school.description_en, school.description_jp, language)}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Location */}
                   {getLocalizedContent(school.location_en, school.location_jp, language) ? (
                     <Tooltip
-                      content={getLocalizedContent(school.location_en, school.location_jp, language)}
+                      content={getLocalizedContent(
+                        school.location_en,
+                        school.location_jp,
+                        language
+                      )}
                       className="truncate"
                     >
                       {getLocalizedContent(school.location_en, school.location_jp, language)}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Tuition */}
-                  {getLocalizedContent(school.admissions_fees_en, school.admissions_fees_jp, language) ? (
+                  {getLocalizedContent(
+                    school.admissions_fees_en,
+                    school.admissions_fees_jp,
+                    language
+                  ) ? (
                     <Tooltip
-                      content={getLocalizedContent(school.admissions_fees_en, school.admissions_fees_jp, language)}
+                      content={getLocalizedContent(
+                        school.admissions_fees_en,
+                        school.admissions_fees_jp,
+                        language
+                      )}
                       className="truncate"
                     >
-                      {getLocalizedContent(school.admissions_fees_en, school.admissions_fees_jp, language)}
+                      {getLocalizedContent(
+                        school.admissions_fees_en,
+                        school.admissions_fees_jp,
+                        language
+                      )}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Student Language Requirements */}
                   {getLocalizedContent(
@@ -151,7 +181,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       )}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Parent Language Requirements */}
                   {getLocalizedContent(
@@ -174,7 +206,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       )}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Age Requirements */}
                   {getLocalizedContent(
@@ -197,18 +231,26 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       )}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                   {/* Curriculum */}
                   {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ? (
                     <Tooltip
-                      content={getLocalizedContent(school.curriculum_en, school.curriculum_jp, language)}
+                      content={getLocalizedContent(
+                        school.curriculum_en,
+                        school.curriculum_jp,
+                        language
+                      )}
                       className="truncate"
                     >
                       {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language)}
                     </Tooltip>
                   ) : (
-                    <div className="truncate text-gray-400">{language === 'en' ? 'N/A' : '未定'}</div>
+                    <div className="truncate text-gray-400">
+                      {language === 'en' ? 'N/A' : '未定'}
+                    </div>
                   )}
                 </div>
               ))}
@@ -222,12 +264,19 @@ const SchoolList: React.FC<SchoolListProps> = ({
             <div className="flex overflow-x-auto space-x-4 p-4 scrollbar">
               {schools.map(school => (
                 <div key={`school-${school.school_id}`} className="flex-shrink-0 w-[280px]">
-                  <SchoolCard school={school} searchQuery={searchQuery} onNotification={onNotification} />
+                  <SchoolCard
+                    school={school}
+                    searchQuery={searchQuery}
+                    onNotification={onNotification}
+                  />
                 </div>
               ))}
               {isLoading &&
                 Array.from({ length: loadingCount }).map((_, index) => (
-                  <div key={`skeleton-${schools.length + index}`} className="flex-shrink-0 w-[280px]">
+                  <div
+                    key={`skeleton-${schools.length + index}`}
+                    className="flex-shrink-0 w-[280px]"
+                  >
                     <SchoolCardSkeleton />
                   </div>
                 ))}
@@ -238,7 +287,11 @@ const SchoolList: React.FC<SchoolListProps> = ({
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {schools.map(school => (
               <div key={`school-${school.school_id}`}>
-                <SchoolCard school={school} searchQuery={searchQuery} onNotification={onNotification} />
+                <SchoolCard
+                  school={school}
+                  searchQuery={searchQuery}
+                  onNotification={onNotification}
+                />
               </div>
             ))}
             {isLoading &&

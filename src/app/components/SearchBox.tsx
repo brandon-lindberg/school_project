@@ -44,7 +44,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   onFiltersChange,
   isOpen = false,
   setIsOpen,
-  language
+  language,
 }) => {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({
@@ -143,10 +143,11 @@ const SearchBox: React.FC<SearchBoxProps> = ({
         </div>
         <button
           onClick={handleClearFilters}
-          className={`flex items-center px-4 py-2 text-sm font-medium border rounded-lg transition-colors duration-200 ${hasActiveFilters
-            ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'
-            : 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
-            }`}
+          className={`flex items-center px-4 py-2 text-sm font-medium border rounded-lg transition-colors duration-200 ${
+            hasActiveFilters
+              ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'
+              : 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
+          }`}
           disabled={!hasActiveFilters}
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

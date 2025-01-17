@@ -181,50 +181,68 @@ const SchoolCard: React.FC<SchoolCardProps> = ({ school, searchQuery = '', onNot
           <span className="font-medium">{language === 'en' ? 'Tuition:' : '学費：'}</span>{' '}
           {highlightText(
             school.admissions_fees_en
-              ? getLocalizedContent(school.admissions_fees_en, school.admissions_fees_jp, language) || ''
-              : language === 'en' ? 'N/A' : '未定',
+              ? getLocalizedContent(
+                  school.admissions_fees_en,
+                  school.admissions_fees_jp,
+                  language
+                ) || ''
+              : language === 'en'
+                ? 'N/A'
+                : '未定',
             searchQuery
           )}
         </p>
 
         <p className="text-gray-600 mb-2 text-sm truncate">
-          <span className="font-medium">{language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}</span>{' '}
+          <span className="font-medium">
+            {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
+          </span>{' '}
           {highlightText(
             school.admissions_language_requirements_students_en
               ? getLocalizedContent(
-                school.admissions_language_requirements_students_en,
-                school.admissions_language_requirements_students_jp,
-                language
-              ) || ''
-              : language === 'en' ? 'N/A' : '未定',
+                  school.admissions_language_requirements_students_en,
+                  school.admissions_language_requirements_students_jp,
+                  language
+                ) || ''
+              : language === 'en'
+                ? 'N/A'
+                : '未定',
             searchQuery
           )}
         </p>
 
         <p className="text-gray-600 mb-2 text-sm truncate">
-          <span className="font-medium">{language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}</span>{' '}
+          <span className="font-medium">
+            {language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}
+          </span>{' '}
           {highlightText(
             school.admissions_language_requirements_parents_en
               ? getLocalizedContent(
-                school.admissions_language_requirements_parents_en,
-                school.admissions_language_requirements_parents_jp,
-                language
-              ) || ''
-              : language === 'en' ? 'N/A' : '未定',
+                  school.admissions_language_requirements_parents_en,
+                  school.admissions_language_requirements_parents_jp,
+                  language
+                ) || ''
+              : language === 'en'
+                ? 'N/A'
+                : '未定',
             searchQuery
           )}
         </p>
 
         <p className="text-gray-600 mb-2 text-sm truncate">
-          <span className="font-medium">{language === 'en' ? 'Age Requirements:' : '年齢要件：'}</span>{' '}
+          <span className="font-medium">
+            {language === 'en' ? 'Age Requirements:' : '年齢要件：'}
+          </span>{' '}
           {highlightText(
             school.admissions_age_requirements_en
               ? getLocalizedContent(
-                school.admissions_age_requirements_en,
-                school.admissions_age_requirements_jp,
-                language
-              ) || ''
-              : language === 'en' ? 'N/A' : '未定',
+                  school.admissions_age_requirements_en,
+                  school.admissions_age_requirements_jp,
+                  language
+                ) || ''
+              : language === 'en'
+                ? 'N/A'
+                : '未定',
             searchQuery
           )}
         </p>
