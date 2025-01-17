@@ -5,6 +5,8 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '../contexts/LanguageContext';
+import RegionNavigation from './RegionNavigation';
+import { REGIONS_CONFIG } from '../list/page';
 import {
   HomeIcon,
   BuildingLibraryIcon,
@@ -15,7 +17,13 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  schools?: any[];
+  onRegionClick?: (location: string) => void;
+  viewMode?: 'list' | 'grid';
+}
+
+const Navbar: React.FC<NavbarProps> = ({ schools = [], onRegionClick = () => { }, viewMode = 'list' }) => {
   const { data: session } = useSession();
   const { language, toggleLanguage } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -123,10 +131,19 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex-1 py-8 px-4">
+        <div className="flex-1 py-4 px-4">
           <div className="space-y-2">
             <NavLinks />
           </div>
+
+          {/* Region Navigation */}
+          <RegionNavigation
+            schools={schools}
+            language={language}
+            regionsConfig={REGIONS_CONFIG}
+            onRegionClick={onRegionClick}
+            viewMode={viewMode}
+          />
         </div>
 
         {/* Bottom Actions */}
