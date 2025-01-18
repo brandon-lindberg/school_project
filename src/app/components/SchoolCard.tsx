@@ -9,12 +9,14 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
 import { useListStatus } from '../contexts/ListStatusContext';
+import { Tooltip } from './Tooltip';
 
 interface SchoolCardProps {
   school: School;
   searchQuery?: string;
   onNotification?: (type: 'success' | 'error', message: string) => void;
   userId?: number | null;
+  isFeatured?: boolean;
 }
 
 const SchoolCard: React.FC<SchoolCardProps> = ({
@@ -22,6 +24,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   searchQuery = '',
   onNotification,
   userId,
+  isFeatured = false,
 }) => {
   const router = useRouter();
   const { data: session } = useSession();
@@ -146,96 +149,71 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
 
   return (
     <div
-      className="border rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow w-full max-w-xs sm:max-w-sm md:max-w-md relative bg-white"
-      style={{ height: '32.125rem' }}
       onClick={handleCardClick}
       onKeyPress={handleKeyPress}
-      role="button"
       tabIndex={0}
-      aria-pressed="false"
+      role="button"
+      className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[26rem]"
     >
-      <Image
-        src={
-          school.logo_id
-            ? `/logos/${school.logo_id}.png`
-            : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
-        }
-        alt={`${name || 'School'} Image`}
-        width={612}
-        height={408}
-        className="w-full h-32 sm:h-40 object-cover rounded-t-lg"
-      />
-      <div className="flex-1 p-4 flex flex-col min-h-0">
-        <div className="flex items-center gap-2 mb-3">
-          <Image
-            src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
-            alt="Logo"
-            width={32}
-            height={32}
-            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
-          />
-          <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl font-semibold truncate">
-              {highlightText(
-                name || (language === 'en' ? 'Unnamed School' : '名称未設定の学校'),
-                searchQuery
-              )}
-            </h2>
-            {school.name_en && school.name_jp && language === 'jp' && (
-              <h3 className="text-sm text-gray-600 truncate">
-                {highlightText(school.name_en, searchQuery)}
-              </h3>
-            )}
-            {school.name_en && school.name_jp && language === 'en' && (
-              <h3 className="text-sm text-gray-600 truncate">
-                {highlightText(school.name_jp, searchQuery)}
-              </h3>
-            )}
+      {/* Image */}
+      <div className="w-full h-36 relative">
+        <Image
+          src={
+            school.image_id
+              ? `/logos/${school.image_id}.png`
+              : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
+          }
+          alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
+          fill
+          className="object-cover"
+        />
+      </div>
+
+      {/* Content container */}
+      <div className="p-4 flex-1 flex flex-col space-y-3">
+        {/* Logo and title container */}
+        <div className="flex items-start gap-2">
+          <div className="flex-shrink-0">
+            <Image
+              src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
+              alt="Logo"
+              width={20}
+              height={20}
+              className="rounded-full"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-gray-900 text-xs leading-5 line-clamp-2">
+              {highlightText(getLocalizedContent(school.name_en, school.name_jp, language) || '', searchQuery)}
+            </h3>
+            <p className="text-gray-500 text-xs">
+              {highlightText(getLocalizedContent(school.location_en, school.location_jp, language) || '', searchQuery)}
+            </p>
           </div>
         </div>
 
-        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-          {highlightText(
-            description || (language === 'en' ? 'No description available.' : '説明がありません。'),
-            searchQuery
-          )}
-        </p>
-
-        <div className="space-y-1.5 mb-3">
-          {location && (
-            <p className="text-gray-600 text-sm truncate">
-              <span className="font-medium">{language === 'en' ? 'Location:' : '場所：'}</span>{' '}
-              {highlightText(location || '', searchQuery)}
+        {/* Description */}
+        {description && (
+          <Tooltip content={description}>
+            <p className="text-gray-600 text-xs leading-4 line-clamp-2 cursor-help">
+              {highlightText(description, searchQuery)}
             </p>
-          )}
+          </Tooltip>
+        )}
 
-          <p className="text-gray-600 text-sm truncate">
-            <span className="font-medium">{language === 'en' ? 'Tuition:' : '学費：'}</span>{' '}
-            {highlightText(
-              school.admissions_fees_en
-                ? getLocalizedContent(
-                    school.admissions_fees_en,
-                    school.admissions_fees_jp,
-                    language
-                  ) || ''
-                : language === 'en'
-                  ? 'N/A'
-                  : '未定',
-              searchQuery
-            )}
-          </p>
-
-          <p className="text-gray-600 text-sm truncate">
+        {/* Requirements Info */}
+        <div className="space-y-1">
+          <p className="text-gray-600 text-xs leading-4 truncate">
             <span className="font-medium">
               {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
             </span>{' '}
             {highlightText(
               school.admissions_language_requirements_students_en
                 ? getLocalizedContent(
-                    school.admissions_language_requirements_students_en,
-                    school.admissions_language_requirements_students_jp,
-                    language
-                  ) || ''
+                  school.admissions_language_requirements_students_en,
+                  school.admissions_language_requirements_students_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -243,17 +221,17 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             )}
           </p>
 
-          <p className="text-gray-600 text-sm truncate">
+          <p className="text-gray-600 text-xs leading-4 truncate">
             <span className="font-medium">
               {language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}
             </span>{' '}
             {highlightText(
               school.admissions_language_requirements_parents_en
                 ? getLocalizedContent(
-                    school.admissions_language_requirements_parents_en,
-                    school.admissions_language_requirements_parents_jp,
-                    language
-                  ) || ''
+                  school.admissions_language_requirements_parents_en,
+                  school.admissions_language_requirements_parents_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -261,17 +239,17 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             )}
           </p>
 
-          <p className="text-gray-600 text-sm truncate">
+          <p className="text-gray-600 text-xs leading-4 truncate">
             <span className="font-medium">
               {language === 'en' ? 'Age Requirements:' : '年齢要件：'}
             </span>{' '}
             {highlightText(
               school.admissions_age_requirements_en
                 ? getLocalizedContent(
-                    school.admissions_age_requirements_en,
-                    school.admissions_age_requirements_jp,
-                    language
-                  ) || ''
+                  school.admissions_age_requirements_en,
+                  school.admissions_age_requirements_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -280,31 +258,14 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           </p>
         </div>
 
-        <div className="mt-auto space-y-1">
-          {email && (
-            <Link
-              href={`mailto:${email}`}
-              className="text-blue-500 hover:underline block text-sm truncate"
-              onClick={e => e.stopPropagation()}
-            >
-              {email}
-            </Link>
-          )}
-          {phone && (
-            <Link
-              href={`tel:${phone}`}
-              className="text-blue-500 hover:underline block text-sm truncate"
-              onClick={e => e.stopPropagation()}
-            >
-              {phone}
-            </Link>
-          )}
+        {/* Contact Info */}
+        <div className="absolute bottom-4 left-4">
           {url && (
             <Link
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline block text-sm truncate"
+              className="text-blue-500 hover:underline text-xs"
               onClick={e => e.stopPropagation()}
             >
               {language === 'en' ? 'Visit Website' : 'ウェブサイトを見る'}
@@ -315,9 +276,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         {session && (
           <button
             onClick={handleToggleList}
-            className={`${
-              isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-            } text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-1 sm:gap-2`}
+            className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+              } text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-1 sm:gap-2`}
             title={
               isInList
                 ? language === 'en'

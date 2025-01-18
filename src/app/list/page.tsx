@@ -16,6 +16,8 @@ import { BsGrid, BsListUl } from 'react-icons/bs';
 import { REGIONS_CONFIG } from '../config/regions';
 import { groupSchoolsByLocation } from '../utils/schools';
 import { useViewMode } from '../contexts/ViewModeContext';
+import RegistrationPrompt from '../components/RegistrationPrompt';
+import SchoolCard from '../components/SchoolCard';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -93,6 +95,7 @@ interface BrowsingHistoryItem {
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
+  const [randomSchools, setRandomSchools] = useState<School[]>([]);
   const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -233,27 +236,48 @@ const ListPage: React.FC = () => {
     [language, handleNotification]
   );
 
+  const fetchRandomSchools = useCallback(async () => {
+    try {
+      const response = await fetch('/api/schools/random?limit=5');
+      const data = await response.json();
+      setRandomSchools(data.schools);
+    } catch (error) {
+      console.error('Error fetching random schools:', error);
+      setRandomSchools([]);
+    }
+  }, []);
+
   useEffect(() => {
     const loadInitialData = async () => {
-      await Promise.all([loadInitialSchools(), fetchBrowsingHistory()]);
+      if (session?.user) {
+        await Promise.all([loadInitialSchools(), fetchBrowsingHistory()]);
+      }
     };
 
     loadInitialData();
-  }, [fetchBrowsingHistory, loadInitialSchools]);
+  }, [fetchBrowsingHistory, loadInitialSchools, session]);
+
+  useEffect(() => {
+    if (!session?.user) {
+      fetchRandomSchools();
+    }
+  }, [session, fetchRandomSchools]);
 
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string, filters: SearchFilters) => {
+        if (!session?.user) return;
         setIsLoading(true);
         const searchResults = await fetchSearchResults(query, filters);
         setSchools(searchResults);
         setIsLoading(false);
       }, 300),
-    []
+    [session]
   );
 
   const handleSearchInput = useCallback(
     (query: string, filters: SearchFilters) => {
+      if (!session?.user) return;
       setSearchQuery(query);
       setFilters(filters);
 
@@ -269,14 +293,15 @@ const ListPage: React.FC = () => {
         debouncedSearch(query, filters);
       }
     },
-    [debouncedSearch, allSchools]
+    [debouncedSearch, allSchools, session]
   );
 
   useEffect(() => {
+    if (!session?.user) return;
     if (searchQuery || !filters.region.includes('all') || !filters.curriculum.includes('all')) {
       handleSearchInput(searchQuery, filters);
     }
-  }, [language, searchQuery, filters, handleSearchInput]);
+  }, [language, searchQuery, filters, handleSearchInput, session]);
 
   const toggleSection = (location: string) => {
     setCollapsedSections((prev: { [key: string]: boolean }) => {
@@ -386,59 +411,63 @@ const ListPage: React.FC = () => {
 
       <div className="flex-1 container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Search Icon Button */}
-        <div className="fixed top-20 sm:top-4 right-4 z-50">
-          <button
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label={isSearchOpen ? 'Close search' : 'Open search'}
-          >
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        {session?.user && (
+          <div className="fixed top-20 sm:top-4 right-4 z-50">
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label={isSearchOpen ? 'Close search' : 'Open search'}
             >
-              {isSearchOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
+              <svg
+                className="w-6 h-6 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {isSearchOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Search Box Overlay */}
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
-            isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={() => setIsSearchOpen(false)}
-        />
+        {session?.user && (
+          <>
+            <div
+              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              onClick={() => setIsSearchOpen(false)}
+            />
 
-        {/* Collapsible Search Box */}
-        <div
-          className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
-            isSearchOpen
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 -translate-y-4 pointer-events-none'
-          }`}
-        >
-          <SearchBox
-            onSearch={handleSearchInput}
-            onFiltersChange={handleFiltersChange}
-            language={language}
-          />
-        </div>
+            {/* Collapsible Search Box */}
+            <div
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-4 pointer-events-none'
+                }`}
+            >
+              <SearchBox
+                onSearch={handleSearchInput}
+                onFiltersChange={handleFiltersChange}
+                language={language}
+              />
+            </div>
+          </>
+        )}
 
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">{translations.schools}</h1>
@@ -461,6 +490,31 @@ const ListPage: React.FC = () => {
             </button>
           )}
         </div>
+
+        {/* Featured Schools Section for Non-Logged In Users */}
+        {!session?.user && randomSchools.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold mb-6">
+              {language === 'en' ? 'Featured Schools' : '注目の学校'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+              {randomSchools.map(school => (
+                <div
+                  key={school.school_id}
+                  className="transform transition-transform hover:scale-105"
+                >
+                  <SchoolCard
+                    school={school}
+                    searchQuery=""
+                    onNotification={handleNotification}
+                    isFeatured={true}
+                  />
+                </div>
+              ))}
+            </div>
+            <RegistrationPrompt />
+          </div>
+        )}
 
         {/* Browsing History Section */}
         {browsingHistory.length > 0 && !searchQuery ? (
@@ -539,7 +593,7 @@ const ListPage: React.FC = () => {
         ) : (
           <>
             {/* Region Sections */}
-            <div className="space-y-8">
+            <div className={`space-y-8 ${!session?.user ? 'blur-sm pointer-events-none' : ''}`}>
               {Object.entries(groupSchoolsByLocation(schools, language)).map(
                 ([location, locationSchools]) => {
                   const schools = locationSchools as School[];
@@ -568,11 +622,10 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${
-                          collapsedSections[location]
-                            ? 'h-0 opacity-0 invisible overflow-hidden'
-                            : 'opacity-100 visible'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
+                          ? 'h-0 opacity-0 invisible overflow-hidden'
+                          : 'opacity-100 visible'
+                          }`}
                       >
                         <SchoolList
                           schools={schools}
