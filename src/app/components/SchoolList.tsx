@@ -117,9 +117,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
     <div className="w-full">
       {viewMode === 'grid' ? (
         <div className="w-full bg-white rounded-lg shadow overflow-hidden">
-          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 max-h-[calc(100vh-200px)]">
+          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 max-h-[calc(100vh-200px)]">
             {/* Header - Fixed at top */}
-            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
+            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
               <div></div>
               <div>{getLocalizedContent('Name', '名前', language)}</div>
               <div>{getLocalizedContent('Description', '説明', language)}</div>
@@ -128,9 +128,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
               <div>{getLocalizedContent('Student Lang.', '生徒の語学要件', language)}</div>
               <div>{getLocalizedContent('Parent Lang.', '保護者の語学要件', language)}</div>
               <div>{getLocalizedContent('Age', '年齢', language)}</div>
-              <div className="flex items-center justify-between">
-                <span>{getLocalizedContent('Curriculum', 'カリキュラム', language)}</span>
-              </div>
+              <div>{getLocalizedContent('Curriculum', 'カリキュラム', language)}</div>
+              <div></div>
             </div>
 
             {/* Scrollable content */}
@@ -138,9 +137,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {schools.map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
@@ -293,29 +291,26 @@ const SchoolList: React.FC<SchoolListProps> = ({
                     </div>
                   )}
                   {/* Curriculum */}
-                  <div className="flex items-center justify-between">
-                    <div className="truncate">
-                      {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ? (
-                        <Tooltip
-                          content={getLocalizedContent(
-                            school.curriculum_en,
-                            school.curriculum_jp,
-                            language
-                          )}
-                          className="truncate"
-                        >
-                          {getLocalizedContent(
-                            school.curriculum_en,
-                            school.curriculum_jp,
-                            language
-                          )}
-                        </Tooltip>
-                      ) : (
-                        <div className="truncate text-gray-400">
-                          {language === 'en' ? 'N/A' : '未定'}
-                        </div>
-                      )}
-                    </div>
+                  <div className="truncate">
+                    {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.curriculum_en,
+                          school.curriculum_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language)}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                  </div>
+                  {/* List Button Column */}
+                  <div className="flex items-center justify-center">
                     {session && (
                       <Tooltip
                         content={
@@ -330,11 +325,10 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       >
                         <button
                           onClick={e => handleToggleList(e, school)}
-                          className={`${
-                            listStatuses[school.school_id]?.isInList
-                              ? 'bg-blue-500 hover:bg-blue-600'
-                              : 'bg-green-500 hover:bg-green-600'
-                          } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ml-2`}
+                          className={`${listStatuses[school.school_id]?.isInList
+                            ? 'bg-blue-500 hover:bg-blue-600'
+                            : 'bg-green-500 hover:bg-green-600'
+                            } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
                         >
                           <span className="text-lg">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}
