@@ -18,17 +18,17 @@ export async function GET(request: Request) {
       where: {
         school_id: parseInt(schoolId, 10),
         list: {
-          user_id: parseInt(userId, 10)
-        }
+          user_id: parseInt(userId, 10),
+        },
       },
       select: {
-        list_id: true
-      }
+        list_id: true,
+      },
     });
 
     return NextResponse.json({
       isInList: !!userListSchool,
-      listId: userListSchool?.list_id || null
+      listId: userListSchool?.list_id || null,
     });
   } catch (error: unknown) {
     let message = 'An unexpected error occurred.';

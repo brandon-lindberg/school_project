@@ -17,16 +17,16 @@ export async function GET(request: Request) {
     const userListSchools = await prisma.userListSchools.findMany({
       where: {
         school_id: {
-          in: schoolIds.map(id => parseInt(id, 10))
+          in: schoolIds.map(id => parseInt(id, 10)),
         },
         list: {
-          user_id: parseInt(userId, 10)
-        }
+          user_id: parseInt(userId, 10),
+        },
       },
       select: {
         school_id: true,
-        list_id: true
-      }
+        list_id: true,
+      },
     });
 
     // Create a map of school_id to list status
@@ -35,8 +35,8 @@ export async function GET(request: Request) {
         schoolId,
         {
           isInList: false,
-          listId: null as number | null
-        }
+          listId: null as number | null,
+        },
       ])
     );
 
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     userListSchools.forEach(({ school_id, list_id }) => {
       schoolListMap[school_id] = {
         isInList: true,
-        listId: list_id
+        listId: list_id,
       };
     });
 

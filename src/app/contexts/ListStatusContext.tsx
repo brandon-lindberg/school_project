@@ -15,7 +15,7 @@ interface ListStatusContextType {
 
 const ListStatusContext = createContext<ListStatusContextType>({
   listStatuses: {},
-  updateListStatus: () => { }
+  updateListStatus: () => {},
 });
 
 export const ListStatusProvider = ({ children }: { children: React.ReactNode }) => {
@@ -38,7 +38,7 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
           list.schools.forEach((school: any) => {
             statusMap[school.school_id] = {
               isInList: true,
-              listId: list.list_id
+              listId: list.list_id,
             };
           });
         });
@@ -55,7 +55,7 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
   const updateListStatus = (schoolId: number, status: ListStatus) => {
     setListStatuses(prev => ({
       ...prev,
-      [schoolId]: status
+      [schoolId]: status,
     }));
   };
 
