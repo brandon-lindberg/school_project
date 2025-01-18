@@ -250,12 +250,12 @@ const ListPage: React.FC = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       if (session?.user) {
-        await Promise.all([loadInitialSchools(), fetchBrowsingHistory()]);
+        await Promise.all([loadInitialSchools(), fetchBrowsingHistory(), fetchRandomSchools()]);
       }
     };
 
     loadInitialData();
-  }, [fetchBrowsingHistory, loadInitialSchools, session]);
+  }, [fetchBrowsingHistory, loadInitialSchools, fetchRandomSchools, session]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -448,19 +448,17 @@ const ListPage: React.FC = () => {
         {session?.user && (
           <>
             <div
-              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
-                isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
+              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
               onClick={() => setIsSearchOpen(false)}
             />
 
             {/* Collapsible Search Box */}
             <div
-              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
-                isSearchOpen
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 -translate-y-4 pointer-events-none'
-              }`}
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-4 pointer-events-none'
+                }`}
             >
               <SearchBox
                 onSearch={handleSearchInput}
@@ -471,8 +469,7 @@ const ListPage: React.FC = () => {
           </>
         )}
 
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">{translations.schools}</h1>
+        <div className="flex justify-end items-center mb-8">
           {session?.user && (
             <button
               onClick={() => updateViewMode(viewMode === 'list' ? 'grid' : 'list')}
@@ -492,31 +489,6 @@ const ListPage: React.FC = () => {
             </button>
           )}
         </div>
-
-        {/* Featured Schools Section for Non-Logged In Users */}
-        {!session?.user && randomSchools.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">
-              {language === 'en' ? 'Featured Schools' : '注目の学校'}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-              {randomSchools.map(school => (
-                <div
-                  key={school.school_id}
-                  className="transform transition-transform hover:scale-105"
-                >
-                  <SchoolCard
-                    school={school}
-                    searchQuery=""
-                    onNotification={handleNotification}
-                    isFeatured={true}
-                  />
-                </div>
-              ))}
-            </div>
-            <RegistrationPrompt />
-          </div>
-        )}
 
         {/* Browsing History Section */}
         {browsingHistory.length > 0 && !searchQuery ? (
@@ -581,6 +553,32 @@ const ListPage: React.FC = () => {
           </div>
         ) : null}
 
+        {/* Featured Schools Section */}
+        {randomSchools.length > 0 && (
+          <div className="mb-12 max-w-7xl mx-auto">
+            <h2 className="text-2xl font-semibold mb-6 text-center">
+              {language === 'en' ? 'Featured Schools' : '注目の学校'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+              {randomSchools.map(school => (
+                <div
+                  key={school.school_id}
+                  className="transform transition-transform hover:scale-105"
+                >
+                  <SchoolCard
+                    school={school}
+                    searchQuery=""
+                    onNotification={handleNotification}
+                    isFeatured={true}
+                    userId={session?.user?.id ? Number(session.user.id) : null}
+                  />
+                </div>
+              ))}
+            </div>
+            {!session?.user && <RegistrationPrompt />}
+          </div>
+        )}
+
         {/* Schools List */}
         {isLoading ? (
           <ListPageSkeleton />
@@ -624,11 +622,10 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${
-                          collapsedSections[location]
-                            ? 'h-0 opacity-0 invisible overflow-hidden'
-                            : 'opacity-100 visible'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
+                          ? 'h-0 opacity-0 invisible overflow-hidden'
+                          : 'opacity-100 visible'
+                          }`}
                       >
                         <SchoolList
                           schools={schools}
