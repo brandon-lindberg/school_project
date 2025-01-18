@@ -7,6 +7,7 @@ import DashboardSkeleton from '../components/DashboardSkeleton';
 import UserLists from '../components/UserLists';
 import BrowsingHistory from '../components/BrowsingHistory';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useListStatus } from '../contexts/ListStatusContext';
 
 // Define the type for user list items
 type UserList = {
@@ -55,6 +56,7 @@ const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const { language } = useLanguage();
+  const { updateListStatus } = useListStatus();
 
   useEffect(() => {
     if (status === 'loading') {
@@ -143,6 +145,9 @@ const DashboardPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to remove school from list');
       }
+
+      // Update the list status context
+      updateListStatus(schoolId, { isInList: false, listId: null });
 
       // Refresh the list after deletion
       const updatedLists = userLists.map(list => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { School } from '@/types/school';
 import SchoolCard from './SchoolCard';
 import SchoolCardSkeleton from './SchoolCardSkeleton';
@@ -7,6 +7,8 @@ import { Tooltip } from './Tooltip';
 import Image from 'next/image';
 import { NotificationType } from './NotificationBanner';
 import './styles/scrollbar.css';
+import { useSession } from 'next-auth/react';
+import { useUser } from '../contexts/UserContext';
 
 interface SchoolListProps {
   schools: School[];
@@ -19,6 +21,11 @@ interface SchoolListProps {
   viewMode: 'list' | 'grid';
 }
 
+interface ListStatus {
+  isInList: boolean;
+  listId: number | null;
+}
+
 const SchoolList: React.FC<SchoolListProps> = ({
   schools,
   searchQuery = '',
@@ -29,34 +36,14 @@ const SchoolList: React.FC<SchoolListProps> = ({
   language,
   viewMode,
 }) => {
+  const { data: session } = useSession();
+  const { userId } = useUser();
+
   if (!schools || schools.length === 0) {
     return (
       <p className="p-4">
         {getLocalizedContent('No schools found.', '学校が見つかりませんでした。', language)}
       </p>
-    );
-  }
-
-  if (isDropdown) {
-    return (
-      <div className="py-1">
-        {schools.map(school => (
-          <div
-            key={`school-${school.school_id}`}
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => (window.location.href = `/schools/${school.school_id}`)}
-          >
-            <div className="font-medium">{school.name_en}</div>
-            {school.name_jp && <div className="text-sm text-gray-500">{school.name_jp}</div>}
-          </div>
-        ))}
-        {isLoading &&
-          Array.from({ length: loadingCount }).map((_, index) => (
-            <div key={`skeleton-${schools.length + index}`} className="px-4 py-2">
-              <SchoolCardSkeleton />
-            </div>
-          ))}
-      </div>
     );
   }
 
@@ -83,9 +70,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {schools.map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
@@ -270,6 +256,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
                     school={school}
                     searchQuery={searchQuery}
                     onNotification={onNotification}
+                    userId={userId}
                   />
                 </div>
               ))}
@@ -293,6 +280,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
                   school={school}
                   searchQuery={searchQuery}
                   onNotification={onNotification}
+                  userId={userId}
                 />
               </div>
             ))}
