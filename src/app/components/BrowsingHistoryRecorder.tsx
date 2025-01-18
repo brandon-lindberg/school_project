@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
@@ -10,11 +10,20 @@ interface BrowsingHistoryRecorderProps {
 
 export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRecorderProps) {
   const { data: session } = useSession();
-  const { fetchBrowsingHistory } = useBrowsingHistory();
+  const { fetchBrowsingHistory, browsingHistory } = useBrowsingHistory();
+  const [hasRecorded, setHasRecorded] = useState(false);
 
   useEffect(() => {
     const recordVisit = async () => {
-      if (!session) return;
+      if (!session || hasRecorded) return;
+
+      // Check if this school was recently in browsing history
+      // If it's not in the history, it's safe to record
+      const wasRecentlyViewed = browsingHistory.some(entry => entry.school_id === schoolId);
+      if (wasRecentlyViewed) {
+        setHasRecorded(true);
+        return;
+      }
 
       try {
         const response = await fetch('/api/browsing', {
@@ -32,13 +41,14 @@ export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRec
 
         // Refresh the browsing history after successfully recording the visit
         await fetchBrowsingHistory();
+        setHasRecorded(true);
       } catch (error) {
         console.error('Error recording browsing history:', error);
       }
     };
 
     recordVisit();
-  }, [schoolId, session, fetchBrowsingHistory]);
+  }, [schoolId, session, fetchBrowsingHistory, hasRecorded, browsingHistory]);
 
   return null; // This component doesn't render anything
 }
