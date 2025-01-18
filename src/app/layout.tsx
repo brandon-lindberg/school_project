@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import ClientNavbar from './components/ClientNavbar';
+import { metadata, viewport } from './metadata';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -14,19 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'International Schools Database Japan',
-  description: 'Find and compare international schools in Japan',
-  manifest: '/site.webmanifest',
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-  },
-};
+export { metadata, viewport };
 
 export default function RootLayout({
   children,
