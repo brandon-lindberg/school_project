@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import { School, FeeLevel, FeeType } from '@/types/school';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import FallbackImage from '../../components/FallbackImage';
 import BrowsingHistoryRecorder from '../../components/BrowsingHistoryRecorder';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getLocalizedContent, getLocalizedArray } from '@/utils/language';
@@ -177,7 +176,6 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
   const address = getLocalizedContent(school.address_en, school.address_jp, language);
   const region = getLocalizedContent(school.region_en, school.region_jp, language);
   const country = getLocalizedContent(school.country_en, school.country_jp, language);
-  const geography = getLocalizedContent(school.geography_en, school.geography_jp, language);
   const email = getLocalizedContent(school.email_en, school.email_jp, language);
   const phone = getLocalizedContent(school.phone_en, school.phone_jp, language);
   const url = getLocalizedContent(school.url_en, school.url_jp, language);
@@ -229,7 +227,6 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
     school.employment_open_positions_jp,
     language
   );
-  const events = getLocalizedArray(school.events_en, school.events_jp, language);
 
   const getFeeLevelContent = (
     school: School,

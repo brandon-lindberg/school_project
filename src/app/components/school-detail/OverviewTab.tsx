@@ -1,7 +1,7 @@
 import React from 'react';
 import { School } from '@/types/school';
 import FallbackImage from '../FallbackImage';
-import { Language } from '@/utils/language';
+import { Language, getLocalizedContent } from '@/utils/language';
 import { Translations } from '../../../interfaces/Translations';
 
 interface OverviewTabProps {
@@ -83,7 +83,8 @@ export function OverviewTab({
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="font-semibold text-gray-600">{translations.sections.curriculum}</h3>
           <p className="mt-2">
-            {school.curriculum_en || school.curriculum_jp || translations.sections.noCurriculum}
+            {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ||
+              translations.sections.noCurriculum}
           </p>
         </div>
       </div>

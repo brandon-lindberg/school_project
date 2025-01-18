@@ -1,4 +1,5 @@
 import type { School as PrismaSchool } from '@prisma/client';
+import { Language } from '@/utils/language';
 
 // Convert Prisma's null types to undefined and add any additional fields
 export type School = {
@@ -6,8 +7,10 @@ export type School = {
     ? PrismaSchool[K] | undefined
     : PrismaSchool[K];
 } & {
-  // Add any additional fields not in Prisma schema
-  [key: string]: any; // For dynamic fee level keys
+  // Add specific types for dynamic fee level keys
+  [K in `admissions_breakdown_fees_${FeeLevel}_${FeeType}_${Language}`]?: string;
+} & {
+  school_id: string;
 };
 
 export type FeeLevel = 'day_care' | 'elementary' | 'junior_high' | 'high_school';

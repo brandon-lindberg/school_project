@@ -1,13 +1,30 @@
 // src/seeder.ts
-import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import { PrismaClient, Prisma } from '@prisma/client';
 import schoolsData from '../normalized_japanese_schools.json';
-import { School } from '../src/interfaces/School';
+import { School } from '../src/types/school';
 
 const prisma = new PrismaClient();
 
+interface StructuredData {
+  [key: string]: {
+    [key: string]: unknown;
+  };
+}
+
+function isStructuredData(data: unknown): data is StructuredData {
+  return typeof data === 'object' && data !== null;
+}
+
+function isJsonObject(value: unknown): value is Prisma.JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function extractFromStructuredData(data: School, section: string, field: string): string | null {
   try {
-    const value = data.structured_data?.[section]?.[field];
+    const structuredData = data.structured_data as Record<string, Prisma.JsonValue>;
+    const sectionData = structuredData[section] as Record<string, Prisma.JsonValue>;
+    const value = sectionData?.[field];
     if (value == null) return null;
     return String(value);
   } catch {
@@ -17,7 +34,8 @@ function extractFromStructuredData(data: School, section: string, field: string)
 
 function extractArrayFromStructuredData(data: School, section: string): string[] {
   try {
-    const sectionData = data.structured_data?.[section];
+    const structuredData = data.structured_data as Record<string, Prisma.JsonValue>;
+    const sectionData = structuredData[section] as Record<string, Prisma.JsonValue>;
     if (!sectionData) return [];
     return Object.entries(sectionData)
       .filter(([_, value]) => value && typeof value === 'string')
