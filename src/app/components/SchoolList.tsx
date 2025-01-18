@@ -137,8 +137,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {schools.map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  }`}
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
@@ -325,10 +326,11 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       >
                         <button
                           onClick={e => handleToggleList(e, school)}
-                          className={`${listStatuses[school.school_id]?.isInList
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'bg-green-500 hover:bg-green-600'
-                            } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+                          className={`${
+                            listStatuses[school.school_id]?.isInList
+                              ? 'bg-blue-500 hover:bg-blue-600'
+                              : 'bg-green-500 hover:bg-green-600'
+                          } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
                         >
                           <span className="text-lg">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}
