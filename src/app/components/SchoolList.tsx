@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { School } from '@/types/school';
 import SchoolCard from './SchoolCard';
 import SchoolCardSkeleton from './SchoolCardSkeleton';
@@ -10,6 +10,15 @@ import './styles/scrollbar.css';
 import { useUser } from '../contexts/UserContext';
 import { useSession } from 'next-auth/react';
 import { useListStatus } from '../contexts/ListStatusContext';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+
+type SortField = 'location' | 'studentLang' | 'parentLang' | 'age' | 'list';
+type SortDirection = 'asc' | 'desc' | null;
+
+interface SortState {
+  field: SortField | null;
+  direction: SortDirection;
+}
 
 interface SchoolListProps {
   schools: School[];
@@ -33,6 +42,120 @@ const SchoolList: React.FC<SchoolListProps> = ({
   const { userId } = useUser();
   const { data: session } = useSession();
   const { listStatuses, updateListStatus } = useListStatus();
+  const [sortState, setSortState] = useState<SortState>({ field: null, direction: null });
+
+  const handleSort = (field: SortField) => {
+    setSortState(prev => ({
+      field,
+      direction:
+        prev.field === field
+          ? prev.direction === 'asc'
+            ? 'desc'
+            : prev.direction === 'desc'
+              ? null
+              : 'asc'
+          : 'asc',
+    }));
+  };
+
+  const getSortedSchools = () => {
+    if (!sortState.field || !sortState.direction) return schools;
+
+    return [...schools].sort((a, b) => {
+      if (sortState.field === 'list') {
+        const compareA = !!listStatuses[a.school_id]?.isInList;
+        const compareB = !!listStatuses[b.school_id]?.isInList;
+        return sortState.direction === 'asc'
+          ? Number(compareA) - Number(compareB)
+          : Number(compareB) - Number(compareA);
+      }
+
+      let compareA = '';
+      let compareB = '';
+
+      switch (sortState.field) {
+        case 'location': {
+          const aContent = getLocalizedContent(a.location_en || '', a.location_jp || '', language);
+          const bContent = getLocalizedContent(b.location_en || '', b.location_jp || '', language);
+          compareA = String(aContent || '');
+          compareB = String(bContent || '');
+          break;
+        }
+        case 'studentLang': {
+          const aContent = getLocalizedContent(
+            a.admissions_language_requirements_students_en || '',
+            a.admissions_language_requirements_students_jp || '',
+            language
+          );
+          const bContent = getLocalizedContent(
+            b.admissions_language_requirements_students_en || '',
+            b.admissions_language_requirements_students_jp || '',
+            language
+          );
+          compareA = String(aContent || '');
+          compareB = String(bContent || '');
+          break;
+        }
+        case 'parentLang': {
+          const aContent = getLocalizedContent(
+            a.admissions_language_requirements_parents_en || '',
+            a.admissions_language_requirements_parents_jp || '',
+            language
+          );
+          const bContent = getLocalizedContent(
+            b.admissions_language_requirements_parents_en || '',
+            b.admissions_language_requirements_parents_jp || '',
+            language
+          );
+          compareA = String(aContent || '');
+          compareB = String(bContent || '');
+          break;
+        }
+        case 'age': {
+          const aContent = getLocalizedContent(
+            a.admissions_age_requirements_en || '',
+            a.admissions_age_requirements_jp || '',
+            language
+          );
+          const bContent = getLocalizedContent(
+            b.admissions_age_requirements_en || '',
+            b.admissions_age_requirements_jp || '',
+            language
+          );
+          compareA = String(aContent || '');
+          compareB = String(bContent || '');
+          break;
+        }
+      }
+
+      return sortState.direction === 'asc'
+        ? compareA.localeCompare(compareB)
+        : compareB.localeCompare(compareA);
+    });
+  };
+
+  const SortHeader = ({ field, label }: { field: SortField; label: string }) => (
+    <div
+      className="flex items-center gap-1 cursor-pointer group"
+      onClick={() => handleSort(field)}
+    >
+      <span>{label}</span>
+      <div className="flex flex-col">
+        <ChevronUpIcon
+          className={`h-3 w-3 ${sortState.field === field && sortState.direction === 'asc'
+            ? 'text-blue-500'
+            : 'text-gray-300 group-hover:text-gray-400'
+            }`}
+        />
+        <ChevronDownIcon
+          className={`h-3 w-3 -mt-1 ${sortState.field === field && sortState.direction === 'desc'
+            ? 'text-blue-500'
+            : 'text-gray-300 group-hover:text-gray-400'
+            }`}
+        />
+      </div>
+    </div>
+  );
 
   const handleToggleList = async (e: React.MouseEvent, school: School) => {
     e.stopPropagation();
@@ -123,23 +246,34 @@ const SchoolList: React.FC<SchoolListProps> = ({
               <div></div>
               <div>{getLocalizedContent('Name', '名前', language)}</div>
               <div>{getLocalizedContent('Description', '説明', language)}</div>
-              <div>{getLocalizedContent('Location', '場所', language)}</div>
+              <SortHeader
+                field="location"
+                label={getLocalizedContent('Location', '場所', language) || ''}
+              />
               <div>{getLocalizedContent('Tuition', '学費', language)}</div>
-              <div>{getLocalizedContent('Student Lang.', '生徒の語学要件', language)}</div>
-              <div>{getLocalizedContent('Parent Lang.', '保護者の語学要件', language)}</div>
-              <div>{getLocalizedContent('Age', '年齢', language)}</div>
+              <SortHeader
+                field="studentLang"
+                label={getLocalizedContent('Student Lang.', '生徒の語学要件', language) || ''}
+              />
+              <SortHeader
+                field="parentLang"
+                label={getLocalizedContent('Parent Lang.', '保護者の語学要件', language) || ''}
+              />
+              <SortHeader
+                field="age"
+                label={getLocalizedContent('Age', '年齢', language) || ''}
+              />
               <div>{getLocalizedContent('Curriculum', 'カリキュラム', language)}</div>
-              <div></div>
+              <SortHeader field="list" label="" />
             </div>
 
             {/* Scrollable content */}
             <div className="col-span-full divide-y divide-gray-200 max-h-[600px] overflow-y-auto scrollbar">
-              {schools.map((school, index) => (
+              {getSortedSchools().map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
                   onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
                   <div className="flex items-center">
@@ -326,11 +460,10 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       >
                         <button
                           onClick={e => handleToggleList(e, school)}
-                          className={`${
-                            listStatuses[school.school_id]?.isInList
-                              ? 'bg-blue-500 hover:bg-blue-600'
-                              : 'bg-green-500 hover:bg-green-600'
-                          } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+                          className={`${listStatuses[school.school_id]?.isInList
+                            ? 'bg-blue-500 hover:bg-blue-600'
+                            : 'bg-green-500 hover:bg-green-600'
+                            } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
                         >
                           <span className="text-lg">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}
