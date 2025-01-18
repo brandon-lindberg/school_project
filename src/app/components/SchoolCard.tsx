@@ -130,8 +130,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   };
 
   return (
-    <Link href={`/schools/${school.school_id}`} className="block">
-      <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
+    <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
+      <Link href={`/schools/${school.school_id}`} className="flex-1 flex flex-col">
         {/* Image */}
         <div className="w-full h-36 relative">
           <Image
@@ -240,51 +240,50 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               )}
             </p>
           </div>
-
-          {/* Contact Info */}
-          <div className="absolute bottom-4 left-4" style={{ zIndex: 10 }}>
-            {url && (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => {
-                  e.stopPropagation();
-                }}
-                className="text-blue-600 hover:text-blue-800 text-xs"
-              >
-                {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
-              </a>
-            )}
-          </div>
-
-          {session && !isFeatured && (
-            <div className="absolute bottom-4 right-4">
-              <Tooltip
-                content={
-                  isInList
-                    ? language === 'en'
-                      ? 'In List'
-                      : 'リスト済み'
-                    : language === 'en'
-                      ? 'Add to List'
-                      : 'リストに追加'
-                }
-              >
-                <button
-                  onClick={handleToggleList}
-                  className={`${
-                    isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
-                >
-                  <span className="text-lg">{isInList ? '✓' : '+'}</span>
-                </button>
-              </Tooltip>
-            </div>
-          )}
         </div>
+      </Link>
+
+      {/* Footer actions */}
+      <div className="p-4 flex justify-between items-center">
+        {/* Contact Info */}
+        {url && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 text-xs"
+          >
+            {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
+          </a>
+        )}
+
+        {/* List Button */}
+        {session && !isFeatured && (
+          <div>
+            <Tooltip
+              content={
+                isInList
+                  ? language === 'en'
+                    ? 'In List'
+                    : 'リスト済み'
+                  : language === 'en'
+                    ? 'Add to List'
+                    : 'リストに追加'
+              }
+            >
+              <button
+                onClick={handleToggleList}
+                className={`${
+                  isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+              >
+                <span className="text-lg">{isInList ? '✓' : '+'}</span>
+              </button>
+            </Tooltip>
+          </div>
+        )}
       </div>
-    </Link>
+    </div>
   );
 };
 
