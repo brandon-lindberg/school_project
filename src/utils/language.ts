@@ -1,23 +1,29 @@
-type Language = 'en' | 'jp';
+export type Language = 'en' | 'jp';
 
 export function getLocalizedContent(
-  enContent: string | undefined | null,
-  jpContent: string | undefined | null,
-  language: Language
+  enContent?: string | null,
+  jpContent?: string | null,
+  language: Language = 'en'
 ): string | undefined {
-  if (language === 'jp') {
-    return jpContent || enContent || undefined;
+  if (language === 'jp' && jpContent) {
+    return jpContent;
+  }
+  if (language === 'en' && enContent) {
+    return enContent;
   }
   return enContent || jpContent || undefined;
 }
 
 export function getLocalizedArray(
-  enArray: string[] | undefined | null,
-  jpArray: string[] | undefined | null,
-  language: Language
+  enArray?: string[] | null,
+  jpArray?: string[] | null,
+  language: Language = 'en'
 ): string[] {
-  if (language === 'jp') {
-    return jpArray || enArray || [];
+  if (language === 'jp' && jpArray) {
+    return jpArray;
+  }
+  if (language === 'en' && enArray) {
+    return enArray;
   }
   return enArray || jpArray || [];
 }
