@@ -20,6 +20,31 @@ import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
+const BrowsingHistorySkeleton = () => (
+  <div className="mb-8 animate-pulse">
+    <div className="h-6 w-32 bg-gray-200 rounded mb-3" /> {/* Title */}
+    <div className="flex overflow-x-auto space-x-3 p-2">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="flex-shrink-0 w-[200px] h-[100px] bg-gray-200 rounded" />
+      ))}
+    </div>
+  </div>
+);
+
+const FeaturedSchoolsSkeleton = () => (
+  <div className="mb-12 max-w-7xl mx-auto animate-pulse">
+    <div className="h-8 w-48 bg-gray-200 rounded mx-auto mb-6" /> {/* Title */}
+    <div className="flex flex-nowrap gap-4 overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 pb-4">
+      {[...Array(4)].map((_, index) => (
+        <div
+          key={index}
+          className="w-[300px] sm:w-auto flex-shrink-0 h-[200px] bg-gray-200 rounded"
+        />
+      ))}
+    </div>
+  </div>
+);
+
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
     {/* Header placeholder */}
@@ -181,19 +206,27 @@ const ListPage: React.FC = () => {
 
   const fetchRandomSchools = useCallback(async () => {
     try {
+      setIsFeaturedLoading(true);
       const response = await fetch('/api/schools/random?limit=4');
       const data = await response.json();
       setRandomSchools(data.schools);
     } catch (error) {
       console.error('Error fetching random schools:', error);
       setRandomSchools([]);
+    } finally {
+      setIsFeaturedLoading(false);
     }
   }, []);
 
   useEffect(() => {
     const loadInitialData = async () => {
       if (session?.user) {
-        await Promise.all([loadInitialSchools(), fetchRandomSchools()]);
+        setIsLoading(true);
+        try {
+          await Promise.all([loadInitialSchools(), fetchRandomSchools()]);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -319,6 +352,18 @@ const ListPage: React.FC = () => {
     };
   }, []);
 
+  // Add loading states for different sections
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(true);
+
+  useEffect(() => {
+    // Set history loading to false after a short delay to simulate loading
+    const timer = setTimeout(() => {
+      setIsHistoryLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [browsingHistory]);
+
   return (
     <div className="flex flex-col min-h-screen">
       {notification && (
@@ -435,85 +480,93 @@ const ListPage: React.FC = () => {
 
         {/* Browsing History Section */}
         {browsingHistory.length > 0 && !searchQuery ? (
-          <div className="mb-8">
-            <h2 className="text-lg font-medium mb-3 text-gray-600">
-              {translations.recentlyViewed}
-            </h2>
-            <div className="relative">
-              <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
-                {browsingHistory.map(entry => (
-                  <div
-                    key={entry.history_id}
-                    className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors relative"
-                    style={{ height: '100px' }}
-                  >
-                    <Link href={`/schools/${entry.school_id}`} className="block h-full p-3">
-                      <div className="flex flex-col h-full">
-                        <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
-                          {getLocalizedContent(
-                            entry.school.name_en,
-                            entry.school.name_jp,
-                            language
-                          )}
-                        </h3>
-                        <div className="absolute bottom-2 left-3">
-                          <p className="text-xs text-gray-400">
-                            {new Date(entry.viewed_at).toLocaleDateString(
-                              language === 'en' ? 'en-US' : 'ja-JP',
-                              {
-                                month: 'short',
-                                day: 'numeric',
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteHistoryEntry(entry.history_id)}
-                      className="absolute bottom-2 right-3 text-xs text-gray-400 hover:text-[#D9534F] transition-colors z-10"
+          isHistoryLoading ? (
+            <BrowsingHistorySkeleton />
+          ) : (
+            <div className="mb-8">
+              <h2 className="text-lg font-medium mb-3 text-gray-600">
+                {translations.recentlyViewed}
+              </h2>
+              <div className="relative">
+                <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
+                  {browsingHistory.map(entry => (
+                    <div
+                      key={entry.history_id}
+                      className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors relative"
+                      style={{ height: '100px' }}
                     >
-                      {language === 'en' ? 'Remove' : '削除'}
-                    </button>
-                  </div>
-                ))}
+                      <Link href={`/schools/${entry.school_id}`} className="block h-full p-3">
+                        <div className="flex flex-col h-full">
+                          <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
+                            {getLocalizedContent(
+                              entry.school.name_en,
+                              entry.school.name_jp,
+                              language
+                            )}
+                          </h3>
+                          <div className="absolute bottom-2 left-3">
+                            <p className="text-xs text-gray-400">
+                              {new Date(entry.viewed_at).toLocaleDateString(
+                                language === 'en' ? 'en-US' : 'ja-JP',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                }
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteHistoryEntry(entry.history_id)}
+                        className="absolute bottom-2 right-3 text-xs text-gray-400 hover:text-[#D9534F] transition-colors z-10"
+                      >
+                        {language === 'en' ? 'Remove' : '削除'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {browsingHistory.length > 0 && (
+                  <button
+                    onClick={handleClearHistory}
+                    className="absolute -top-8 right-0 text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    {translations.clearHistory}
+                  </button>
+                )}
               </div>
-              {browsingHistory.length > 0 && (
-                <button
-                  onClick={handleClearHistory}
-                  className="absolute -top-8 right-0 text-sm text-gray-500 hover:text-gray-700"
-                >
-                  {translations.clearHistory}
-                </button>
-              )}
             </div>
-          </div>
+          )
         ) : null}
 
         {/* Featured Schools Section */}
-        {randomSchools.length > 0 && (
-          <div className="mb-12 max-w-7xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-6 text-center">
-              {language === 'en' ? 'Featured Schools' : '注目の学校'}
-            </h2>
-            <div className="flex flex-nowrap gap-4 overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 pb-4">
-              {randomSchools.map(school => (
-                <div
-                  key={school.school_id}
-                  className="transform transition-transform hover:scale-105 w-[300px] sm:w-auto flex-shrink-0"
-                >
-                  <SchoolCard
-                    school={school}
-                    searchQuery=""
-                    onNotification={handleNotification}
-                    isFeatured={true}
-                    userId={session?.user?.id ? Number(session.user.id) : null}
-                  />
-                </div>
-              ))}
+        {isFeaturedLoading ? (
+          <FeaturedSchoolsSkeleton />
+        ) : (
+          randomSchools.length > 0 && (
+            <div className="mb-12 max-w-7xl mx-auto">
+              <h2 className="text-2xl font-semibold mb-6 text-center">
+                {language === 'en' ? 'Featured Schools' : '注目の学校'}
+              </h2>
+              <div className="flex flex-nowrap gap-4 overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 pb-4">
+                {randomSchools.map(school => (
+                  <div
+                    key={school.school_id}
+                    className="transform transition-transform hover:scale-105 w-[300px] sm:w-auto flex-shrink-0"
+                  >
+                    <SchoolCard
+                      school={school}
+                      searchQuery=""
+                      onNotification={handleNotification}
+                      isFeatured={true}
+                      userId={session?.user?.id ? Number(session.user.id) : null}
+                    />
+                  </div>
+                ))}
+              </div>
+              {!session?.user && <RegistrationPrompt />}
             </div>
-            {!session?.user && <RegistrationPrompt />}
-          </div>
+          )
         )}
 
         {/* Schools List */}
