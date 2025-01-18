@@ -83,16 +83,6 @@ const getDefaultCollapsedState = () => {
   );
 };
 
-interface BrowsingHistoryItem {
-  history_id: number;
-  school_id: number;
-  viewed_at: Date;
-  school: {
-    name_en: string | null;
-    name_jp: string | null;
-  };
-}
-
 const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);

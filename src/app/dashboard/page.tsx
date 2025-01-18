@@ -28,16 +28,6 @@ type UserList = {
   }[];
 };
 
-type BrowsingHistoryItem = {
-  history_id: number;
-  school_id: number;
-  viewed_at: Date;
-  school: {
-    name_en: string;
-    name_jp: string;
-  };
-};
-
 // Function to fetch the user ID dynamically
 const getUserId = async (): Promise<number> => {
   const response = await fetch('/api/user');
