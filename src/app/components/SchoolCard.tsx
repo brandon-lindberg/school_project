@@ -24,7 +24,6 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   searchQuery = '',
   onNotification,
   userId,
-  isFeatured = false,
 }) => {
   const router = useRouter();
   const { data: session } = useSession();
@@ -140,11 +139,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   };
 
   // Get localized content
-  const name = getLocalizedContent(school.name_en, school.name_jp, language);
   const description = getLocalizedContent(school.description_en, school.description_jp, language);
-  const location = getLocalizedContent(school.location_en, school.location_jp, language);
-  const email = getLocalizedContent(school.email_en, school.email_jp, language);
-  const phone = getLocalizedContent(school.phone_en, school.phone_jp, language);
   const url = getLocalizedContent(school.url_en, school.url_jp, language);
 
   return (
