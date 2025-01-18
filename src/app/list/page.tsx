@@ -454,10 +454,11 @@ const ListPage: React.FC = () => {
 
             {/* Collapsible Search Box */}
             <div
-              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-30 ${isSearchOpen
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-4 pointer-events-none'
-                }`}
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-30 ${
+                isSearchOpen
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 -translate-y-4 pointer-events-none'
+              }`}
             >
               <SearchBox
                 onSearch={handleSearchInput}
@@ -621,10 +622,11 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
-                          ? 'h-0 opacity-0 invisible overflow-hidden'
-                          : 'opacity-100 visible'
-                          }`}
+                        className={`transition-all duration-300 ease-in-out ${
+                          collapsedSections[location]
+                            ? 'h-0 opacity-0 invisible overflow-hidden'
+                            : 'opacity-100 visible'
+                        }`}
                       >
                         <SchoolList
                           schools={schools}

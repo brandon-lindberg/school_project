@@ -9,11 +9,8 @@ export async function GET(request: Request) {
     // Fetch total count of schools with URLs
     const totalCount = await prisma.school.count({
       where: {
-        OR: [
-          { url_en: { not: null } },
-          { url_jp: { not: null } }
-        ]
-      }
+        OR: [{ url_en: { not: null } }, { url_jp: { not: null } }],
+      },
     });
 
     // Generate random offset
@@ -22,10 +19,7 @@ export async function GET(request: Request) {
     // Fetch random schools with URLs
     const schools = await prisma.school.findMany({
       where: {
-        OR: [
-          { url_en: { not: null } },
-          { url_jp: { not: null } }
-        ]
+        OR: [{ url_en: { not: null } }, { url_jp: { not: null } }],
       },
       take: limit,
       skip: randomOffset,
