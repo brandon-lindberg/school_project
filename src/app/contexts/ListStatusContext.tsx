@@ -8,6 +8,14 @@ interface ListStatus {
   listId: number | null;
 }
 
+interface UserList {
+  list_id: number;
+  schools: {
+    school_id: number;
+    list_id: number;
+  }[];
+}
+
 interface ListStatusContextType {
   listStatuses: Record<string, ListStatus>;
   updateListStatus: (schoolId: number, status: ListStatus) => void;
@@ -34,8 +42,8 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
         const data = await response.json();
 
         const statusMap: Record<string, ListStatus> = {};
-        data.lists.forEach((list: any) => {
-          list.schools.forEach((school: any) => {
+        data.lists.forEach((list: UserList) => {
+          list.schools.forEach(school => {
             statusMap[school.school_id] = {
               isInList: true,
               listId: list.list_id,

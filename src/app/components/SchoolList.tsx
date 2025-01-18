@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React from 'react';
 import { School } from '@/types/school';
 import SchoolCard from './SchoolCard';
 import SchoolCardSkeleton from './SchoolCardSkeleton';
@@ -7,7 +7,6 @@ import { Tooltip } from './Tooltip';
 import Image from 'next/image';
 import { NotificationType } from './NotificationBanner';
 import './styles/scrollbar.css';
-import { useSession } from 'next-auth/react';
 import { useUser } from '../contexts/UserContext';
 
 interface SchoolListProps {
@@ -15,15 +14,9 @@ interface SchoolListProps {
   searchQuery?: string;
   isLoading?: boolean;
   loadingCount?: number;
-  isDropdown?: boolean;
   onNotification?: (type: NotificationType, message: string) => void;
   language: 'en' | 'jp';
   viewMode: 'list' | 'grid';
-}
-
-interface ListStatus {
-  isInList: boolean;
-  listId: number | null;
 }
 
 const SchoolList: React.FC<SchoolListProps> = ({
@@ -31,12 +24,10 @@ const SchoolList: React.FC<SchoolListProps> = ({
   searchQuery = '',
   isLoading = false,
   loadingCount = 5,
-  isDropdown = false,
   onNotification,
   language,
   viewMode,
 }) => {
-  const { data: session } = useSession();
   const { userId } = useUser();
 
   if (!schools || schools.length === 0) {
