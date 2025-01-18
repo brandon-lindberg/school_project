@@ -154,8 +154,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               <Image
                 src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
                 alt="Logo"
-                width={20}
-                height={20}
+                width={40}
+                height={40}
                 className="rounded-full"
               />
             </div>
@@ -193,10 +193,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_students_en
                   ? getLocalizedContent(
-                      school.admissions_language_requirements_students_en,
-                      school.admissions_language_requirements_students_jp,
-                      language
-                    ) || ''
+                    school.admissions_language_requirements_students_en,
+                    school.admissions_language_requirements_students_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -211,10 +211,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_parents_en
                   ? getLocalizedContent(
-                      school.admissions_language_requirements_parents_en,
-                      school.admissions_language_requirements_parents_jp,
-                      language
-                    ) || ''
+                    school.admissions_language_requirements_parents_en,
+                    school.admissions_language_requirements_parents_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -229,10 +229,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_age_requirements_en
                   ? getLocalizedContent(
-                      school.admissions_age_requirements_en,
-                      school.admissions_age_requirements_jp,
-                      language
-                    ) || ''
+                    school.admissions_age_requirements_en,
+                    school.admissions_age_requirements_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -273,9 +273,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             >
               <button
                 onClick={handleToggleList}
-                className={`${
-                  isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+                className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
               >
                 <span className="text-lg">{isInList ? '✓' : '+'}</span>
               </button>
