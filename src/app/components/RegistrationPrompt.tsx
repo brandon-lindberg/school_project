@@ -34,4 +34,3 @@ const RegistrationPrompt: React.FC = () => {
 };
 
 export default RegistrationPrompt;
-
