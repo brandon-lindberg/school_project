@@ -285,10 +285,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<Params> }
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === key
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === key
+                    ? 'bg-green-500 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                }`}
               >
                 {label}
               </button>

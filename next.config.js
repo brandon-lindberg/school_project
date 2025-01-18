@@ -21,6 +21,13 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    turbo: {
+      rules: {
+        // Configure any specific rules for Turbopack here
+      }
+    }
+  }
 };
 
 module.exports = withPWA(nextConfig);

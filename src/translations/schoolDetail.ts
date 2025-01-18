@@ -29,12 +29,15 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       programsOffered: language === 'en' ? 'Programs Offered' : '提供プログラム',
       noProgramsListed: language === 'en' ? 'No programs listed' : 'プログラムの記載なし',
       curriculum: language === 'en' ? 'Curriculum' : 'カリキュラム',
-      noCurriculum: language === 'en' ? 'No curriculum information available' : 'カリキュラム情報なし',
+      noCurriculum:
+        language === 'en' ? 'No curriculum information available' : 'カリキュラム情報なし',
       admissions: language === 'en' ? 'Admissions' : '入学',
       acceptancePolicy: language === 'en' ? 'Acceptance Policy' : '入学方針',
-      noAcceptancePolicy: language === 'en' ? 'No acceptance policy information available' : '入学方針情報なし',
+      noAcceptancePolicy:
+        language === 'en' ? 'No acceptance policy information available' : '入学方針情報なし',
       applicationGuidelines: language === 'en' ? 'Application Guidelines' : '出願ガイドライン',
-      noGuidelines: language === 'en' ? 'No application guidelines available' : '出願ガイドラインなし',
+      noGuidelines:
+        language === 'en' ? 'No application guidelines available' : '出願ガイドラインなし',
       feesOverview: language === 'en' ? 'Fees Overview' : '費用概要',
       noFees: language === 'en' ? 'No fees information available' : '費用情報なし',
       detailedFees: language === 'en' ? 'Detailed Fee Structure' : '詳細な費用構成',
@@ -49,7 +52,8 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       supportServices: language === 'en' ? 'Support Services' : 'サポートサービス',
       library: language === 'en' ? 'Library' : '図書館',
       calendar: language === 'en' ? 'Academic Calendar' : '学年暦',
-      academicSupport: language === 'en' ? 'Academic Support & Activities' : '学習支援とアクティビティ',
+      academicSupport:
+        language === 'en' ? 'Academic Support & Activities' : '学習支援とアクティビティ',
       academicSupportTitle: language === 'en' ? 'Academic Support' : '学習支援',
       extracurricular: language === 'en' ? 'Extracurricular Activities' : '課外活動',
       staffEmployment: language === 'en' ? 'Staff & Employment' : 'スタッフと採用',
@@ -65,6 +69,6 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       elementary: language === 'en' ? 'Elementary School' : '小学校',
       juniorhigh: language === 'en' ? 'Junior High School' : '中学校',
       highschool: language === 'en' ? 'High School' : '高校',
-    }
+    },
   };
 }
