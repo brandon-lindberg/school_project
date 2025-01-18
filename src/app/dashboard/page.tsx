@@ -8,6 +8,7 @@ import UserLists from '../components/UserLists';
 import BrowsingHistory from '../components/BrowsingHistory';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useListStatus } from '../contexts/ListStatusContext';
+import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
 // Define the type for user list items
 type UserList = {
@@ -51,12 +52,16 @@ const getUserId = async (): Promise<number> => {
 
 const DashboardPage: React.FC = () => {
   const [userLists, setUserLists] = useState<UserList[]>([]);
-  const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const { language } = useLanguage();
   const { updateListStatus } = useListStatus();
+  const {
+    browsingHistory,
+    deleteHistoryEntry: handleDeleteHistoryEntry,
+    clearHistory: handleClearHistory,
+  } = useBrowsingHistory();
 
   useEffect(() => {
     if (status === 'loading') {
@@ -81,14 +86,6 @@ const DashboardPage: React.FC = () => {
         }
         const listsData = await listsResponse.json();
         setUserLists(listsData.lists);
-
-        // Fetch browsing history
-        const historyResponse = await fetch('/api/browsing');
-        if (!historyResponse.ok) {
-          throw new Error('Failed to fetch browsing history');
-        }
-        const historyData = await historyResponse.json();
-        setBrowsingHistory(historyData);
       } catch (error) {
         console.error('Error fetching data:', error);
         router.replace('/list');
@@ -101,40 +98,6 @@ const DashboardPage: React.FC = () => {
       fetchData();
     }
   }, [session, status, router]);
-
-  const handleClearHistory = async () => {
-    try {
-      const response = await fetch('/api/browsing', {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to clear browsing history');
-      }
-
-      setBrowsingHistory([]);
-    } catch (error) {
-      console.error('Error clearing browsing history:', error);
-    }
-  };
-
-  const handleDeleteHistoryEntry = async (historyId: number) => {
-    try {
-      const response = await fetch(`/api/browsing?historyId=${historyId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete history entry');
-      }
-
-      setBrowsingHistory(prevHistory =>
-        prevHistory.filter(entry => entry.history_id !== historyId)
-      );
-    } catch (error) {
-      console.error('Error deleting history entry:', error);
-    }
-  };
 
   const handleDeleteSchoolFromList = async (listId: number, schoolId: number) => {
     try {

@@ -18,6 +18,7 @@ import { groupSchoolsByLocation } from '../utils/schools';
 import { useViewMode } from '../contexts/ViewModeContext';
 import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
+import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
 const ListPageSkeleton = () => (
   <div className="animate-pulse">
@@ -96,7 +97,6 @@ const ListPage: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [randomSchools, setRandomSchools] = useState<School[]>([]);
-  const [browsingHistory, setBrowsingHistory] = useState<BrowsingHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { viewMode, updateViewMode } = useViewMode();
@@ -119,6 +119,11 @@ const ListPage: React.FC = () => {
   });
   const { language } = useLanguage();
   const { data: session } = useSession();
+  const {
+    browsingHistory,
+    deleteHistoryEntry: handleDeleteHistoryEntry,
+    clearHistory: handleClearHistory,
+  } = useBrowsingHistory();
 
   // Translations
   const translations = {
@@ -184,58 +189,6 @@ const ListPage: React.FC = () => {
     }, 5000);
   }, []);
 
-  const fetchBrowsingHistory = useCallback(async () => {
-    try {
-      const response = await fetch('/api/browsing');
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setBrowsingHistory(data);
-      } else {
-        setBrowsingHistory([]);
-      }
-    } catch (error) {
-      console.error('Error fetching browsing history:', error);
-      handleNotification(
-        'error',
-        language === 'en' ? 'Failed to load browsing history' : '閲覧履歴の読み込みに失敗しました'
-      );
-    }
-  }, [language, handleNotification]);
-
-  const handleClearHistory = useCallback(async () => {
-    try {
-      await fetch('/api/browsing', { method: 'DELETE' });
-      setBrowsingHistory([]);
-      handleNotification('success', language === 'en' ? 'History cleared' : '履歴を削除しました');
-    } catch (error) {
-      console.error('Error clearing history:', error);
-      handleNotification(
-        'error',
-        language === 'en' ? 'Failed to clear history' : '履歴の削除に失敗しました'
-      );
-    }
-  }, [language, handleNotification]);
-
-  const handleDeleteHistoryEntry = useCallback(
-    async (historyId: number) => {
-      try {
-        await fetch(`/api/browsing?historyId=${historyId}`, { method: 'DELETE' });
-        setBrowsingHistory(prev => prev.filter(item => item.history_id !== historyId));
-        handleNotification(
-          'success',
-          language === 'en' ? 'Entry removed' : 'エントリーを削除しました'
-        );
-      } catch (error) {
-        console.error('Error deleting history entry:', error);
-        handleNotification(
-          'error',
-          language === 'en' ? 'Failed to remove entry' : 'エントリーの削除に失敗しました'
-        );
-      }
-    },
-    [language, handleNotification]
-  );
-
   const fetchRandomSchools = useCallback(async () => {
     try {
       const response = await fetch('/api/schools/random?limit=4');
@@ -250,12 +203,12 @@ const ListPage: React.FC = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       if (session?.user) {
-        await Promise.all([loadInitialSchools(), fetchBrowsingHistory(), fetchRandomSchools()]);
+        await Promise.all([loadInitialSchools(), fetchRandomSchools()]);
       }
     };
 
     loadInitialData();
-  }, [fetchBrowsingHistory, loadInitialSchools, fetchRandomSchools, session]);
+  }, [loadInitialSchools, fetchRandomSchools, session]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -501,13 +454,10 @@ const ListPage: React.FC = () => {
                 {browsingHistory.map(entry => (
                   <div
                     key={entry.history_id}
-                    className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors"
+                    className="flex-shrink-0 w-[200px] bg-white rounded border border-gray-100 hover:border-gray-200 transition-colors relative"
                     style={{ height: '100px' }}
                   >
-                    <Link
-                      href={`/schools/${entry.school_id}`}
-                      className="block h-full p-3 relative"
-                    >
+                    <Link href={`/schools/${entry.school_id}`} className="block h-full p-3">
                       <div className="flex flex-col h-full">
                         <h3 className="text-sm font-medium text-gray-700 hover:text-[#0057B7] line-clamp-2">
                           {getLocalizedContent(
@@ -516,7 +466,7 @@ const ListPage: React.FC = () => {
                             language
                           )}
                         </h3>
-                        <div className="absolute bottom-2 left-0 right-0 px-3 flex justify-between items-center">
+                        <div className="absolute bottom-2 left-3">
                           <p className="text-xs text-gray-400">
                             {new Date(entry.viewed_at).toLocaleDateString(
                               language === 'en' ? 'en-US' : 'ja-JP',
@@ -526,18 +476,15 @@ const ListPage: React.FC = () => {
                               }
                             )}
                           </p>
-                          <button
-                            onClick={e => {
-                              e.preventDefault();
-                              handleDeleteHistoryEntry(entry.history_id);
-                            }}
-                            className="text-xs text-gray-400 hover:text-[#D9534F] transition-colors"
-                          >
-                            {language === 'en' ? 'Remove' : '削除'}
-                          </button>
                         </div>
                       </div>
                     </Link>
+                    <button
+                      onClick={() => handleDeleteHistoryEntry(entry.history_id)}
+                      className="absolute bottom-2 right-3 text-xs text-gray-400 hover:text-[#D9534F] transition-colors z-10"
+                    >
+                      {language === 'en' ? 'Remove' : '削除'}
+                    </button>
                   </div>
                 ))}
               </div>

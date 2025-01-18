@@ -142,16 +142,6 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   const description = getLocalizedContent(school.description_en, school.description_jp, language);
   const url = school.url_en || school.url_jp;
 
-  React.useEffect(() => {
-    console.log('SchoolCard Debug:', {
-      schoolId: school.school_id,
-      isFeatured,
-      url,
-      url_en: school.url_en,
-      url_jp: school.url_jp,
-    });
-  }, [school.school_id, isFeatured, url, school.url_en, school.url_jp]);
-
   return (
     <div
       onClick={handleCardClick}
@@ -278,7 +268,6 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               rel="noopener noreferrer"
               onClick={e => {
                 e.stopPropagation();
-                console.log('Website link clicked:', { url, schoolId: school.school_id });
               }}
               className="text-blue-600 hover:text-blue-800 text-xs"
             >
@@ -287,7 +276,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           )}
         </div>
 
-        {session && (
+        {session && !isFeatured && (
           <div className="absolute bottom-4 right-4">
             <Tooltip
               content={
