@@ -238,7 +238,7 @@ const ListPage: React.FC = () => {
 
   const fetchRandomSchools = useCallback(async () => {
     try {
-      const response = await fetch('/api/schools/random?limit=5');
+      const response = await fetch('/api/schools/random?limit=4');
       const data = await response.json();
       setRandomSchools(data.schools);
     } catch (error) {
@@ -412,7 +412,7 @@ const ListPage: React.FC = () => {
       <div className="flex-1 container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Search Icon Button */}
         {session?.user && (
-          <div className="fixed top-20 sm:top-4 right-4 z-50">
+          <div className="fixed top-20 sm:top-4 right-4 z-30">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -448,19 +448,16 @@ const ListPage: React.FC = () => {
         {session?.user && (
           <>
             <div
-              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
-                isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
+              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-20 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               onClick={() => setIsSearchOpen(false)}
             />
 
             {/* Collapsible Search Box */}
             <div
-              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
-                isSearchOpen
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 -translate-y-4 pointer-events-none'
-              }`}
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-30 ${isSearchOpen
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-4 pointer-events-none'
+                }`}
             >
               <SearchBox
                 onSearch={handleSearchInput}
@@ -471,7 +468,7 @@ const ListPage: React.FC = () => {
           </>
         )}
 
-        <div className="flex justify-end items-center mb-8">
+        <div className="flex justify-end items-center mb-8 mr-16">
           {session?.user && (
             <button
               onClick={() => updateViewMode(viewMode === 'list' ? 'grid' : 'list')}
@@ -561,11 +558,11 @@ const ListPage: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-6 text-center">
               {language === 'en' ? 'Featured Schools' : '注目の学校'}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div className="flex flex-nowrap gap-4 overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 pb-4">
               {randomSchools.map(school => (
                 <div
                   key={school.school_id}
-                  className="transform transition-transform hover:scale-105"
+                  className="transform transition-transform hover:scale-105 w-[300px] sm:w-auto flex-shrink-0"
                 >
                   <SchoolCard
                     school={school}
@@ -624,11 +621,10 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${
-                          collapsedSections[location]
-                            ? 'h-0 opacity-0 invisible overflow-hidden'
-                            : 'opacity-100 visible'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
+                          ? 'h-0 opacity-0 invisible overflow-hidden'
+                          : 'opacity-100 visible'
+                          }`}
                       >
                         <SchoolList
                           schools={schools}

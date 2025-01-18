@@ -24,6 +24,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   searchQuery = '',
   onNotification,
   userId,
+  isFeatured = false,
 }) => {
   const router = useRouter();
   const { data: session } = useSession();
@@ -140,7 +141,17 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
 
   // Get localized content
   const description = getLocalizedContent(school.description_en, school.description_jp, language);
-  const url = getLocalizedContent(school.url_en, school.url_jp, language);
+  const url = school.url_en || school.url_jp;
+
+  React.useEffect(() => {
+    console.log('SchoolCard Debug:', {
+      schoolId: school.school_id,
+      isFeatured,
+      url,
+      url_en: school.url_en,
+      url_jp: school.url_jp
+    });
+  }, [school.school_id, isFeatured, url, school.url_en, school.url_jp]);
 
   return (
     <div
@@ -148,7 +159,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
       onKeyPress={handleKeyPress}
       tabIndex={0}
       role="button"
-      className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[26rem]"
+      className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]"
     >
       {/* Image */}
       <div className="w-full h-36 relative">
@@ -203,7 +214,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         )}
 
         {/* Requirements Info */}
-        <div className="space-y-1">
+        <div className="space-y-1 mb-8">
           <p className="text-gray-600 text-xs leading-4 truncate">
             <span className="font-medium">
               {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
@@ -211,10 +222,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             {highlightText(
               school.admissions_language_requirements_students_en
                 ? getLocalizedContent(
-                    school.admissions_language_requirements_students_en,
-                    school.admissions_language_requirements_students_jp,
-                    language
-                  ) || ''
+                  school.admissions_language_requirements_students_en,
+                  school.admissions_language_requirements_students_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -229,10 +240,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             {highlightText(
               school.admissions_language_requirements_parents_en
                 ? getLocalizedContent(
-                    school.admissions_language_requirements_parents_en,
-                    school.admissions_language_requirements_parents_jp,
-                    language
-                  ) || ''
+                  school.admissions_language_requirements_parents_en,
+                  school.admissions_language_requirements_parents_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -247,10 +258,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             {highlightText(
               school.admissions_age_requirements_en
                 ? getLocalizedContent(
-                    school.admissions_age_requirements_en,
-                    school.admissions_age_requirements_jp,
-                    language
-                  ) || ''
+                  school.admissions_age_requirements_en,
+                  school.admissions_age_requirements_jp,
+                  language
+                ) || ''
                 : language === 'en'
                   ? 'N/A'
                   : '未定',
@@ -260,47 +271,45 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         </div>
 
         {/* Contact Info */}
-        <div className="absolute bottom-4 left-4">
+        <div className="absolute bottom-4 left-4" style={{ zIndex: 10 }}>
           {url && (
-            <Link
+            <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline text-xs"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Website link clicked:', { url, schoolId: school.school_id });
+              }}
+              className="text-blue-600 hover:text-blue-800 text-xs"
             >
-              {language === 'en' ? 'Visit Website' : 'ウェブサイトを見る'}
-            </Link>
+              {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
+            </a>
           )}
         </div>
 
         {session && (
-          <button
-            onClick={handleToggleList}
-            className={`${
-              isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-            } text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full flex items-center justify-center absolute bottom-4 right-4 shadow-md transition-colors gap-1 sm:gap-2`}
-            title={
-              isInList
-                ? language === 'en'
-                  ? 'Remove from My Schools'
-                  : '私の学校から削除'
-                : language === 'en'
-                  ? 'Add to My Schools'
-                  : '私の学校に追加'
-            }
-          >
-            <span className="text-lg sm:text-xl">{isInList ? '✓' : '+'}</span>
-            <span className="text-xs sm:text-sm whitespace-nowrap">
-              {isInList
-                ? language === 'en'
-                  ? 'In List'
-                  : 'リスト済み'
-                : language === 'en'
-                  ? 'Add to List'
-                  : 'リストに追加'}
-            </span>
-          </button>
+          <div className="absolute bottom-4 right-4">
+            <Tooltip
+              content={
+                isInList
+                  ? language === 'en'
+                    ? 'In List'
+                    : 'リスト済み'
+                  : language === 'en'
+                    ? 'Add to List'
+                    : 'リストに追加'
+              }
+            >
+              <button
+                onClick={handleToggleList}
+                className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+              >
+                <span className="text-lg">{isInList ? '✓' : '+'}</span>
+              </button>
+            </Tooltip>
+          </div>
         )}
       </div>
     </div>

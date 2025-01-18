@@ -6,14 +6,27 @@ export async function GET(request: Request) {
   const limit = parseInt(searchParams.get('limit') || '10', 10);
 
   try {
-    // Fetch total count of schools
-    const totalCount = await prisma.school.count();
+    // Fetch total count of schools with URLs
+    const totalCount = await prisma.school.count({
+      where: {
+        OR: [
+          { url_en: { not: null } },
+          { url_jp: { not: null } }
+        ]
+      }
+    });
 
     // Generate random offset
     const randomOffset = Math.floor(Math.random() * Math.max(0, totalCount - limit));
 
-    // Fetch random schools
+    // Fetch random schools with URLs
     const schools = await prisma.school.findMany({
+      where: {
+        OR: [
+          { url_en: { not: null } },
+          { url_jp: { not: null } }
+        ]
+      },
       take: limit,
       skip: randomOffset,
       orderBy: {
