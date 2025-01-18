@@ -1,36 +1,16 @@
-'use client';
+import { Metadata, ResolvingMetadata } from 'next';
+import { School } from '@/types/school';
+import ClientSchoolDetail from '@/app/schools/[id]/ClientSchoolDetail';
 
-import React, { useEffect, useState } from 'react';
-import { redirect } from 'next/navigation';
-import { School, FeeLevel, FeeType } from '@/types/school';
-import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import BrowsingHistoryRecorder from '../../components/BrowsingHistoryRecorder';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { getLocalizedContent, getLocalizedArray } from '@/utils/language';
-import { getSchoolDetailTranslations } from '@/translations/schoolDetail';
-import {
-  OverviewTab,
-  EducationTab,
-  AdmissionsTab,
-  CampusTab,
-  StudentLifeTab,
-  EmploymentTab,
-  PoliciesTab,
-} from '@/app/components/school-detail';
-
-interface Params {
-  id: string;
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
-
-// Add type for language
-type Language = 'en' | 'jp';
 
 async function getSchool(id: string): Promise<School | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const url = `${baseUrl}/api/schools?id=${id}`;
-    console.log('Fetching school from:', url);
 
     const response = await fetch(url, {
       cache: 'no-store',
@@ -39,17 +19,12 @@ async function getSchool(id: string): Promise<School | null> {
       },
     });
 
-    console.log('Response status:', response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Response not ok:', errorText);
+      console.error('Response not ok:', await response.text());
       return null;
     }
 
     const data = await response.json();
-    console.log('Fetched school data:', data);
-
     if (!data || !data.school_id) {
       console.error('Invalid school data received:', data);
       return null;
@@ -62,244 +37,99 @@ async function getSchool(id: string): Promise<School | null> {
   }
 }
 
-export default function SchoolDetailPage({ params }: { params: Promise<Params> }) {
-  const resolvedParams = React.use(params);
-  const { language } = useLanguage() as { language: Language };
-  const { status } = useSession();
-  const [school, setSchool] = useState<School | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+export async function generateMetadata(
+  { params }: PageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const resolvedParams = await params;
+  const school = await getSchool(resolvedParams.id);
 
-  const translations = getSchoolDetailTranslations(language);
+  if (!school) {
+    return {
+      title: 'School Not Found',
+    };
+  }
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/login');
-    }
+  const previousImages = (await parent).openGraph?.images || [];
 
-    async function loadSchool() {
-      const schoolData = await getSchool(resolvedParams.id);
-      if (!schoolData) {
-        console.error('School not found for ID:', resolvedParams.id);
-        redirect('/list');
-      }
-      setSchool(schoolData);
-    }
+  // Filter out null values from arrays and provide fallbacks for null strings
+  const keywords = [
+    'international school',
+    'education',
+    school.name_en || '',
+    school.country_en || '',
+    school.region_en || '',
+    ...(school.education_programs_offered_en?.filter(Boolean) || []),
+    ...(school.accreditation_en?.filter(Boolean) || []),
+  ];
 
-    if (status === 'authenticated') {
-      loadSchool();
-    }
-  }, [status, resolvedParams.id]);
+  return {
+    title: `${school.name_en || 'School'} - International School Profile`,
+    description:
+      school.short_description_en || school.description_en || 'International School Profile',
+    keywords: keywords,
+    openGraph: {
+      title: school.name_en || 'International School',
+      description:
+        school.short_description_en || school.description_en || 'International School Profile',
+      url: `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}`,
+      siteName: 'My International Schools',
+      images: [
+        {
+          url: school.image_url || '/logo.png',
+          width: 1200,
+          height: 630,
+          alt: school.name_en || 'School Image',
+        },
+        ...previousImages,
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: school.name_en || 'International School',
+      description:
+        school.short_description_en || school.description_en || 'International School Profile',
+      images: [school.image_url || '/logo.png'],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}`,
+      languages: {
+        'en-US': `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}?lang=en`,
+        'ja-JP': `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}?lang=jp`,
+      },
+    },
+  };
+}
 
-  if (!school || status === 'loading') {
+export default async function SchoolDetailPage({ params, searchParams }: PageProps) {
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const school = await getSchool(resolvedParams.id);
+
+  // Get the language from search params
+  const language = resolvedSearchParams.lang === 'ja' ? 'jp' : 'en';
+
+  if (!school) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
+        <div className="text-xl text-red-500">
+          {language === 'jp' ? '学校が見つかりません' : 'School not found'}
+        </div>
       </div>
     );
   }
 
-  // Get localized content
-  const name = getLocalizedContent(school.name_en, school.name_jp, language);
-  const description = getLocalizedContent(school.description_en, school.description_jp, language);
-  const shortDescription = getLocalizedContent(
-    school.short_description_en,
-    school.short_description_jp,
-    language
-  );
-  const location = getLocalizedContent(school.location_en, school.location_jp, language);
-  const address = getLocalizedContent(school.address_en, school.address_jp, language);
-  const region = getLocalizedContent(school.region_en, school.region_jp, language);
-  const country = getLocalizedContent(school.country_en, school.country_jp, language);
-  const email = getLocalizedContent(school.email_en, school.email_jp, language);
-  const phone = getLocalizedContent(school.phone_en, school.phone_jp, language);
-  const url = getLocalizedContent(school.url_en, school.url_jp, language);
-
-  // Get localized arrays
-  const affiliations = getLocalizedArray(school.affiliations_en, school.affiliations_jp, language);
-  const accreditations = getLocalizedArray(
-    school.accreditation_en,
-    school.accreditation_jp,
-    language
-  );
-  const programs = getLocalizedArray(
-    school.education_programs_offered_en,
-    school.education_programs_offered_jp,
-    language
-  );
-  const facilities = getLocalizedArray(
-    school.campus_facilities_en,
-    school.campus_facilities_jp,
-    language
-  );
-  const supportServices = getLocalizedArray(
-    school.student_life_support_services_en,
-    school.student_life_support_services_jp,
-    language
-  );
-  const academicSupport = getLocalizedArray(
-    school.education_academic_support_en,
-    school.education_academic_support_jp,
-    language
-  );
-  const extracurricular = getLocalizedArray(
-    school.education_extracurricular_activities_en,
-    school.education_extracurricular_activities_jp,
-    language
-  );
-  const staffList = getLocalizedArray(
-    school.staff_staff_list_en,
-    school.staff_staff_list_jp,
-    language
-  );
-  const boardMembers = getLocalizedArray(
-    school.staff_board_members_en,
-    school.staff_board_members_jp,
-    language
-  );
-  const openPositions = getLocalizedArray(
-    school.employment_open_positions_en,
-    school.employment_open_positions_jp,
-    language
-  );
-
-  const getFeeLevelContent = (
-    school: School,
-    level: FeeLevel,
-    feeType: FeeType,
-    lang: Language
-  ): string => {
-    const key = `admissions_breakdown_fees_${level}_${feeType}` as keyof School;
-    const enKey = `${key}_en` as keyof School;
-    const jpKey = `${key}_jp` as keyof School;
-    return getLocalizedContent(school[enKey] as string, school[jpKey] as string, lang) || '';
-  };
-
-  const hasFeeLevelFees = (school: School, level: FeeLevel): boolean => {
-    return (
-      !!getFeeLevelContent(school, level, 'tuition', 'en') ||
-      !!getFeeLevelContent(school, level, 'registration_fee', 'en') ||
-      !!getFeeLevelContent(school, level, 'maintenance_fee', 'en')
-    );
-  };
-
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <OverviewTab
-            school={school}
-            translations={translations}
-            name={name}
-            shortDescription={shortDescription}
-            location={location}
-            address={address}
-            region={region}
-            country={country}
-            email={email}
-            phone={phone}
-            url={url}
-            description={description}
-            affiliations={affiliations}
-            accreditations={accreditations}
-            language={language}
-          />
-        );
-
-      case 'education':
-        return (
-          <EducationTab
-            translations={translations}
-            programs={programs}
-            academicSupport={academicSupport}
-            extracurricular={extracurricular}
-          />
-        );
-
-      case 'admissions':
-        return (
-          <AdmissionsTab
-            school={school}
-            translations={translations}
-            language={language}
-            getFeeLevelContent={getFeeLevelContent}
-            hasFeeLevelFees={hasFeeLevelFees}
-          />
-        );
-
-      case 'campus':
-        return (
-          <CampusTab
-            school={school}
-            translations={translations}
-            language={language}
-            facilities={facilities}
-          />
-        );
-
-      case 'studentLife':
-        return (
-          <StudentLifeTab
-            school={school}
-            translations={translations}
-            language={language}
-            supportServices={supportServices}
-          />
-        );
-
-      case 'employment':
-        return (
-          <EmploymentTab
-            school={school}
-            translations={translations}
-            language={language}
-            openPositions={openPositions}
-            staffList={staffList}
-            boardMembers={boardMembers}
-          />
-        );
-
-      case 'policies':
-        return <PoliciesTab school={school} translations={translations} language={language} />;
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <BrowsingHistoryRecorder schoolId={school.school_id} />
-
-        {/* Navigation */}
-        <div className="mb-8">
-          <Link href="/list" className="text-green-500 hover:underline mb-4 inline-block">
-            {translations.backToList}
-          </Link>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-4 overflow-x-auto pb-2">
-            {Object.entries(translations.tabs).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === key
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        {renderTab()}
-      </div>
-    </div>
-  );
+  return <ClientSchoolDetail school={school} />;
 }

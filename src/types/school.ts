@@ -11,6 +11,7 @@ export type School = {
   [K in `admissions_breakdown_fees_${FeeLevel}_${FeeType}_${Language}`]?: string;
 } & {
   school_id: string;
+  image_url?: string; // Optional field for school image
 };
 
 export type FeeLevel = 'day_care' | 'elementary' | 'junior_high' | 'high_school';
