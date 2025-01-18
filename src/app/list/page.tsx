@@ -448,17 +448,19 @@ const ListPage: React.FC = () => {
         {session?.user && (
           <>
             <div
-              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
+              className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40 ${
+                isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
               onClick={() => setIsSearchOpen(false)}
             />
 
             {/* Collapsible Search Box */}
             <div
-              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${isSearchOpen
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-4 pointer-events-none'
-                }`}
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-50 ${
+                isSearchOpen
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 -translate-y-4 pointer-events-none'
+              }`}
             >
               <SearchBox
                 onSearch={handleSearchInput}
@@ -622,10 +624,11 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
-                          ? 'h-0 opacity-0 invisible overflow-hidden'
-                          : 'opacity-100 visible'
-                          }`}
+                        className={`transition-all duration-300 ease-in-out ${
+                          collapsedSections[location]
+                            ? 'h-0 opacity-0 invisible overflow-hidden'
+                            : 'opacity-100 visible'
+                        }`}
                       >
                         <SchoolList
                           schools={schools}
