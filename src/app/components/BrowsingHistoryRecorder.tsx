@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
 interface BrowsingHistoryRecorderProps {
   schoolId: number;
@@ -9,6 +10,7 @@ interface BrowsingHistoryRecorderProps {
 
 export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRecorderProps) {
   const { data: session } = useSession();
+  const { fetchBrowsingHistory } = useBrowsingHistory();
 
   useEffect(() => {
     const recordVisit = async () => {
@@ -25,14 +27,18 @@ export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRec
 
         if (!response.ok) {
           console.error('Failed to record browsing history');
+          return;
         }
+
+        // Refresh the browsing history after successfully recording the visit
+        await fetchBrowsingHistory();
       } catch (error) {
         console.error('Error recording browsing history:', error);
       }
     };
 
     recordVisit();
-  }, [schoolId, session]);
+  }, [schoolId, session, fetchBrowsingHistory]);
 
   return null; // This component doesn't render anything
 }

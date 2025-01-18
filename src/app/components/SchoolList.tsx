@@ -11,6 +11,7 @@ import { useUser } from '../contexts/UserContext';
 import { useSession } from 'next-auth/react';
 import { useListStatus } from '../contexts/ListStatusContext';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 type SortField = 'location' | 'studentLang' | 'parentLang' | 'age' | 'list';
 type SortDirection = 'asc' | 'desc' | null;
@@ -271,176 +272,185 @@ const SchoolList: React.FC<SchoolListProps> = ({
                   className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   }`}
-                  onClick={() => (window.location.href = `/schools/${school.school_id}`)}
                 >
-                  <div className="flex items-center">
-                    <Image
-                      src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
-                      alt="Logo"
-                      width={30}
-                      height={30}
-                      className="rounded-full"
-                    />
-                  </div>
-                  <Tooltip
-                    content={getLocalizedContent(school.name_en, school.name_jp, language)}
-                    className="whitespace-normal"
-                  >
-                    {getLocalizedContent(school.name_en, school.name_jp, language)}
-                  </Tooltip>
-                  {/* Description */}
-                  {getLocalizedContent(school.description_en, school.description_jp, language) ? (
-                    <Tooltip
-                      content={getLocalizedContent(
-                        school.description_en,
-                        school.description_jp,
-                        language
-                      )}
-                      className="truncate"
-                    >
-                      {getLocalizedContent(school.description_en, school.description_jp, language)}
-                    </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
+                  <Link href={`/schools/${school.school_id}`} className="contents">
+                    <div className="flex items-center">
+                      <Image
+                        src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
+                        alt="Logo"
+                        width={30}
+                        height={30}
+                        className="rounded-full"
+                      />
                     </div>
-                  )}
-                  {/* Location */}
-                  {getLocalizedContent(school.location_en, school.location_jp, language) ? (
                     <Tooltip
-                      content={getLocalizedContent(
-                        school.location_en,
-                        school.location_jp,
-                        language
-                      )}
-                      className="truncate"
+                      content={getLocalizedContent(school.name_en, school.name_jp, language)}
+                      className="whitespace-normal"
                     >
-                      {getLocalizedContent(school.location_en, school.location_jp, language)}
+                      {getLocalizedContent(school.name_en, school.name_jp, language)}
                     </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
-                    </div>
-                  )}
-                  {/* Tuition */}
-                  {getLocalizedContent(
-                    school.admissions_fees_en,
-                    school.admissions_fees_jp,
-                    language
-                  ) ? (
-                    <Tooltip
-                      content={getLocalizedContent(
-                        school.admissions_fees_en,
-                        school.admissions_fees_jp,
-                        language
-                      )}
-                      className="truncate"
-                    >
-                      {getLocalizedContent(
-                        school.admissions_fees_en,
-                        school.admissions_fees_jp,
-                        language
-                      )}
-                    </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
-                    </div>
-                  )}
-                  {/* Student Language Requirements */}
-                  {getLocalizedContent(
-                    school.admissions_language_requirements_students_en,
-                    school.admissions_language_requirements_students_jp,
-                    language
-                  ) ? (
-                    <Tooltip
-                      content={getLocalizedContent(
-                        school.admissions_language_requirements_students_en,
-                        school.admissions_language_requirements_students_jp,
-                        language
-                      )}
-                      className="truncate"
-                    >
-                      {getLocalizedContent(
-                        school.admissions_language_requirements_students_en,
-                        school.admissions_language_requirements_students_jp,
-                        language
-                      )}
-                    </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
-                    </div>
-                  )}
-                  {/* Parent Language Requirements */}
-                  {getLocalizedContent(
-                    school.admissions_language_requirements_parents_en,
-                    school.admissions_language_requirements_parents_jp,
-                    language
-                  ) ? (
-                    <Tooltip
-                      content={getLocalizedContent(
-                        school.admissions_language_requirements_parents_en,
-                        school.admissions_language_requirements_parents_jp,
-                        language
-                      )}
-                      className="truncate"
-                    >
-                      {getLocalizedContent(
-                        school.admissions_language_requirements_parents_en,
-                        school.admissions_language_requirements_parents_jp,
-                        language
-                      )}
-                    </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
-                    </div>
-                  )}
-                  {/* Age Requirements */}
-                  {getLocalizedContent(
-                    school.admissions_age_requirements_en,
-                    school.admissions_age_requirements_jp,
-                    language
-                  ) ? (
-                    <Tooltip
-                      content={getLocalizedContent(
-                        school.admissions_age_requirements_en,
-                        school.admissions_age_requirements_jp,
-                        language
-                      )}
-                      className="truncate"
-                    >
-                      {getLocalizedContent(
-                        school.admissions_age_requirements_en,
-                        school.admissions_age_requirements_jp,
-                        language
-                      )}
-                    </Tooltip>
-                  ) : (
-                    <div className="truncate text-gray-400">
-                      {language === 'en' ? 'N/A' : '未定'}
-                    </div>
-                  )}
-                  {/* Curriculum */}
-                  <div className="truncate">
-                    {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ? (
+                    {/* Description */}
+                    {getLocalizedContent(school.description_en, school.description_jp, language) ? (
                       <Tooltip
                         content={getLocalizedContent(
-                          school.curriculum_en,
-                          school.curriculum_jp,
+                          school.description_en,
+                          school.description_jp,
                           language
                         )}
                         className="truncate"
                       >
-                        {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language)}
+                        {getLocalizedContent(
+                          school.description_en,
+                          school.description_jp,
+                          language
+                        )}
                       </Tooltip>
                     ) : (
                       <div className="truncate text-gray-400">
                         {language === 'en' ? 'N/A' : '未定'}
                       </div>
                     )}
-                  </div>
+                    {/* Location */}
+                    {getLocalizedContent(school.location_en, school.location_jp, language) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.location_en,
+                          school.location_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(school.location_en, school.location_jp, language)}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                    {/* Tuition */}
+                    {getLocalizedContent(
+                      school.admissions_fees_en,
+                      school.admissions_fees_jp,
+                      language
+                    ) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.admissions_fees_en,
+                          school.admissions_fees_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(
+                          school.admissions_fees_en,
+                          school.admissions_fees_jp,
+                          language
+                        )}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                    {/* Student Language Requirements */}
+                    {getLocalizedContent(
+                      school.admissions_language_requirements_students_en,
+                      school.admissions_language_requirements_students_jp,
+                      language
+                    ) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.admissions_language_requirements_students_en,
+                          school.admissions_language_requirements_students_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(
+                          school.admissions_language_requirements_students_en,
+                          school.admissions_language_requirements_students_jp,
+                          language
+                        )}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                    {/* Parent Language Requirements */}
+                    {getLocalizedContent(
+                      school.admissions_language_requirements_parents_en,
+                      school.admissions_language_requirements_parents_jp,
+                      language
+                    ) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.admissions_language_requirements_parents_en,
+                          school.admissions_language_requirements_parents_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(
+                          school.admissions_language_requirements_parents_en,
+                          school.admissions_language_requirements_parents_jp,
+                          language
+                        )}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                    {/* Age Requirements */}
+                    {getLocalizedContent(
+                      school.admissions_age_requirements_en,
+                      school.admissions_age_requirements_jp,
+                      language
+                    ) ? (
+                      <Tooltip
+                        content={getLocalizedContent(
+                          school.admissions_age_requirements_en,
+                          school.admissions_age_requirements_jp,
+                          language
+                        )}
+                        className="truncate"
+                      >
+                        {getLocalizedContent(
+                          school.admissions_age_requirements_en,
+                          school.admissions_age_requirements_jp,
+                          language
+                        )}
+                      </Tooltip>
+                    ) : (
+                      <div className="truncate text-gray-400">
+                        {language === 'en' ? 'N/A' : '未定'}
+                      </div>
+                    )}
+                    {/* Curriculum */}
+                    <div className="truncate">
+                      {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ? (
+                        <Tooltip
+                          content={getLocalizedContent(
+                            school.curriculum_en,
+                            school.curriculum_jp,
+                            language
+                          )}
+                          className="truncate"
+                        >
+                          {getLocalizedContent(
+                            school.curriculum_en,
+                            school.curriculum_jp,
+                            language
+                          )}
+                        </Tooltip>
+                      ) : (
+                        <div className="truncate text-gray-400">
+                          {language === 'en' ? 'N/A' : '未定'}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                   {/* List Button Column */}
                   <div className="flex items-center justify-center">
                     {session && (
