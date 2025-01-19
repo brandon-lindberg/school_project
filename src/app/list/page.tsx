@@ -19,6 +19,7 @@ import { useViewMode } from '../contexts/ViewModeContext';
 import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
+import ContactBanner from '../components/ContactBanner';
 
 const BrowsingHistorySkeleton = () => (
   <div className="mb-8 animate-pulse">
@@ -396,6 +397,9 @@ const ListPage: React.FC = () => {
           </svg>
         </button>
       )}
+
+      {/* Contact Banner for non-logged-in users */}
+      {!session?.user && <ContactBanner />}
 
       <div className="flex-1 container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Search Icon Button */}
