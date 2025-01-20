@@ -57,6 +57,13 @@ export function OverviewTab({
   } | null>(null);
   const { data: session } = useSession();
 
+  const [claimStatus, setClaimStatus] = useState<{
+    isSchoolAdmin: boolean;
+    hasExistingSchool: boolean;
+    isClaimed: boolean;
+    hasPendingClaim: boolean;
+  } | null>(null);
+
   useEffect(() => {
     // Check if user has a pending claim for this school
     const checkClaimStatus = async () => {
@@ -76,6 +83,23 @@ export function OverviewTab({
 
     checkClaimStatus();
   }, [session?.user?.email, school.school_id]);
+
+  // Add effect to fetch claim status
+  useEffect(() => {
+    const fetchClaimStatus = async () => {
+      try {
+        const response = await fetch(`/api/schools/${school.school_id}/claim/status`);
+        const data = await response.json();
+        if (response.ok) {
+          setClaimStatus(data);
+        }
+      } catch (error) {
+        console.error('Error fetching claim status:', error);
+      }
+    };
+
+    fetchClaimStatus();
+  }, [school.school_id]);
 
   const handleClaimSuccess = () => {
     setHasPendingClaim(true);
@@ -170,71 +194,54 @@ export function OverviewTab({
           </div>
         </div>
 
-        {/* Admin Actions Card */}
-        {session?.user && (
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">
-              {language === 'en' ? 'School Administration' : '学校管理'}
-            </h2>
-            {isSchoolAdmin ? (
-              <>
-                <p className="text-gray-600 mb-4">
-                  {language === 'en'
-                    ? 'You are an administrator of this school.'
-                    : 'あなたはこの学校の管理者です。'}
-                </p>
-                <button
-                  onClick={onEdit}
-                  className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                >
-                  {translations.buttons.edit}
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-gray-600">
-                  {hasPendingClaim
-                    ? language === 'en'
-                      ? 'Your claim is pending review. We will notify you once it has been processed.'
-                      : '申請は審査中です。処理が完了次第、お知らせいたします。'
-                    : isClaimed
-                      ? language === 'en'
-                        ? 'This school has already been claimed.'
-                        : 'この学校は既に申請されています。'
-                      : language === 'en'
-                        ? 'Are you a representative of this school? Claim this school to manage its information.'
-                        : 'この学校の代表者の方ですか？学校情報を管理するには、学校の所有権を申請してください。'}
-                </p>
-                <button
-                  onClick={() => setIsClaimModalOpen(true)}
-                  className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
-                    hasPendingClaim
-                      ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                      : isClaimed
-                        ? 'bg-gray-500 cursor-not-allowed'
-                        : 'bg-green-500 hover:bg-green-600'
+        {/* School Administration Card */}
+        {!isSchoolAdmin && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
+            </div>
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                {language === 'en'
+                  ? 'Are you a school administrator? Claim this school to manage its information.'
+                  : '学校の管理者ですか？学校を申請して情報を管理できます。'}
+              </p>
+              <button
+                onClick={() => setIsClaimModalOpen(true)}
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
+                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                  : claimStatus?.isClaimed
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : claimStatus?.hasExistingSchool
+                      ? 'bg-gray-500 cursor-not-allowed'
+                      : 'bg-green-500 hover:bg-green-600'
                   } text-white`}
-                  disabled={hasPendingClaim || isClaimed}
-                >
-                  {isClaimed ? (
-                    <>
-                      <CheckCircleIcon className="h-5 w-5 mr-2" />
-                      {language === 'en' ? 'Already Claimed' : '申請済み'}
-                    </>
-                  ) : hasPendingClaim ? (
-                    language === 'en' ? (
-                      'Claim Pending'
-                    ) : (
-                      '申請審査中'
-                    )
-                  ) : language === 'en' ? (
-                    'Claim School'
+                disabled={claimStatus?.hasPendingClaim || claimStatus?.isClaimed || claimStatus?.hasExistingSchool}
+              >
+                {claimStatus?.isClaimed ? (
+                  <>
+                    <CheckCircleIcon className="h-5 w-5 mr-2" />
+                    {language === 'en' ? 'Already Claimed' : '申請済み'}
+                  </>
+                ) : claimStatus?.hasPendingClaim ? (
+                  language === 'en' ? (
+                    'Claim Pending'
                   ) : (
-                    '学校を申請する'
-                  )}
-                </button>
-              </>
-            )}
+                    '申請審査中'
+                  )
+                ) : claimStatus?.hasExistingSchool ? (
+                  language === 'en' ? (
+                    'Already Managing Another School'
+                  ) : (
+                    '他の学校を管理中'
+                  )
+                ) : language === 'en' ? (
+                  'Claim School'
+                ) : (
+                  '学校を申請する'
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>

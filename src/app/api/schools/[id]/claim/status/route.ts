@@ -10,9 +10,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user from database
+    // Get user from database with managed schools
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: {
+        user_id: true,
+        role: true,
+        managedSchools: {
+          select: {
+            school_id: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -28,14 +37,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
-    // Check if school is already claimed (verified or has approved claims)
+    // Check if user is already a school admin and has an existing school
+    const isSchoolAdmin = user.role === 'SCHOOL_ADMIN';
+    const hasExistingSchool = user.managedSchools.length > 0;
+
+    // Check if school exists and if it's already claimed
     const school = await prisma.school.findUnique({
       where: { school_id: schoolId },
       select: {
         is_verified: true,
         claims: {
           where: {
-            status: 'APPROVED',
+            OR: [
+              { status: 'APPROVED' },
+              {
+                AND: [
+                  { status: 'PENDING' },
+                  { user_id: user.user_id }
+                ]
+              }
+            ]
           },
         },
       },
@@ -45,18 +66,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Check for pending claims by the current user
-    const pendingClaim = await prisma.schoolClaim.findFirst({
-      where: {
-        school_id: schoolId,
-        user_id: user.user_id,
-        status: 'PENDING',
-      },
-    });
+    const isClaimed = school.is_verified || school.claims.some(claim => claim.status === 'APPROVED');
+    const hasPendingClaim = school.claims.some(claim => claim.status === 'PENDING');
 
     return NextResponse.json({
-      hasPendingClaim: !!pendingClaim,
-      isClaimed: school.is_verified || school.claims.length > 0,
+      isSchoolAdmin,
+      hasExistingSchool,
+      isClaimed,
+      hasPendingClaim,
     });
   } catch (error) {
     console.error('Error checking claim status:', error);
