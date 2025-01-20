@@ -44,10 +44,11 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
     }
   }, [status]);
 
-  // Check if user is a school admin for this school
-  const isSchoolAdmin =
-    session?.user?.role === 'SCHOOL_ADMIN' &&
-    session?.user?.managedSchoolId === parseInt(school.school_id);
+  // Check if user is a school admin for this school or a super admin
+  const canEdit =
+    session?.user?.role === 'SUPER_ADMIN' ||
+    (session?.user?.role === 'SCHOOL_ADMIN' &&
+      session?.user?.managedSchoolId === parseInt(school.school_id));
 
   const handleSave = async (data: Partial<School>) => {
     try {
@@ -185,7 +186,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
 
   const renderTab = () => {
     // If editing, render the edit form for the current tab
-    if (isEditing && isSchoolAdmin) {
+    if (isEditing && canEdit) {
       // Map tab names to section names
       const sectionMap = {
         overview: 'basic',
@@ -228,7 +229,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             affiliations={affiliations}
             accreditations={accreditations}
             language={language}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -240,7 +241,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             programs={programs}
             academicSupport={academicSupport}
             extracurricular={extracurricular}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -253,7 +254,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             language={language}
             getFeeLevelContent={getFeeLevelContent}
             hasFeeLevelFees={hasFeeLevelFees}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -265,7 +266,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             translations={translations}
             language={language}
             facilities={facilities}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -277,7 +278,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             translations={translations}
             language={language}
             supportServices={supportServices}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -291,7 +292,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             openPositions={openPositions}
             staffList={staffList}
             boardMembers={boardMembers}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
@@ -302,7 +303,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             school={school}
             translations={translations}
             language={language}
-            isSchoolAdmin={isSchoolAdmin}
+            isSchoolAdmin={canEdit}
             onEdit={() => setIsEditing(true)}
           />
         );
