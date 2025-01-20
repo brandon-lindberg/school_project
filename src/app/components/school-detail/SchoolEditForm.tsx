@@ -134,6 +134,44 @@ export function SchoolEditForm({
         school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en ?? '',
       admissions_breakdown_fees_grade_elementary_maintenance_fee_jp:
         school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp ?? '',
+      admissions_breakdown_fees_grade_high_school_tuition_en:
+        school.admissions_breakdown_fees_grade_high_school_tuition_en ?? '',
+      admissions_breakdown_fees_grade_high_school_tuition_jp:
+        school.admissions_breakdown_fees_grade_high_school_tuition_jp ?? '',
+      admissions_breakdown_fees_grade_high_school_registration_fee_en:
+        school.admissions_breakdown_fees_grade_high_school_registration_fee_en ?? '',
+      admissions_breakdown_fees_grade_high_school_registration_fee_jp:
+        school.admissions_breakdown_fees_grade_high_school_registration_fee_jp ?? '',
+      admissions_breakdown_fees_grade_high_school_maintenance_fee_en:
+        school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en ?? '',
+      admissions_breakdown_fees_grade_high_school_maintenance_fee_jp:
+        school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp ?? '',
+      // Summer School Fees
+      admissions_breakdown_fees_summer_school_tuition_en:
+        school.admissions_breakdown_fees_summer_school_tuition_en ?? '',
+      admissions_breakdown_fees_summer_school_tuition_jp:
+        school.admissions_breakdown_fees_summer_school_tuition_jp ?? '',
+      admissions_breakdown_fees_summer_school_registration_fee_en:
+        school.admissions_breakdown_fees_summer_school_registration_fee_en ?? '',
+      admissions_breakdown_fees_summer_school_registration_fee_jp:
+        school.admissions_breakdown_fees_summer_school_registration_fee_jp ?? '',
+      admissions_breakdown_fees_summer_school_maintenance_fee_en:
+        school.admissions_breakdown_fees_summer_school_maintenance_fee_en ?? '',
+      admissions_breakdown_fees_summer_school_maintenance_fee_jp:
+        school.admissions_breakdown_fees_summer_school_maintenance_fee_jp ?? '',
+      // Other Fees
+      admissions_breakdown_fees_other_tuition_en:
+        school.admissions_breakdown_fees_other_tuition_en ?? '',
+      admissions_breakdown_fees_other_tuition_jp:
+        school.admissions_breakdown_fees_other_tuition_jp ?? '',
+      admissions_breakdown_fees_other_registration_fee_en:
+        school.admissions_breakdown_fees_other_registration_fee_en ?? '',
+      admissions_breakdown_fees_other_registration_fee_jp:
+        school.admissions_breakdown_fees_other_registration_fee_jp ?? '',
+      admissions_breakdown_fees_other_maintenance_fee_en:
+        school.admissions_breakdown_fees_other_maintenance_fee_en ?? '',
+      admissions_breakdown_fees_other_maintenance_fee_jp:
+        school.admissions_breakdown_fees_other_maintenance_fee_jp ?? '',
 
       // Campus & Facilities Information
       campus_facilities_en: school.campus_facilities_en ?? [],
@@ -935,7 +973,539 @@ export function SchoolEditForm({
         </div>
       </div>
 
-      {/* Add more fee fields as needed */}
+      {/* Junior High School Fees */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Tuition (English)'
+              : '中学校 - 授業料（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_tuition_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_grade_junior_high_tuition_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Tuition (Japanese)'
+              : '中学校 - 授業料（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_tuition_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_grade_junior_high_tuition_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* High School Fees */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en' ? 'High School - Tuition (English)' : '高校 - 授業料（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_tuition_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_grade_high_school_tuition_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en' ? 'High School - Tuition (Japanese)' : '高校 - 授業料（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_tuition_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_grade_high_school_tuition_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Registration Fees */}
+      <h4 className="text-lg font-medium mt-6 mb-4">
+        {language === 'en' ? 'Registration Fees' : '入学金'}
+      </h4>
+
+      {/* Elementary Registration Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Elementary School - Registration Fee (English)'
+              : '小学校 - 入学金（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_elementary_registration_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_elementary_registration_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Elementary School - Registration Fee (Japanese)'
+              : '小学校 - 入学金（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_elementary_registration_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_elementary_registration_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Junior High Registration Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Registration Fee (English)'
+              : '中学校 - 入学金（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_registration_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_junior_high_registration_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Registration Fee (Japanese)'
+              : '中学校 - 入学金（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_registration_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_junior_high_registration_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* High School Registration Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'High School - Registration Fee (English)'
+              : '高校 - 入学金（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_registration_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_high_school_registration_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'High School - Registration Fee (Japanese)'
+              : '高校 - 入学金（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_registration_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_high_school_registration_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Maintenance Fees */}
+      <h4 className="text-lg font-medium mt-6 mb-4">
+        {language === 'en' ? 'Maintenance Fees' : '施設維持費'}
+      </h4>
+
+      {/* Elementary Maintenance Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Elementary School - Maintenance Fee (English)'
+              : '小学校 - 施設維持費（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_elementary_maintenance_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_elementary_maintenance_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Elementary School - Maintenance Fee (Japanese)'
+              : '小学校 - 施設維持費（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_elementary_maintenance_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Junior High Maintenance Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Maintenance Fee (English)'
+              : '中学校 - 施設維持費（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_junior_high_maintenance_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Junior High School - Maintenance Fee (Japanese)'
+              : '中学校 - 施設維持費（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* High School Maintenance Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'High School - Maintenance Fee (English)'
+              : '高校 - 施設維持費（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_maintenance_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_high_school_maintenance_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'High School - Maintenance Fee (Japanese)'
+              : '高校 - 施設維持費（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_grade_high_school_maintenance_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Summer School Fees */}
+      <h4 className="text-lg font-medium mt-6 mb-4">
+        {language === 'en' ? 'Summer School Fees' : 'サマースクール費用'}
+      </h4>
+
+      {/* Summer School Tuition */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Tuition (English)'
+              : 'サマースクール - 授業料（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_tuition_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_summer_school_tuition_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Tuition (Japanese)'
+              : 'サマースクール - 授業料（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_tuition_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_summer_school_tuition_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Summer School Registration Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Registration Fee (English)'
+              : 'サマースクール - 入学金（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_registration_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_summer_school_registration_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Registration Fee (Japanese)'
+              : 'サマースクール - 入学金（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_registration_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_summer_school_registration_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Summer School Maintenance Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Maintenance Fee (English)'
+              : 'サマースクール - 施設維持費（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_maintenance_fee_en}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_summer_school_maintenance_fee_en',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Summer School - Maintenance Fee (Japanese)'
+              : 'サマースクール - 施設維持費（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_summer_school_maintenance_fee_jp}
+            onChange={e =>
+              handleChange(
+                'admissions_breakdown_fees_summer_school_maintenance_fee_jp',
+                e.target.value
+              )
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Other Fees */}
+      <h4 className="text-lg font-medium mt-6 mb-4">
+        {language === 'en' ? 'Other Fees' : 'その他の費用'}
+      </h4>
+
+      {/* Other Tuition */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en' ? 'Other - Tuition (English)' : 'その他 - 授業料（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_tuition_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_tuition_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en' ? 'Other - Tuition (Japanese)' : 'その他 - 授業料（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_tuition_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_tuition_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Other Registration Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en' ? 'Other - Registration Fee (English)' : 'その他 - 入学金（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_registration_fee_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_registration_fee_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Other - Registration Fee (Japanese)'
+              : 'その他 - 入学金（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_registration_fee_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_registration_fee_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
+
+      {/* Other Maintenance Fee */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Other - Maintenance Fee (English)'
+              : 'その他 - 施設維持費（英語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_maintenance_fee_en}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_maintenance_fee_en', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {language === 'en'
+              ? 'Other - Maintenance Fee (Japanese)'
+              : 'その他 - 施設維持費（日本語）'}
+          </label>
+          <input
+            type="text"
+            value={formData.admissions_breakdown_fees_other_maintenance_fee_jp}
+            onChange={e =>
+              handleChange('admissions_breakdown_fees_other_maintenance_fee_jp', e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
     </div>
   );
 

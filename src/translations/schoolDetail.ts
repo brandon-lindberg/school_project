@@ -34,7 +34,7 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       curriculum: language === 'en' ? 'Curriculum' : 'カリキュラム',
       noCurriculum:
         language === 'en' ? 'No curriculum information available' : 'カリキュラム情報なし',
-      admissions: language === 'en' ? 'Admissions' : '入学',
+      admissions: language === 'en' ? 'Admissions' : '入学案内',
       acceptancePolicy: language === 'en' ? 'Acceptance Policy' : '入学方針',
       noAcceptancePolicy:
         language === 'en' ? 'No acceptance policy information available' : '入学方針情報なし',
@@ -72,6 +72,15 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       elementary: language === 'en' ? 'Elementary School' : '小学校',
       juniorhigh: language === 'en' ? 'Junior High School' : '中学校',
       highschool: language === 'en' ? 'High School' : '高校',
+      summerSchool: language === 'en' ? 'Summer School' : 'サマースクール',
+      otherFees: language === 'en' ? 'Other Fees' : 'その他の費用',
+      noFeeInfo: language === 'en' ? 'No fee information available' : '費用情報なし',
+      ageRequirements: language === 'en' ? 'Age Requirements' : '年齢要件',
+      languageRequirementsStudents:
+        language === 'en' ? 'Student Language Requirements' : '生徒の言語要件',
+      languageRequirementsParents:
+        language === 'en' ? 'Parent Language Requirements' : '保護者の言語要件',
+      noInfo: language === 'en' ? 'No information available' : '情報なし',
     },
   };
 }
