@@ -65,33 +65,16 @@ export function OverviewTab({
   } | null>(null);
 
   useEffect(() => {
-    // Check if user has a pending claim for this school
-    const checkClaimStatus = async () => {
+    const fetchClaimStatus = async () => {
       if (!session?.user?.email) return;
 
       try {
         const response = await fetch(`/api/schools/${school.school_id}/claim/status`);
         if (response.ok) {
           const data = await response.json();
+          setClaimStatus(data);
           setHasPendingClaim(data.hasPendingClaim);
           setIsClaimed(data.isClaimed);
-        }
-      } catch (error) {
-        console.error('Error checking claim status:', error);
-      }
-    };
-
-    checkClaimStatus();
-  }, [session?.user?.email, school.school_id]);
-
-  // Add effect to fetch claim status
-  useEffect(() => {
-    const fetchClaimStatus = async () => {
-      try {
-        const response = await fetch(`/api/schools/${school.school_id}/claim/status`);
-        const data = await response.json();
-        if (response.ok) {
-          setClaimStatus(data);
         }
       } catch (error) {
         console.error('Error fetching claim status:', error);
@@ -99,7 +82,7 @@ export function OverviewTab({
     };
 
     fetchClaimStatus();
-  }, [school.school_id]);
+  }, [session?.user?.email, school.school_id]);
 
   const handleClaimSuccess = () => {
     setHasPendingClaim(true);
@@ -195,7 +178,7 @@ export function OverviewTab({
         </div>
 
         {/* School Administration Card */}
-        {!isSchoolAdmin && (
+        {!isSchoolAdmin ? (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
@@ -208,15 +191,20 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
-                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                  : claimStatus?.isClaimed
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : claimStatus?.hasExistingSchool
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
+                  claimStatus?.hasPendingClaim
+                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                    : claimStatus?.isClaimed
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : 'bg-green-500 hover:bg-green-600'
-                  } text-white`}
-                disabled={claimStatus?.hasPendingClaim || claimStatus?.isClaimed || claimStatus?.hasExistingSchool}
+                      : claimStatus?.hasExistingSchool
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
+                disabled={
+                  claimStatus?.hasPendingClaim ||
+                  claimStatus?.isClaimed ||
+                  claimStatus?.hasExistingSchool
+                }
               >
                 {claimStatus?.isClaimed ? (
                   <>
@@ -240,6 +228,18 @@ export function OverviewTab({
                 ) : (
                   '学校を申請する'
                 )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
+              <button
+                onClick={onEdit}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+              >
+                <span>{translations.buttons.edit}</span>
               </button>
             </div>
           </div>

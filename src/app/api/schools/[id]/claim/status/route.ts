@@ -51,12 +51,9 @@ export async function GET(request: NextRequest) {
             OR: [
               { status: 'APPROVED' },
               {
-                AND: [
-                  { status: 'PENDING' },
-                  { user_id: user.user_id }
-                ]
-              }
-            ]
+                AND: [{ status: 'PENDING' }, { user_id: user.user_id }],
+              },
+            ],
           },
         },
       },
@@ -66,7 +63,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    const isClaimed = school.is_verified || school.claims.some(claim => claim.status === 'APPROVED');
+    const isClaimed =
+      school.is_verified || school.claims.some(claim => claim.status === 'APPROVED');
     const hasPendingClaim = school.claims.some(claim => claim.status === 'PENDING');
 
     return NextResponse.json({
