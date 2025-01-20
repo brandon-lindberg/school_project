@@ -28,7 +28,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
-    // Check for pending claims
+    // Check if school is already claimed (verified or has approved claims)
+    const school = await prisma.school.findUnique({
+      where: { school_id: schoolId },
+      select: {
+        is_verified: true,
+        claims: {
+          where: {
+            status: 'APPROVED',
+          },
+        },
+      },
+    });
+
+    if (!school) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    // Check for pending claims by the current user
     const pendingClaim = await prisma.schoolClaim.findFirst({
       where: {
         school_id: schoolId,
@@ -39,6 +56,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       hasPendingClaim: !!pendingClaim,
+      isClaimed: school.is_verified || school.claims.length > 0,
     });
   } catch (error) {
     console.error('Error checking claim status:', error);

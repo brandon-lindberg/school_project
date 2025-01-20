@@ -10,6 +10,8 @@ interface EmploymentTabProps {
   openPositions: string[];
   staffList: string[];
   boardMembers: string[];
+  isSchoolAdmin?: boolean;
+  onEdit?: () => void;
 }
 
 export function EmploymentTab({
@@ -19,9 +21,23 @@ export function EmploymentTab({
   openPositions,
   staffList,
   boardMembers,
+  isSchoolAdmin,
+  onEdit,
 }: EmploymentTabProps) {
   return (
     <div className="space-y-6">
+      {/* Admin Edit Button */}
+      {isSchoolAdmin && (
+        <div className="flex justify-end">
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            {translations.buttons?.edit || 'Edit Employment Information'}
+          </button>
+        </div>
+      )}
+
       {/* Open Positions */}
       {openPositions.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
@@ -54,8 +70,8 @@ export function EmploymentTab({
       {/* Staff List */}
       {staffList.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">{translations.sections.staff}</h2>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="text-2xl font-bold mb-4">{translations.sections.staffList}</h2>
+          <ul className="space-y-3">
             {staffList.map((staff, index) => (
               <li key={index} className="flex items-start space-x-2">
                 <span className="text-green-500">•</span>
@@ -70,7 +86,7 @@ export function EmploymentTab({
       {boardMembers.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.boardMembers}</h2>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ul className="space-y-3">
             {boardMembers.map((member, index) => (
               <li key={index} className="flex items-start space-x-2">
                 <span className="text-green-500">•</span>

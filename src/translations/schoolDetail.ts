@@ -14,6 +14,9 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       employment: language === 'en' ? 'Employment' : '採用',
       policies: language === 'en' ? 'Policies' : '方針',
     },
+    buttons: {
+      edit: language === 'en' ? 'Edit Information' : '情報を編集',
+    },
     sections: {
       location: language === 'en' ? 'Location' : '所在地',
       contactInfo: language === 'en' ? 'Contact Information' : '連絡先',

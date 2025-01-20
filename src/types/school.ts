@@ -14,6 +14,6 @@ export type School = {
   image_url?: string; // Optional field for school image
 };
 
-export type FeeLevel = 'day_care' | 'elementary' | 'junior_high' | 'high_school';
+export type FeeLevel = 'day_care' | 'kindergarten' | 'elementary' | 'junior_high' | 'high_school';
 
 export type FeeType = 'tuition' | 'registration_fee' | 'maintenance_fee';

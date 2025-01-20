@@ -10,11 +10,31 @@ interface PoliciesTabProps {
   school: School;
   translations: Translations;
   language: Language;
+  isSchoolAdmin?: boolean;
+  onEdit?: () => void;
 }
 
-export function PoliciesTab({ school, translations, language }: PoliciesTabProps) {
+export function PoliciesTab({
+  school,
+  translations,
+  language,
+  isSchoolAdmin,
+  onEdit,
+}: PoliciesTabProps) {
   return (
     <div className="space-y-6">
+      {/* Admin Edit Button */}
+      {isSchoolAdmin && (
+        <div className="flex justify-end">
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            {translations.buttons?.edit || 'Edit Policies Information'}
+          </button>
+        </div>
+      )}
+
       {/* Privacy Policy */}
       {(school.policies_privacy_policy_en || school.policies_privacy_policy_jp) && (
         <Card>
