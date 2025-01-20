@@ -2,17 +2,7 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcrypt';
-
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      email?: string | null;
-      name?: string | null;
-      image?: string | null;
-    };
-  }
-}
+import { UserRole } from '@prisma/client';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -29,7 +19,23 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            user_id: true,
+            email: true,
+            password_hash: true,
+            first_name: true,
+            family_name: true,
+            role: true,
+            managedSchools: {
+              take: 1,
+              select: {
+                school_id: true,
+              },
+            },
+          },
         });
+
+        console.log('Database user:', JSON.stringify(user, null, 2));
 
         if (!user) {
           return null;
@@ -41,11 +47,16 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        return {
+        const authUser = {
           id: user.user_id.toString(),
           email: user.email,
           name: user.first_name ? `${user.first_name} ${user.family_name || ''}` : null,
+          role: user.role,
+          managedSchoolId: user.managedSchools[0]?.school_id,
         };
+
+        console.log('Auth user:', JSON.stringify(authUser, null, 2));
+        return authUser;
       },
     }),
   ],
@@ -56,15 +67,17 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    jwt: async ({ token, user }) => {
       if (user) {
-        token.id = user.id;
+        token.role = user.role;
+        token.managedSchoolId = user.managedSchoolId;
       }
       return token;
     },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
+    session: async ({ session, token }) => {
+      if (token) {
+        (session.user as any).role = token.role;
+        (session.user as any).managedSchoolId = token.managedSchoolId;
       }
       return session;
     },

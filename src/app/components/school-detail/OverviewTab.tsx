@@ -1,8 +1,12 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { School } from '@/types/school';
 import FallbackImage from '../FallbackImage';
 import { Language, getLocalizedContent } from '@/utils/language';
 import { Translations } from '../../../interfaces/Translations';
+import { useSession } from 'next-auth/react';
+import { ClaimSchoolModal } from './ClaimSchoolModal';
+import NotificationBanner from '@/app/components/NotificationBanner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface OverviewTabProps {
   school: School;
@@ -37,10 +41,59 @@ export function OverviewTab({
   description,
   affiliations,
   accreditations,
-  language,
 }: OverviewTabProps) {
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [hasPendingClaim, setHasPendingClaim] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const { language } = useLanguage();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    // Check if user has a pending claim for this school
+    const checkPendingClaim = async () => {
+      if (!session?.user?.email) return;
+
+      try {
+        const response = await fetch(`/api/schools/${school.school_id}/claim/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasPendingClaim(data.hasPendingClaim);
+        }
+      } catch (error) {
+        console.error('Error checking claim status:', error);
+      }
+    };
+
+    checkPendingClaim();
+  }, [session?.user?.email, school.school_id]);
+
+  const handleClaimSuccess = () => {
+    setHasPendingClaim(true);
+  };
+
+  // Add notification auto-dismiss
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   return (
     <div className="space-y-6">
+      {notification && (
+        <NotificationBanner
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       {/* Hero Section */}
       <div className="relative h-64 rounded-xl overflow-hidden">
         <FallbackImage
@@ -58,40 +111,101 @@ export function OverviewTab({
       </div>
 
       {/* Quick Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold text-gray-600">{translations.sections.location}</h3>
-          <p className="mt-2">{[location, address, region, country].filter(Boolean).join(', ')}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Location Card */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">{translations.sections.location}</h2>
+          <div className="space-y-2">
+            {getLocalizedContent(school.location_en, school.location_jp, language) && (
+              <p className="text-gray-600">
+                {getLocalizedContent(school.location_en, school.location_jp, language)}
+              </p>
+            )}
+            {getLocalizedContent(school.region_en, school.region_jp, language) && (
+              <p className="text-gray-600">
+                {getLocalizedContent(school.region_en, school.region_jp, language)}
+              </p>
+            )}
+            {getLocalizedContent(school.country_en, school.country_jp, language) && (
+              <p className="text-gray-600">
+                {getLocalizedContent(school.country_en, school.country_jp, language)}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold text-gray-600">{translations.sections.contactInfo}</h3>
-          <div className="mt-2 space-y-1">
-            {email && <p>📧 {email}</p>}
-            {phone && <p>📞 {phone}</p>}
-            {url && (
+
+        {/* Contact Card */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">{translations.sections.contactInfo}</h2>
+          <div className="space-y-2">
+            {getLocalizedContent(school.email_en, school.email_jp, language) && (
+              <p className="text-gray-600">
+                <span className="font-medium">{translations.sections.email}:</span>{' '}
+                {getLocalizedContent(school.email_en, school.email_jp, language)}
+              </p>
+            )}
+            {getLocalizedContent(school.phone_en, school.phone_jp, language) && (
+              <p className="text-gray-600">
+                <span className="font-medium">{translations.sections.phone}:</span>{' '}
+                {getLocalizedContent(school.phone_en, school.phone_jp, language)}
+              </p>
+            )}
+            {getLocalizedContent(school.url_en, school.url_jp, language) && (
               <a
-                href={url}
+                href={getLocalizedContent(school.url_en, school.url_jp, language)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-green-500 hover:underline"
+                className="text-green-500 hover:text-green-600"
               >
-                🌐 {translations.sections.visitWebsite}
+                {translations.sections.visitWebsite}
               </a>
             )}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold text-gray-600">{translations.sections.curriculum}</h3>
-          <p className="mt-2">
-            {getLocalizedContent(school.curriculum_en, school.curriculum_jp, language) ||
-              translations.sections.noCurriculum}
-          </p>
-        </div>
+
+        {/* Claim School Card - Only show for logged-in users */}
+        {session?.user && (
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-xl font-semibold mb-4">
+              {language === 'en' ? 'School Administration' : '学校管理'}
+            </h2>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                {hasPendingClaim
+                  ? language === 'en'
+                    ? 'Your claim is pending review. We will notify you once it has been processed.'
+                    : '申請は審査中です。処理が完了次第、お知らせいたします。'
+                  : language === 'en'
+                    ? 'Are you a representative of this school? Claim this school to manage its information.'
+                    : 'この学校の代表者の方ですか？学校情報を管理するには、学校の所有権を申請してください。'}
+              </p>
+              <button
+                onClick={() => setIsClaimModalOpen(true)}
+                className={`w-full px-4 py-2 rounded transition-colors ${
+                  hasPendingClaim
+                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                    : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
+                disabled={hasPendingClaim}
+              >
+                {hasPendingClaim
+                  ? language === 'en'
+                    ? 'Claim Pending'
+                    : '申請審査中'
+                  : language === 'en'
+                    ? 'Claim School'
+                    : '学校を申請する'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Description */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold mb-4">{translations.sections.aboutSchool}</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">{translations.sections.aboutSchool}</h2>
+        </div>
         <p className="text-gray-700 whitespace-pre-wrap">{description}</p>
       </div>
 
@@ -122,6 +236,15 @@ export function OverviewTab({
           </div>
         )}
       </div>
+
+      {/* Claim School Modal */}
+      <ClaimSchoolModal
+        schoolId={school.school_id}
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        onSuccess={handleClaimSuccess}
+        onNotification={setNotification}
+      />
     </div>
   );
 }

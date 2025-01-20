@@ -1,225 +1,197 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  user_id       Int      @id @default(autoincrement())
-  email         String   @unique
-  password_hash String
-  family_name   String?
-  first_name    String?
-  phone_number  String?
-  preferred_view_mode String? @default("list")
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  lists UserList[]
-  browsingHistories BrowsingHistory[]
+  user_id             Int               @id @default(autoincrement())
+  email               String            @unique
+  password_hash       String
+  family_name         String?
+  first_name          String?
+  phone_number        String?
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+  preferred_view_mode String?           @default("list")
+  role                UserRole          @default(USER)
+  browsingHistories   BrowsingHistory[]
+  assignedAdmins      SchoolAdmin[]     @relation("AdminAssigner")
+  managedSchools      SchoolAdmin[]
+  processedClaims     SchoolClaim[]     @relation("ClaimProcessor")
+  schoolClaims        SchoolClaim[]
+  lists               UserList[]
 }
 
 model School {
-  school_id     Int     @id @default(autoincrement())
-  site_id       String  @unique
-  name_en       String?
-  name_jp       String?
-  location_en   String?
-  location_jp   String?
-  phone_en      String?
-  phone_jp      String?
-  email_en      String?
-  email_jp      String?
-  address_en    String?
-  address_jp    String?
-  curriculum_en String?
-  curriculum_jp String?
-
-  structured_data Json @default("{}")
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // New Columns with English and Japanese Versions (Now Nullable)
-  url_en          String?
-  url_jp          String?
-  logo_id         String?
-  image_id        String?
-  affiliations_en String[]
-  affiliations_jp String[]
-  accreditation_en String[]
-  accreditation_jp String[]
-
-  // Education
-  education_programs_offered_en           String[]
-  education_programs_offered_jp           String[]
-  education_curriculum_en                 String?
-  education_curriculum_jp                 String?
-  education_academic_support_en           String[]
-  education_academic_support_jp           String[]
-  education_extracurricular_activities_en String[]
-  education_extracurricular_activities_jp String[]
-
-  // Admissions
-  admissions_acceptance_policy_en               String?
-  admissions_acceptance_policy_jp               String?
-  admissions_application_guidelines_en          String?
-  admissions_application_guidelines_jp          String?
-  admissions_age_requirements_en                String?
-  admissions_age_requirements_jp                String?
-  admissions_fees_en                             String?
-  admissions_fees_jp                             String?
-  admissions_breakdown_fees_application_fee_en  String?
-  admissions_breakdown_fees_application_fee_jp  String?
-  admissions_breakdown_fees_day_care_fee_tuition_en         String?
-  admissions_breakdown_fees_day_care_fee_tuition_jp         String?
-  admissions_breakdown_fees_day_care_fee_registration_fee_en String?
-  admissions_breakdown_fees_day_care_fee_registration_fee_jp String?
-  admissions_breakdown_fees_day_care_fee_maintenance_fee_en   String?
-  admissions_breakdown_fees_day_care_fee_maintenance_fee_jp   String?
-  admissions_breakdown_fees_kindergarten_tuition_en         String?
-  admissions_breakdown_fees_kindergarten_tuition_jp         String?
-  admissions_breakdown_fees_kindergarten_registration_fee_en String?
-  admissions_breakdown_fees_kindergarten_registration_fee_jp String?
-  admissions_breakdown_fees_kindergarten_maintenance_fee_en   String?
-  admissions_breakdown_fees_kindergarten_maintenance_fee_jp   String?
-  admissions_breakdown_fees_grade_elementary_tuition_en     String?
-  admissions_breakdown_fees_grade_elementary_tuition_jp     String?
-  admissions_breakdown_fees_grade_elementary_registration_fee_en String?
-  admissions_breakdown_fees_grade_elementary_registration_fee_jp String?
-  admissions_breakdown_fees_grade_elementary_maintenance_fee_en String?
-  admissions_breakdown_fees_grade_elementary_maintenance_fee_jp String?
-  admissions_breakdown_fees_grade_junior_high_tuition_en        String?
-  admissions_breakdown_fees_grade_junior_high_tuition_jp        String?
+  school_id                                                       Int               @id @default(autoincrement())
+  site_id                                                         String            @unique
+  name_en                                                         String?
+  name_jp                                                         String?
+  location_en                                                     String?
+  location_jp                                                     String?
+  phone_en                                                        String?
+  phone_jp                                                        String?
+  email_en                                                        String?
+  email_jp                                                        String?
+  address_en                                                      String?
+  address_jp                                                      String?
+  curriculum_en                                                   String?
+  curriculum_jp                                                   String?
+  structured_data                                                 Json              @default("{}")
+  created_at                                                      DateTime          @default(now())
+  updated_at                                                      DateTime          @updatedAt
+  url_en                                                          String?
+  url_jp                                                          String?
+  logo_id                                                         String?
+  image_id                                                        String?
+  affiliations_en                                                 String[]
+  affiliations_jp                                                 String[]
+  accreditation_en                                                String[]
+  accreditation_jp                                                String[]
+  education_programs_offered_en                                   String[]
+  education_programs_offered_jp                                   String[]
+  education_curriculum_en                                         String?
+  education_curriculum_jp                                         String?
+  education_academic_support_en                                   String[]
+  education_academic_support_jp                                   String[]
+  education_extracurricular_activities_en                         String[]
+  education_extracurricular_activities_jp                         String[]
+  admissions_acceptance_policy_en                                 String?
+  admissions_acceptance_policy_jp                                 String?
+  admissions_application_guidelines_en                            String?
+  admissions_application_guidelines_jp                            String?
+  admissions_age_requirements_en                                  String?
+  admissions_age_requirements_jp                                  String?
+  admissions_fees_en                                              String?
+  admissions_fees_jp                                              String?
+  admissions_breakdown_fees_application_fee_en                    String?
+  admissions_breakdown_fees_application_fee_jp                    String?
+  admissions_breakdown_fees_day_care_fee_tuition_en               String?
+  admissions_breakdown_fees_day_care_fee_tuition_jp               String?
+  admissions_breakdown_fees_day_care_fee_registration_fee_en      String?
+  admissions_breakdown_fees_day_care_fee_registration_fee_jp      String?
+  admissions_breakdown_fees_day_care_fee_maintenance_fee_en       String?
+  admissions_breakdown_fees_day_care_fee_maintenance_fee_jp       String?
+  admissions_breakdown_fees_kindergarten_tuition_en               String?
+  admissions_breakdown_fees_kindergarten_tuition_jp               String?
+  admissions_breakdown_fees_kindergarten_registration_fee_en      String?
+  admissions_breakdown_fees_kindergarten_registration_fee_jp      String?
+  admissions_breakdown_fees_kindergarten_maintenance_fee_en       String?
+  admissions_breakdown_fees_kindergarten_maintenance_fee_jp       String?
+  admissions_breakdown_fees_grade_elementary_tuition_en           String?
+  admissions_breakdown_fees_grade_elementary_tuition_jp           String?
+  admissions_breakdown_fees_grade_elementary_registration_fee_en  String?
+  admissions_breakdown_fees_grade_elementary_registration_fee_jp  String?
+  admissions_breakdown_fees_grade_elementary_maintenance_fee_en   String?
+  admissions_breakdown_fees_grade_elementary_maintenance_fee_jp   String?
+  admissions_breakdown_fees_grade_junior_high_tuition_en          String?
+  admissions_breakdown_fees_grade_junior_high_tuition_jp          String?
   admissions_breakdown_fees_grade_junior_high_registration_fee_en String?
   admissions_breakdown_fees_grade_junior_high_registration_fee_jp String?
-  admissions_breakdown_fees_grade_junior_high_maintenance_fee_en   String?
-  admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp   String?
-  admissions_breakdown_fees_grade_high_school_tuition_en        String?
-  admissions_breakdown_fees_grade_high_school_tuition_jp        String?
+  admissions_breakdown_fees_grade_junior_high_maintenance_fee_en  String?
+  admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp  String?
+  admissions_breakdown_fees_grade_high_school_tuition_en          String?
+  admissions_breakdown_fees_grade_high_school_tuition_jp          String?
   admissions_breakdown_fees_grade_high_school_registration_fee_en String?
   admissions_breakdown_fees_grade_high_school_registration_fee_jp String?
-  admissions_breakdown_fees_grade_high_school_maintenance_fee_en   String?
-  admissions_breakdown_fees_grade_high_school_maintenance_fee_jp   String?
-  admissions_breakdown_fees_summer_school_tuition_en           String?
-  admissions_breakdown_fees_summer_school_tuition_jp           String?
-  admissions_breakdown_fees_summer_school_registration_fee_en   String?
-  admissions_breakdown_fees_summer_school_registration_fee_jp   String?
-  admissions_breakdown_fees_summer_school_maintenance_fee_en     String?
-  admissions_breakdown_fees_summer_school_maintenance_fee_jp     String?
-  admissions_breakdown_fees_other_tuition_en                  String?
-  admissions_breakdown_fees_other_tuition_jp                  String?
-  admissions_breakdown_fees_other_registration_fee_en          String?
-  admissions_breakdown_fees_other_registration_fee_jp          String?
-  admissions_breakdown_fees_other_maintenance_fee_en            String?
-  admissions_breakdown_fees_other_maintenance_fee_jp            String?
-  admissions_procedure_en                            String?
-  admissions_procedure_jp                            String?
-  admissions_language_requirements_students_en       String?
-  admissions_language_requirements_students_jp       String?
-  admissions_language_requirements_parents_en        String?
-  admissions_language_requirements_parents_jp        String?
+  admissions_breakdown_fees_grade_high_school_maintenance_fee_en  String?
+  admissions_breakdown_fees_grade_high_school_maintenance_fee_jp  String?
+  admissions_breakdown_fees_summer_school_tuition_en              String?
+  admissions_breakdown_fees_summer_school_tuition_jp              String?
+  admissions_breakdown_fees_summer_school_registration_fee_en     String?
+  admissions_breakdown_fees_summer_school_registration_fee_jp     String?
+  admissions_breakdown_fees_summer_school_maintenance_fee_en      String?
+  admissions_breakdown_fees_summer_school_maintenance_fee_jp      String?
+  admissions_breakdown_fees_other_tuition_en                      String?
+  admissions_breakdown_fees_other_tuition_jp                      String?
+  admissions_breakdown_fees_other_registration_fee_en             String?
+  admissions_breakdown_fees_other_registration_fee_jp             String?
+  admissions_breakdown_fees_other_maintenance_fee_en              String?
+  admissions_breakdown_fees_other_maintenance_fee_jp              String?
+  admissions_procedure_en                                         String?
+  admissions_procedure_jp                                         String?
+  admissions_language_requirements_students_en                    String?
+  admissions_language_requirements_students_jp                    String?
+  admissions_language_requirements_parents_en                     String?
+  admissions_language_requirements_parents_jp                     String?
+  events_en                                                       String[]
+  events_jp                                                       String[]
+  campus_facilities_en                                            String[]
+  campus_facilities_jp                                            String[]
+  campus_virtual_tour_en                                          String?
+  campus_virtual_tour_jp                                          String?
+  student_life_counseling_en                                      String?
+  student_life_counseling_jp                                      String?
+  student_life_support_services_en                                String[]
+  student_life_support_services_jp                                String[]
+  student_life_library_en                                         String?
+  student_life_library_jp                                         String?
+  student_life_calendar_en                                        String?
+  student_life_calendar_jp                                        String?
+  student_life_tour_en                                            String?
+  student_life_tour_jp                                            String?
+  employment_open_positions_en                                    String[]
+  employment_open_positions_jp                                    String[]
+  employment_application_process_en                               String?
+  employment_application_process_jp                               String?
+  policies_privacy_policy_en                                      String?
+  policies_privacy_policy_jp                                      String?
+  policies_terms_of_use_en                                        String?
+  policies_terms_of_use_jp                                        String?
+  staff_staff_list_en                                             String[]
+  staff_staff_list_jp                                             String[]
+  staff_board_members_en                                          String[]
+  staff_board_members_jp                                          String[]
+  short_description_en                                            String?
+  short_description_jp                                            String?
+  description_en                                                  String?
+  description_jp                                                  String?
+  country_en                                                      String?
+  country_jp                                                      String?
+  region_en                                                       String?
+  region_jp                                                       String?
+  geography_en                                                    String?
+  geography_jp                                                    String?
+  is_verified                                                     Boolean           @default(false)
+  verification_date                                               DateTime?
+  verified_by                                                     Int?
+  browsingHistories                                               BrowsingHistory[]
+  admins                                                          SchoolAdmin[]
+  claims                                                          SchoolClaim[]
+  userListSchools                                                 UserListSchools[]
 
-  events_en String[]
-  events_jp String[]
-
-  // Campus
-  campus_facilities_en String[]
-  campus_facilities_jp String[]
-  campus_virtual_tour_en String?
-  campus_virtual_tour_jp String?
-
-  // Student Life
-  student_life_counseling_en           String?
-  student_life_counseling_jp           String?
-  student_life_support_services_en    String[]
-  student_life_support_services_jp    String[]
-  student_life_library_en             String?
-  student_life_library_jp             String?
-  student_life_calendar_en            String?
-  student_life_calendar_jp            String?
-  student_life_tour_en                String?
-  student_life_tour_jp                String?
-
-  // Employment
-  employment_open_positions_en        String[]
-  employment_open_positions_jp        String[]
-  employment_application_process_en   String?
-  employment_application_process_jp   String?
-
-  // Policies
-  policies_privacy_policy_en String?
-  policies_privacy_policy_jp String?
-  policies_terms_of_use_en    String?
-  policies_terms_of_use_jp    String?
-
-  // Staff
-  staff_staff_list_en     String[]
-  staff_staff_list_jp     String[]
-  staff_board_members_en  String[]
-  staff_board_members_jp  String[]
-
-  // New Columns Added
-  short_description_en String?
-  short_description_jp String?
-  description_en       String?
-  description_jp       String?
-
-  // Additional Columns
-  country_en   String?
-  country_jp   String?
-  region_en    String?
-  region_jp    String?
-  geography_en String?
-  geography_jp String?
-
-  // Relations
-  userListSchools UserListSchools[]
-  browsingHistories BrowsingHistory[]
-
-  // Indexes
-  @@index([name_en, name_jp], name: "idx_school_name")
-  @@index([location_en, location_jp], name: "idx_school_location")
-  @@index([email_en, email_jp], name: "idx_school_email")
-  @@index([phone_en, phone_jp], name: "idx_school_phone")
-  @@index([created_at, updated_at], name: "idx_school_timestamps")
-  @@index([url_en, url_jp], name: "idx_school_url")
-  @@index([logo_id], name: "idx_school_logo")
-  @@index([image_id], name: "idx_school_image")
-  @@index([country_en, country_jp], name: "idx_school_country")
-  @@index([region_en, region_jp], name: "idx_school_region")
-  @@index([geography_en, geography_jp], name: "idx_school_geography")
+  @@index([name_en, name_jp], map: "idx_school_name")
+  @@index([location_en, location_jp], map: "idx_school_location")
+  @@index([email_en, email_jp], map: "idx_school_email")
+  @@index([phone_en, phone_jp], map: "idx_school_phone")
+  @@index([created_at, updated_at], map: "idx_school_timestamps")
+  @@index([url_en, url_jp], map: "idx_school_url")
+  @@index([logo_id], map: "idx_school_logo")
+  @@index([image_id], map: "idx_school_image")
+  @@index([country_en, country_jp], map: "idx_school_country")
+  @@index([region_en, region_jp], map: "idx_school_region")
+  @@index([geography_en, geography_jp], map: "idx_school_geography")
 }
 
 model UserList {
-  list_id    Int      @id @default(autoincrement())
+  list_id    Int               @id @default(autoincrement())
   list_name  String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // Relations
-  user    User              @relation(fields: [user_id], references: [user_id])
-  user_id Int
-  schools UserListSchools[]
+  created_at DateTime          @default(now())
+  updated_at DateTime          @updatedAt
+  user_id    Int
+  user       User              @relation(fields: [user_id], references: [user_id])
+  schools    UserListSchools[]
 }
 
 model UserListSchools {
-  // Composite key for (list_id, school_id)
   list_id   Int
   school_id Int
-
-  // Relations
-  list   UserList @relation(fields: [list_id], references: [list_id])
-  school School   @relation(fields: [school_id], references: [school_id])
+  list      UserList @relation(fields: [list_id], references: [list_id])
+  school    School   @relation(fields: [school_id], references: [school_id])
 
   @@id([list_id, school_id])
 }
@@ -229,10 +201,54 @@ model BrowsingHistory {
   user_id    Int
   school_id  Int
   viewed_at  DateTime @default(now())
+  school     School   @relation(fields: [school_id], references: [school_id])
+  user       User     @relation(fields: [user_id], references: [user_id])
 
-  // Relations
-  user   User   @relation(fields: [user_id], references: [user_id])
-  school School @relation(fields: [school_id], references: [school_id])
+  @@index([user_id, school_id], map: "idx_browsing_history_user_school")
+}
 
-  @@index([user_id, school_id], name: "idx_browsing_history_user_school")
+model SchoolClaim {
+  claim_id            Int         @id @default(autoincrement())
+  school_id           Int
+  user_id             Int
+  status              ClaimStatus @default(PENDING)
+  verification_method String
+  verification_data   String
+  submitted_at        DateTime    @default(now())
+  processed_at        DateTime?
+  processed_by        Int?
+  notes               String?
+  processor           User?       @relation("ClaimProcessor", fields: [processed_by], references: [user_id])
+  school              School      @relation(fields: [school_id], references: [school_id])
+  user                User        @relation(fields: [user_id], references: [user_id])
+
+  @@index([school_id])
+  @@index([user_id])
+  @@index([status])
+}
+
+model SchoolAdmin {
+  school_id   Int
+  user_id     Int
+  assigned_at DateTime @default(now())
+  assigned_by Int
+  assigner    User     @relation("AdminAssigner", fields: [assigned_by], references: [user_id])
+  school      School   @relation(fields: [school_id], references: [school_id])
+  user        User     @relation(fields: [user_id], references: [user_id])
+
+  @@id([school_id, user_id])
+  @@index([school_id])
+  @@index([user_id])
+}
+
+enum UserRole {
+  USER
+  SCHOOL_ADMIN
+  SUPER_ADMIN
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
