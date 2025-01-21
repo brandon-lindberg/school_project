@@ -228,17 +228,14 @@ const ListPage: React.FC = () => {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        // For unauthenticated users, just fetch random schools
+        fetchRandomSchools();
       }
     };
 
     loadInitialData();
   }, [loadInitialSchools, fetchRandomSchools, session]);
-
-  useEffect(() => {
-    if (!session?.user) {
-      fetchRandomSchools();
-    }
-  }, [session, fetchRandomSchools]);
 
   const debouncedSearch = useMemo(
     () =>

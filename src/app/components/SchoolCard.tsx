@@ -160,10 +160,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               />
             </div>
             <div className="min-w-0 flex-1">
-              <Link
-                href={`/schools/${school.school_id}`}
-                className="block hover:text-blue-600"
-              >
+              <Link href={`/schools/${school.school_id}`} className="block hover:text-blue-600">
                 <h3 className="font-bold text-gray-900 text-xs leading-5 line-clamp-2 cursor-pointer">
                   {highlightText(
                     getLocalizedContent(school.name_en, school.name_jp, language) || '',
@@ -198,10 +195,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_students_en
                   ? getLocalizedContent(
-                    school.admissions_language_requirements_students_en,
-                    school.admissions_language_requirements_students_jp,
-                    language
-                  ) || ''
+                      school.admissions_language_requirements_students_en,
+                      school.admissions_language_requirements_students_jp,
+                      language
+                    ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -216,10 +213,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_parents_en
                   ? getLocalizedContent(
-                    school.admissions_language_requirements_parents_en,
-                    school.admissions_language_requirements_parents_jp,
-                    language
-                  ) || ''
+                      school.admissions_language_requirements_parents_en,
+                      school.admissions_language_requirements_parents_jp,
+                      language
+                    ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -234,10 +231,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_age_requirements_en
                   ? getLocalizedContent(
-                    school.admissions_age_requirements_en,
-                    school.admissions_age_requirements_jp,
-                    language
-                  ) || ''
+                      school.admissions_age_requirements_en,
+                      school.admissions_age_requirements_jp,
+                      language
+                    ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -278,8 +275,9 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             >
               <button
                 onClick={handleToggleList}
-                className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
+                className={`${
+                  isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
               >
                 <span className="text-lg cursor-pointer">{isInList ? '✓' : '+'}</span>
               </button>

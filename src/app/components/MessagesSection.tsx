@@ -1,47 +1,14 @@
-import { useState, useEffect } from 'react';
-import { format, differenceInDays } from 'date-fns';
+import { useState } from 'react';
+import { format, differenceInDays, isValid } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronDownIcon, ChevronUpIcon, ClockIcon } from '@heroicons/react/24/outline';
-
-type Message = {
-  message: {
-    message_id: number;
-    title: string;
-    content: string;
-    created_at: string;
-    scheduled_deletion: string;
-    is_broadcast: boolean;
-    sender: {
-      email: string;
-      family_name: string | null;
-      first_name: string | null;
-    };
-  };
-  is_read: boolean;
-  read_at: string | null;
-};
+import { useDashboard } from '../contexts/DashboardContext';
 
 export default function MessagesSection() {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
   const { language } = useLanguage();
-
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  const fetchMessages = async () => {
-    try {
-      const response = await fetch('/api/messages');
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    }
-  };
+  const { messages, refreshData } = useDashboard();
 
   const markAsRead = async (messageId: number) => {
     try {
@@ -49,13 +16,7 @@ export default function MessagesSection() {
         method: 'POST',
       });
       if (response.ok) {
-        setMessages(
-          messages.map(msg =>
-            msg.message.message_id === messageId
-              ? { ...msg, is_read: true, read_at: new Date().toISOString() }
-              : msg
-          )
-        );
+        refreshData();
       }
     } catch (error) {
       console.error('Error marking message as read:', error);
@@ -67,32 +28,55 @@ export default function MessagesSection() {
       setExpandedMessageId(null);
     } else {
       setExpandedMessageId(messageId);
-      const message = messages.find(msg => msg.message.message_id === messageId);
+      const message = messages.find(msg => msg.message_id === messageId);
       if (message && !message.is_read) {
         await markAsRead(messageId);
       }
     }
   };
 
-  const getSenderName = (sender: Message['message']['sender']) => {
+  const getSenderName = (sender: {
+    email: string;
+    family_name: string | null;
+    first_name: string | null;
+  }) => {
     if (sender.family_name && sender.first_name) {
       return `${sender.family_name} ${sender.first_name}`;
     }
     return sender.email;
   };
 
-  const formatDate = (date: string, formatStr: string) => {
+  const formatDate = (date: string | null | undefined, formatStr: string) => {
+    if (!date) return '';
+    const parsedDate = new Date(date);
+    if (!isValid(parsedDate)) return '';
+
     if (language === 'jp') {
-      return format(new Date(date), formatStr, { locale: ja })
-        .replace(/\d+月/, match => match.replace('月', '月 ')) // Add space after month
-        .replace(/\d+日/, match => match.replace('日', '日 ')) // Add space after day
-        .replace(/午前|午後/, match => `${match} `); // Add space after AM/PM
+      return format(parsedDate, formatStr, { locale: ja })
+        .replace(/\d+月/, match => match.replace('月', '月 '))
+        .replace(/\d+日/, match => match.replace('日', '日 '))
+        .replace(/午前|午後/, match => `${match} `);
     }
-    return format(new Date(date), formatStr);
+    return format(parsedDate, formatStr);
   };
 
-  const getExpirationInfo = (scheduledDeletion: string) => {
-    const daysLeft = differenceInDays(new Date(scheduledDeletion), new Date());
+  const getExpirationInfo = (scheduledDeletion: string | null | undefined) => {
+    if (!scheduledDeletion) {
+      return {
+        text: language === 'en' ? 'No deletion date set' : '削除日未設定',
+        tooltip: language === 'en' ? 'No deletion date set' : '削除日が設定されていません',
+      };
+    }
+
+    const deletionDate = new Date(scheduledDeletion);
+    if (!isValid(deletionDate)) {
+      return {
+        text: language === 'en' ? 'Invalid deletion date' : '無効な削除日',
+        tooltip: language === 'en' ? 'Invalid deletion date' : '無効な削除日',
+      };
+    }
+
+    const daysLeft = differenceInDays(deletionDate, new Date());
 
     if (language === 'en') {
       return {
@@ -114,18 +98,18 @@ export default function MessagesSection() {
       </h2>
 
       <div className="space-y-4">
-        {messages.length === 0 ? (
+        {!messages || messages.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             {language === 'en' ? 'No messages' : 'メッセージはありません'}
           </div>
         ) : (
           messages.map(msg => (
-            <div key={msg.message.message_id} className="space-y-2">
+            <div key={msg.message_id} className="space-y-2">
               {/* Message Preview */}
               <button
-                onClick={() => handleMessageClick(msg.message.message_id)}
+                onClick={() => handleMessageClick(msg.message_id)}
                 className={`w-full text-left transition-colors ${
-                  expandedMessageId === msg.message.message_id
+                  expandedMessageId === msg.message_id
                     ? 'bg-blue-50'
                     : msg.is_read
                       ? 'bg-white hover:bg-gray-50'
@@ -134,28 +118,29 @@ export default function MessagesSection() {
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-gray-900 truncate">{msg.message.title}</h4>
+                    <h4 className="font-medium text-gray-900 truncate">{msg.title}</h4>
                     {!msg.is_read && (
                       <span className="inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                         {language === 'en' ? 'New' : '新着'}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{msg.message.content}</p>
+                  <p className="text-sm text-gray-600 truncate">{msg.content}</p>
                   <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                     <ClockIcon className="w-4 h-4" />
-                    <span title={getExpirationInfo(msg.message.scheduled_deletion).tooltip}>
-                      {getExpirationInfo(msg.message.scheduled_deletion).text}
+                    <span title={getExpirationInfo(msg.scheduled_deletion).tooltip}>
+                      {getExpirationInfo(msg.scheduled_deletion).text}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-xs text-gray-500 mb-1">
-                    {language === 'en'
-                      ? formatDate(msg.message.created_at, 'MMM d, h:mm a')
-                      : formatDate(msg.message.created_at, 'M月d日 aa h:mm')}
+                    {formatDate(
+                      msg.created_at,
+                      language === 'en' ? 'MMM d, h:mm a' : 'M月d日 aa h:mm'
+                    )}
                   </span>
-                  {expandedMessageId === msg.message.message_id ? (
+                  {expandedMessageId === msg.message_id ? (
                     <ChevronUpIcon className="w-5 h-5 text-gray-400" />
                   ) : (
                     <ChevronDownIcon className="w-5 h-5 text-gray-400" />
@@ -164,26 +149,25 @@ export default function MessagesSection() {
               </button>
 
               {/* Expanded Message */}
-              {expandedMessageId === msg.message.message_id && (
+              {expandedMessageId === msg.message_id && (
                 <div className="ml-4 pl-4 border-l-2 border-blue-200">
                   <div className="bg-white rounded-lg border p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className="font-medium text-gray-900">
-                          {getSenderName(msg.message.sender)}
-                        </div>
+                        <div className="font-medium text-gray-900">{getSenderName(msg.sender)}</div>
                         <div className="text-sm text-gray-500">
-                          {language === 'en'
-                            ? formatDate(msg.message.created_at, 'MMM d, yyyy h:mm a')
-                            : formatDate(msg.message.created_at, 'yyyy年M月d日 aa h:mm')}
+                          {formatDate(
+                            msg.created_at,
+                            language === 'en' ? 'MMM d, yyyy h:mm a' : 'yyyy年M月d日 aa h:mm'
+                          )}
                         </div>
                         <div
                           className="text-sm text-gray-500 mt-1"
-                          title={getExpirationInfo(msg.message.scheduled_deletion).tooltip}
+                          title={getExpirationInfo(msg.scheduled_deletion).tooltip}
                         >
                           <span className="inline-flex items-center gap-1">
                             <ClockIcon className="w-4 h-4" />
-                            {getExpirationInfo(msg.message.scheduled_deletion).text}
+                            {getExpirationInfo(msg.scheduled_deletion).text}
                           </span>
                         </div>
                       </div>
@@ -191,17 +175,16 @@ export default function MessagesSection() {
                         <div className="text-xs text-gray-500">
                           {language === 'en' ? 'Read' : '既読'}
                           {msg.read_at &&
-                            (language === 'en'
-                              ? ` • ${formatDate(msg.read_at, 'MMM d, h:mm a')}`
-                              : ` • ${formatDate(msg.read_at, 'M月d日 aa h:mm')}`)}
+                            formatDate(
+                              msg.read_at,
+                              language === 'en' ? ' • MMM d, h:mm a' : ' • M月d日 aa h:mm'
+                            )}
                         </div>
                       )}
                     </div>
                     <div className="prose prose-sm max-w-none">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        {msg.message.title}
-                      </h3>
-                      <p className="text-gray-700 whitespace-pre-wrap">{msg.message.content}</p>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">{msg.title}</h3>
+                      <p className="text-gray-700 whitespace-pre-wrap">{msg.content}</p>
                     </div>
                   </div>
                 </div>

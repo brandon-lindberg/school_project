@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import DashboardSkeleton from '../components/DashboardSkeleton';
@@ -11,6 +11,7 @@ import MessagesSection from '../components/MessagesSection';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useListStatus } from '../contexts/ListStatusContext';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
+import { DashboardProvider, useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
 
 // Define the type for user list items
@@ -48,13 +49,9 @@ const getUserId = async (): Promise<number> => {
   return data.userId;
 };
 
-const DashboardPage: React.FC = () => {
-  const [userLists, setUserLists] = useState<UserList[]>([]);
-  const [managedSchools, setManagedSchools] = useState<ManagedSchool[]>([]);
-  const [userRole, setUserRole] = useState<string | null>(null);
+function DashboardContent() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
+  const { status } = useSession();
   const { language } = useLanguage();
   const { updateListStatus } = useListStatus();
   const {
@@ -62,51 +59,16 @@ const DashboardPage: React.FC = () => {
     deleteHistoryEntry: handleDeleteHistoryEntry,
     clearHistory: handleClearHistory,
   } = useBrowsingHistory();
+  const { userLists, managedSchools, userRole, isLoading, refreshData } = useDashboard();
 
-  useEffect(() => {
-    if (status === 'loading') {
-      return;
-    }
+  if (status === 'loading' || isLoading) {
+    return <DashboardSkeleton />;
+  }
 
-    if (status === 'unauthenticated') {
-      router.replace('/list');
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        // Get the actual userId using the getUserId function
-        const fetchedUserId = await getUserId();
-
-        // Fetch user lists
-        const listsResponse = await fetch(`/api/userLists?userId=${fetchedUserId}`);
-        if (!listsResponse.ok) {
-          throw new Error('Failed to fetch user lists');
-        }
-        const listsData = await listsResponse.json();
-        setUserLists(listsData.lists);
-
-        // Fetch user role and managed schools
-        const roleResponse = await fetch('/api/user/role');
-        if (!roleResponse.ok) {
-          throw new Error('Failed to fetch user role');
-        }
-        const roleData = await roleResponse.json();
-        setUserRole(roleData.role);
-        setManagedSchools(roleData.managedSchools);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        router.replace('/list');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (session) {
-      fetchData();
-    }
-  }, [session, status, router]);
+  if (status === 'unauthenticated') {
+    router.replace('/list');
+    return null;
+  }
 
   const handleDeleteSchoolFromList = async (listId: number, schoolId: number) => {
     try {
@@ -121,31 +83,13 @@ const DashboardPage: React.FC = () => {
       // Update the list status context
       updateListStatus(schoolId, { isInList: false, listId: null });
 
-      // Refresh the list after deletion
-      const updatedLists = userLists.map(list => {
-        if (list.list_id === listId) {
-          return {
-            ...list,
-            schools: list.schools.filter(school => school.school_id !== schoolId),
-          };
-        }
-        return list;
-      });
-
-      setUserLists(updatedLists);
+      // Refresh dashboard data
+      await refreshData();
     } catch (error) {
       console.error('Error removing school from list:', error);
       router.replace('/list');
     }
   };
-
-  if (status === 'loading' || isLoading) {
-    return <DashboardSkeleton />;
-  }
-
-  if (status === 'unauthenticated') {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans">
@@ -207,6 +151,12 @@ const DashboardPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default DashboardPage;
+export default function DashboardPage() {
+  return (
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
+  );
+}

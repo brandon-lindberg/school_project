@@ -65,7 +65,7 @@ export function ClaimSchoolModal({
       onClose();
       onNotification({
         type: 'success',
-        message: language === 'en' ? 'Claim submitted successfully!' : '申請が完了しました！'
+        message: language === 'en' ? 'Claim submitted successfully!' : '申請が完了しました！',
       });
       // Update the parent component's state to reflect the pending claim
       setHasPendingClaim(true);

@@ -1,36 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
-
-type Notification = {
-  notification_id: number;
-  type: 'CLAIM_SUBMITTED' | 'CLAIM_APPROVED' | 'CLAIM_REJECTED';
-  title: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
-};
+import { useDashboard } from '../contexts/DashboardContext';
 
 export default function NotificationsSection() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { notifications, refreshData } = useDashboard();
   const { language } = useLanguage();
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch('/api/notifications');
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
 
   const clearAllNotifications = async () => {
     try {
@@ -38,7 +14,7 @@ export default function NotificationsSection() {
         method: 'POST',
       });
       if (response.ok) {
-        setNotifications([]);
+        refreshData();
       }
     } catch (error) {
       console.error('Error clearing notifications:', error);
