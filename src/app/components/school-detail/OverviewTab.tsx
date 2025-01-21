@@ -87,6 +87,10 @@ export function OverviewTab({
 
   const handleClaimSuccess = () => {
     setHasPendingClaim(true);
+    setClaimStatus(prevStatus => prevStatus ? {
+      ...prevStatus,
+      hasPendingClaim: true
+    } : null);
   };
 
   // Add notification auto-dismiss
@@ -192,15 +196,14 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
-                  claimStatus?.hasPendingClaim
-                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                    : claimStatus?.isClaimed
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
+                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                  : claimStatus?.isClaimed
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : claimStatus?.hasExistingSchool
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : claimStatus?.hasExistingSchool
-                        ? 'bg-gray-500 cursor-not-allowed'
-                        : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white`}
                 disabled={
                   claimStatus?.hasPendingClaim ||
                   claimStatus?.isClaimed ||
@@ -291,6 +294,7 @@ export function OverviewTab({
           onClose={() => setIsClaimModalOpen(false)}
           onSuccess={handleClaimSuccess}
           onNotification={setNotification}
+          setHasPendingClaim={setHasPendingClaim}
         />
       )}
     </div>

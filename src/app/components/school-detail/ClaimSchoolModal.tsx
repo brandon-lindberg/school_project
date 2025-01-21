@@ -12,6 +12,7 @@ interface ClaimSchoolModalProps {
   onClose: () => void;
   onSuccess: () => void;
   onNotification: (notification: { type: 'success' | 'error'; message: string } | null) => void;
+  setHasPendingClaim: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function ClaimSchoolModal({
@@ -20,11 +21,13 @@ export function ClaimSchoolModal({
   onClose,
   onSuccess,
   onNotification,
+  setHasPendingClaim,
 }: ClaimSchoolModalProps) {
   const [verificationMethod, setVerificationMethod] = useState<'EMAIL' | 'DOCUMENT'>('EMAIL');
   const [verificationData, setVerificationData] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
   const { data: session } = useSession();
   const router = useRouter();
@@ -33,8 +36,8 @@ export function ClaimSchoolModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted');
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch(`/api/schools/${schoolId}/claim`, {
@@ -53,38 +56,28 @@ export function ClaimSchoolModal({
       const data = await response.json();
       console.log('API Data:', data);
 
-      if (response.ok) {
-        console.log('Claim submitted successfully');
-        onSuccess();
-        onClose();
-
-        // Send success notification to parent
-        onNotification({
-          type: 'success',
-          message:
-            language === 'en'
-              ? 'Your claim has been submitted successfully and is pending review.'
-              : '申請が正常に送信され、審査待ちです。',
-        });
-      } else {
-        console.log('Setting error notification');
-        onNotification({
-          type: 'error',
-          message:
-            language === 'en'
-              ? 'Failed to submit claim. Please try again.'
-              : '申請の送信に失敗しました。もう一度お試しください。',
-        });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit claim');
       }
+
+      console.log('Claim submitted successfully');
+      onSuccess();
+      onClose();
+      onNotification({
+        type: 'success',
+        message: language === 'en' ? 'Claim submitted successfully!' : '申請が完了しました！'
+      });
+      // Update the parent component's state to reflect the pending claim
+      setHasPendingClaim(true);
     } catch (error) {
       console.error('Error submitting claim:', error);
-      onNotification({
-        type: 'error',
-        message:
-          language === 'en'
-            ? 'An error occurred. Please try again.'
-            : 'エラーが発生しました。もう一度お試しください。',
-      });
+      setError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'Failed to submit claim'
+            : '申請の送信に失敗しました'
+      );
     } finally {
       setIsSubmitting(false);
     }
