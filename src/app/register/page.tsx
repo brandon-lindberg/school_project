@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
+import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -42,8 +43,21 @@ export default function RegisterPage() {
       if (!res.ok) {
         setMessage(data.error || translations.somethingWrong);
       } else {
-        setMessage(`${translations.successMessage}${data.userId}`);
-        router.push('/list');
+        // After successful registration, sign in the user
+        const signInResult = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (signInResult?.error) {
+          setMessage(signInResult.error);
+        } else {
+          // Wait for the session to be updated
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          router.push('/list');
+          router.refresh();
+        }
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
