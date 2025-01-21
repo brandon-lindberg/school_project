@@ -73,9 +73,32 @@ export async function POST(request: NextRequest) {
         verification_method: validatedData.verificationMethod,
         verification_data: validatedData.verificationData,
         notes: validatedData.notes,
-        status: 'PENDING', // All claims start as pending
+        status: 'PENDING',
       },
     });
+
+    // Notify all super admins about the new claim
+    const superAdmins = await prisma.user.findMany({
+      where: { role: 'SUPER_ADMIN' },
+      select: { user_id: true },
+    });
+
+    const schoolName = school.name_en || school.name_jp || 'School';
+    const claimantName =
+      [user.first_name, user.family_name].filter(Boolean).join(' ') || user.email;
+
+    await prisma.$transaction(
+      superAdmins.map(admin =>
+        prisma.notification.create({
+          data: {
+            user_id: admin.user_id,
+            type: 'CLAIM_SUBMITTED',
+            title: `New School Claim: ${schoolName}`,
+            message: `${claimantName} has submitted a claim for ${schoolName}. Verification method: ${validatedData.verificationMethod}`,
+          },
+        })
+      )
+    );
 
     return NextResponse.json({
       message: 'Claim submitted successfully',

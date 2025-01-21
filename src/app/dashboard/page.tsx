@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import UserLists from '../components/UserLists';
 import BrowsingHistory from '../components/BrowsingHistory';
+import NotificationsSection from '../components/NotificationsSection';
+import MessagesSection from '../components/MessagesSection';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useListStatus } from '../contexts/ListStatusContext';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
@@ -181,8 +183,15 @@ const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Browsing History */}
+          {/* Right Column - Messages, Notifications and Browsing History */}
           <div className="space-y-6">
+            {/* Messages Section */}
+            <MessagesSection />
+
+            {/* Notifications Section */}
+            <NotificationsSection />
+
+            {/* Browsing History Section */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-2xl font-semibold text-[#333333] mb-6">
                 {language === 'en' ? 'Browsing History' : '閲覧履歴'}

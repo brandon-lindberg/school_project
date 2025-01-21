@@ -38,7 +38,15 @@ export async function POST(request: NextRequest) {
     // Get the claim
     const claim = await prisma.schoolClaim.findUnique({
       where: { claim_id: validatedData.claimId },
-      include: { school: true },
+      include: {
+        school: {
+          select: {
+            school_id: true,
+            name_en: true,
+            name_jp: true,
+          },
+        },
+      },
     });
 
     if (!claim) {
@@ -57,6 +65,23 @@ export async function POST(request: NextRequest) {
         processed_at: new Date(),
         processed_by: user.user_id,
         notes: validatedData.notes,
+      },
+    });
+
+    // Create notification for the user who made the claim
+    const schoolName = claim.school.name_en || claim.school.name_jp || 'School';
+    await prisma.notification.create({
+      data: {
+        user_id: claim.user_id,
+        type: validatedData.status === 'APPROVED' ? 'CLAIM_APPROVED' : 'CLAIM_REJECTED',
+        title:
+          validatedData.status === 'APPROVED'
+            ? `School Claim Approved: ${schoolName}`
+            : `School Claim Rejected: ${schoolName}`,
+        message:
+          validatedData.status === 'APPROVED'
+            ? `Your claim for ${schoolName} has been approved. You now have admin access to manage the school.`
+            : `Your claim for ${schoolName} has been rejected.${validatedData.notes ? ` Reason: ${validatedData.notes}` : ''}`,
       },
     });
 

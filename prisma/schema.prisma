@@ -24,6 +24,9 @@ model User {
   processedClaims     SchoolClaim[]     @relation("ClaimProcessor")
   schoolClaims        SchoolClaim[]
   lists               UserList[]
+  notifications       Notification[]
+  sentMessages        Message[]          @relation("MessageSender")
+  receivedMessages    MessageRecipient[]
 }
 
 model School {
@@ -251,4 +254,55 @@ enum ClaimStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum NotificationType {
+  CLAIM_SUBMITTED
+  CLAIM_APPROVED
+  CLAIM_REJECTED
+  MESSAGE_RECEIVED
+}
+
+model Notification {
+  notification_id Int              @id @default(autoincrement())
+  user_id        Int
+  type           NotificationType
+  title          String
+  message        String
+  is_read        Boolean          @default(false)
+  created_at     DateTime         @default(now())
+  user           User             @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id])
+  @@index([created_at])
+  @@index([is_read])
+}
+
+model Message {
+  message_id          Int                @id @default(autoincrement())
+  sender_id          Int
+  title              String
+  content            String
+  created_at         DateTime           @default(now())
+  is_broadcast       Boolean            @default(false)
+  scheduled_deletion DateTime           @default(dbgenerated("NOW() + INTERVAL '30 days'"))
+  sender             User               @relation("MessageSender", fields: [sender_id], references: [user_id])
+  recipients         MessageRecipient[]
+
+  @@index([sender_id])
+  @@index([created_at])
+  @@index([scheduled_deletion])
+}
+
+model MessageRecipient {
+  message_id Int
+  user_id    Int
+  is_read    Boolean   @default(false)
+  read_at    DateTime?
+  message    Message   @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
+  user       User      @relation(fields: [user_id], references: [user_id])
+
+  @@id([message_id, user_id])
+  @@index([user_id])
+  @@index([is_read])
 }
