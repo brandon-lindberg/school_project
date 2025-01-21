@@ -131,7 +131,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
 
   return (
     <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
-      <Link href={`/schools/${school.school_id}`} className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col">
         {/* Image */}
         <div className="w-full h-36 relative">
           <Image
@@ -160,8 +160,11 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               />
             </div>
             <div className="min-w-0 flex-1">
-              <Link href={`/schools/${school.school_id}`}>
-                <h3 className="font-bold text-gray-900 text-xs leading-5 line-clamp-2 hover:text-blue-600 cursor-pointer">
+              <Link
+                href={`/schools/${school.school_id}`}
+                className="block hover:text-blue-600"
+              >
+                <h3 className="font-bold text-gray-900 text-xs leading-5 line-clamp-2 cursor-pointer">
                   {highlightText(
                     getLocalizedContent(school.name_en, school.name_jp, language) || '',
                     searchQuery
@@ -243,7 +246,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             </p>
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* Footer actions */}
       <div className="p-4 flex justify-between items-center">
