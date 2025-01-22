@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 
-type Message = {
+type MessageContent = {
   message_id: number;
   title: string;
   content: string;
@@ -12,7 +12,11 @@ type Message = {
     email: string;
     family_name: string | null;
     first_name: string | null;
-  };
+  } | null;
+};
+
+type Message = {
+  message: MessageContent;
   is_read: boolean;
   read_at: string | null;
 };

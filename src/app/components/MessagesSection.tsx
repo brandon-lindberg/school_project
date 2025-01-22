@@ -5,6 +5,26 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronDownIcon, ChevronUpIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useDashboard } from '../contexts/DashboardContext';
 
+type MessageContent = {
+  message_id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  scheduled_deletion: string;
+  is_broadcast: boolean;
+  sender: {
+    email: string;
+    family_name: string | null;
+    first_name: string | null;
+  } | null;
+};
+
+type Message = {
+  message: MessageContent;
+  is_read: boolean;
+  read_at: string | null;
+};
+
 export default function MessagesSection() {
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
   const { language } = useLanguage();
@@ -28,22 +48,25 @@ export default function MessagesSection() {
       setExpandedMessageId(null);
     } else {
       setExpandedMessageId(messageId);
-      const message = messages.find(msg => msg.message_id === messageId);
+      const message = messages.find(msg => msg.message.message_id === messageId);
       if (message && !message.is_read) {
         await markAsRead(messageId);
       }
     }
   };
 
-  const getSenderName = (sender: {
-    email: string;
-    family_name: string | null;
-    first_name: string | null;
-  }) => {
+  const getSenderName = (
+    sender: {
+      email: string;
+      family_name: string | null;
+      first_name: string | null;
+    } | null
+  ) => {
+    if (!sender) return 'System';
     if (sender.family_name && sender.first_name) {
       return `${sender.family_name} ${sender.first_name}`;
     }
-    return sender.email;
+    return sender.email || 'System';
   };
 
   const formatDate = (date: string | null | undefined, formatStr: string) => {
@@ -104,12 +127,12 @@ export default function MessagesSection() {
           </div>
         ) : (
           messages.map(msg => (
-            <div key={msg.message_id} className="space-y-2">
+            <div key={msg.message.message_id} className="space-y-2">
               {/* Message Preview */}
               <button
-                onClick={() => handleMessageClick(msg.message_id)}
+                onClick={() => handleMessageClick(msg.message.message_id)}
                 className={`w-full text-left transition-colors ${
-                  expandedMessageId === msg.message_id
+                  expandedMessageId === msg.message.message_id
                     ? 'bg-blue-50'
                     : msg.is_read
                       ? 'bg-white hover:bg-gray-50'
@@ -118,29 +141,31 @@ export default function MessagesSection() {
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-gray-900 truncate">{msg.title}</h4>
+                    <h4 className="font-medium text-gray-900 truncate">
+                      {msg.message.title || ''}
+                    </h4>
                     {!msg.is_read && (
                       <span className="inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                         {language === 'en' ? 'New' : '新着'}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{msg.content}</p>
+                  <p className="text-sm text-gray-600 truncate">{msg.message.content || ''}</p>
                   <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                     <ClockIcon className="w-4 h-4" />
-                    <span title={getExpirationInfo(msg.scheduled_deletion).tooltip}>
-                      {getExpirationInfo(msg.scheduled_deletion).text}
+                    <span title={getExpirationInfo(msg.message.scheduled_deletion).tooltip}>
+                      {getExpirationInfo(msg.message.scheduled_deletion).text}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-xs text-gray-500 mb-1">
                     {formatDate(
-                      msg.created_at,
+                      msg.message.created_at,
                       language === 'en' ? 'MMM d, h:mm a' : 'M月d日 aa h:mm'
                     )}
                   </span>
-                  {expandedMessageId === msg.message_id ? (
+                  {expandedMessageId === msg.message.message_id ? (
                     <ChevronUpIcon className="w-5 h-5 text-gray-400" />
                   ) : (
                     <ChevronDownIcon className="w-5 h-5 text-gray-400" />
@@ -149,25 +174,27 @@ export default function MessagesSection() {
               </button>
 
               {/* Expanded Message */}
-              {expandedMessageId === msg.message_id && (
+              {expandedMessageId === msg.message.message_id && (
                 <div className="ml-4 pl-4 border-l-2 border-blue-200">
                   <div className="bg-white rounded-lg border p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className="font-medium text-gray-900">{getSenderName(msg.sender)}</div>
+                        <div className="font-medium text-gray-900">
+                          {getSenderName(msg.message.sender)}
+                        </div>
                         <div className="text-sm text-gray-500">
                           {formatDate(
-                            msg.created_at,
+                            msg.message.created_at,
                             language === 'en' ? 'MMM d, yyyy h:mm a' : 'yyyy年M月d日 aa h:mm'
                           )}
                         </div>
                         <div
                           className="text-sm text-gray-500 mt-1"
-                          title={getExpirationInfo(msg.scheduled_deletion).tooltip}
+                          title={getExpirationInfo(msg.message.scheduled_deletion).tooltip}
                         >
                           <span className="inline-flex items-center gap-1">
                             <ClockIcon className="w-4 h-4" />
-                            {getExpirationInfo(msg.scheduled_deletion).text}
+                            {getExpirationInfo(msg.message.scheduled_deletion).text}
                           </span>
                         </div>
                       </div>
@@ -183,8 +210,12 @@ export default function MessagesSection() {
                       )}
                     </div>
                     <div className="prose prose-sm max-w-none">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">{msg.title}</h3>
-                      <p className="text-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {msg.message.title || ''}
+                      </h3>
+                      <p className="text-gray-700 whitespace-pre-wrap">
+                        {msg.message.content || ''}
+                      </p>
                     </div>
                   </div>
                 </div>
