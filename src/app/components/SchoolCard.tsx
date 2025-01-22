@@ -131,23 +131,24 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
 
   return (
     <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
-      <div className="flex-1 flex flex-col">
-        {/* Image */}
-        <div className="w-full h-36 relative">
-          <Image
-            src={
-              school.image_id
-                ? `/logos/${school.image_id}.png`
-                : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
-            }
-            alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
-            fill
-            className="object-cover"
-          />
-        </div>
+      {/* Image */}
+      <div className="w-full h-36 relative">
+        <Image
+          src={
+            school.image_id
+              ? `/logos/${school.image_id}.png`
+              : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
+          }
+          alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
+          fill
+          className="object-cover"
+        />
+      </div>
 
-        {/* Content container */}
-        <div className="p-4 flex-1 flex flex-col space-y-3">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col">
+        {/* Content section */}
+        <div className="p-4 flex-1 flex flex-col gap-2">
           {/* Logo and title container */}
           <div className="flex items-start gap-2">
             <div className="flex-shrink-0">
@@ -187,7 +188,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           )}
 
           {/* Requirements Info */}
-          <div className="space-y-1 mb-8">
+          <div className="flex flex-col gap-1">
             <p className="text-gray-600 text-xs leading-4 truncate">
               <span className="font-medium">
                 {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
@@ -243,47 +244,47 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Footer actions */}
-      <div className="p-4 flex justify-between items-center">
-        {/* Contact Info */}
-        {url && (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 text-xs"
-          >
-            {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
-          </a>
-        )}
-
-        {/* List Button */}
-        {session && !isFeatured && (
-          <div>
-            <Tooltip
-              content={
-                isInList
-                  ? language === 'en'
-                    ? 'In List'
-                    : 'リスト済み'
-                  : language === 'en'
-                    ? 'Add to List'
-                    : 'リストに追加'
-              }
+        {/* Footer actions - fixed at bottom */}
+        <div className="p-4 flex justify-between items-center border-t bg-white mt-auto">
+          {/* Contact Info */}
+          {url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 text-xs"
             >
-              <button
-                onClick={handleToggleList}
-                className={`${
-                  isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
+              {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
+            </a>
+          )}
+
+          {/* List Button */}
+          {session && !isFeatured && (
+            <div>
+              <Tooltip
+                content={
+                  isInList
+                    ? language === 'en'
+                      ? 'In List'
+                      : 'リスト済み'
+                    : language === 'en'
+                      ? 'Add to List'
+                      : 'リストに追加'
+                }
               >
-                <span className="text-lg cursor-pointer">{isInList ? '✓' : '+'}</span>
-              </button>
-            </Tooltip>
-          </div>
-        )}
+                <button
+                  onClick={handleToggleList}
+                  className={`${
+                    isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
+                >
+                  <span className="text-lg cursor-pointer">{isInList ? '✓' : '+'}</span>
+                </button>
+              </Tooltip>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
