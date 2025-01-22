@@ -68,56 +68,97 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
-
-  const fetchData = async () => {
-    if (!session?.user) return;
-
-    try {
-      setIsLoading(true);
-
-      // First get the user ID
-      const userResponse = await fetch('/api/user');
-      const userData = await userResponse.json();
-
-      if (!userResponse.ok || !userData.userId) {
-        throw new Error('Failed to get user ID');
-      }
-
-      // Fetch all data in parallel
-      const [messagesRes, notificationsRes, userListsRes, roleRes] = await Promise.all([
-        fetch('/api/messages'),
-        fetch('/api/notifications'),
-        fetch(`/api/userLists?userId=${userData.userId}`),
-        fetch('/api/user/role'),
-      ]);
-
-      const [messagesData, notificationsData, userListsData, roleData] = await Promise.all([
-        messagesRes.json(),
-        notificationsRes.json(),
-        userListsRes.json(),
-        roleRes.json(),
-      ]);
-
-      setMessages(messagesData);
-      setNotifications(notificationsData);
-      setUserLists(userListsData.lists);
-      setUserRole(roleData.role);
-      setManagedSchools(roleData.managedSchools || []);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const loadDataRef = React.useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
-    if (session?.user) {
-      fetchData();
-    }
-  }, [session]);
+    let mounted = true;
+
+    const loadData = async () => {
+      if (!session?.user?.email || !mounted) return;
+
+      try {
+        setIsLoading(true);
+
+        // First get the user ID
+        const userResponse = await fetch('/api/user');
+        if (!userResponse.ok) {
+          throw new Error(`Failed to get user ID: ${userResponse.statusText}`);
+        }
+
+        const userData = await userResponse.json();
+        if (!userData?.userId) {
+          throw new Error('User ID not found in response');
+        }
+
+        if (!mounted) return;
+
+        // Fetch all data in parallel
+        const [messagesRes, notificationsRes, userListsRes, roleRes] = await Promise.all([
+          fetch('/api/messages'),
+          fetch('/api/notifications'),
+          fetch(`/api/userLists?userId=${userData.userId}`),
+          fetch('/api/user/role'),
+        ]);
+
+        if (!mounted) return;
+
+        // Check if any requests failed
+        const failedRequests = [
+          { name: 'messages', res: messagesRes },
+          { name: 'notifications', res: notificationsRes },
+          { name: 'userLists', res: userListsRes },
+          { name: 'role', res: roleRes },
+        ].filter(req => !req.res.ok);
+
+        if (failedRequests.length > 0) {
+          throw new Error(
+            `Failed requests: ${failedRequests.map(req => `${req.name} (${req.res.status})`).join(', ')}`
+          );
+        }
+
+        const [messagesData, notificationsData, userListsData, roleData] = await Promise.all([
+          messagesRes.json(),
+          notificationsRes.json(),
+          userListsRes.json(),
+          roleRes.json(),
+        ]);
+
+        if (!mounted) return;
+
+        setMessages(messagesData);
+        setNotifications(notificationsData);
+        setUserLists(userListsData.lists || []);
+        setUserRole(roleData.role);
+        setManagedSchools(roleData.managedSchools || []);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Reset states on error
+        if (mounted) {
+          setMessages([]);
+          setNotifications([]);
+          setUserLists([]);
+          setUserRole(null);
+          setManagedSchools([]);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadData();
+    loadDataRef.current = loadData;
+
+    return () => {
+      mounted = false;
+    };
+  }, [session?.user?.email]);
 
   const refreshData = async () => {
-    await fetchData();
+    if (loadDataRef.current) {
+      await loadDataRef.current();
+    }
   };
 
   return (

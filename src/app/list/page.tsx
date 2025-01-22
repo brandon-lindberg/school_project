@@ -220,22 +220,35 @@ const ListPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+
     const loadInitialData = async () => {
-      if (session?.user) {
+      if (!mounted) return;
+
+      try {
         setIsLoading(true);
-        try {
-          await Promise.all([loadInitialSchools(), fetchRandomSchools()]);
-        } finally {
+        if (session?.user) {
+          const [schools] = await Promise.all([fetchAllSchools(), fetchRandomSchools()]);
+          if (mounted) {
+            setSchools(schools);
+            setAllSchools(schools);
+          }
+        } else {
+          await fetchRandomSchools();
+        }
+      } finally {
+        if (mounted) {
           setIsLoading(false);
         }
-      } else {
-        // For unauthenticated users, just fetch random schools
-        fetchRandomSchools();
       }
     };
 
     loadInitialData();
-  }, [loadInitialSchools, fetchRandomSchools, session]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [session, fetchRandomSchools]);
 
   const debouncedSearch = useMemo(
     () =>
