@@ -36,6 +36,16 @@ export const groupSchoolsByLocation = (schools: School[], language: Language) =>
       location.includes('ニセコ')
     ) {
       location = 'Hokkaido';
+    } else if (location.includes('Tokyo') || location.includes('東京')) {
+      location = 'Tokyo';
+    } else if (location.includes('Nagano') || location.includes('長野')) {
+      location = 'Nagano';
+    } else if (location.includes('Okinawa') || location.includes('沖縄')) {
+      location = 'Okinawa';
+    } else if (location.includes('Hiroshima') || location.includes('広島')) {
+      location = 'Hiroshima';
+    } else if (location.includes('Fukuoka') || location.includes('福岡')) {
+      location = 'Fukuoka';
     }
 
     if (!acc[location]) {

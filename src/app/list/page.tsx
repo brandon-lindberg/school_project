@@ -148,7 +148,11 @@ const ListPage: React.FC = () => {
     noResults: language === 'en' ? 'No results found' : '結果が見つかりません',
     recentlyViewed: language === 'en' ? 'Recently Viewed' : '最近見た学校',
     regions: Object.entries(REGIONS_CONFIG).reduce((acc: Record<string, string>, [key, value]) => {
-      acc[key] = language === 'en' ? value.en : value.jp;
+      if (value && typeof value === 'object' && 'en' in value && 'jp' in value) {
+        acc[key] = language === 'en' ? value.en : value.jp;
+      } else {
+        acc[key] = key; // Fallback to the key if the value is not properly structured
+      }
       return acc;
     }, {}),
     clearHistory: language === 'en' ? 'Clear All' : 'すべて削除',
@@ -613,7 +617,11 @@ const ListPage: React.FC = () => {
                       >
                         <div className="flex items-center gap-2">
                           <h2 className="text-xl font-semibold">
-                            {REGIONS_CONFIG[location][language]}
+                            {REGIONS_CONFIG[location]
+                              ? language === 'en'
+                                ? REGIONS_CONFIG[location].en
+                                : REGIONS_CONFIG[location].jp
+                              : location}
                           </h2>
                           <span className="text-gray-500 text-sm">({schools.length} Schools)</span>
                         </div>
