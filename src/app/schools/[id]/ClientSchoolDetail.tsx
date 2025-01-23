@@ -38,17 +38,22 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
 
   const translations = getSchoolDetailTranslations(language);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/login');
-    }
-  }, [status]);
-
   // Check if user is a school admin for this school or a super admin
   const canEdit =
     session?.user?.role === 'SUPER_ADMIN' ||
     (session?.user?.role === 'SCHOOL_ADMIN' &&
       session?.user?.managedSchoolId === parseInt(school.school_id));
+
+  const isAuthenticated = status === 'authenticated';
+
+  const handleTabClick = (tab: string) => {
+    if (!isAuthenticated && tab !== 'overview') {
+      // Redirect to list page for non-authenticated users trying to access other tabs
+      window.location.href = '/list';
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   const handleSave = async (data: Partial<School>) => {
     try {
@@ -314,50 +319,94 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <BrowsingHistoryRecorder schoolId={school.school_id} />
+    <div className="container mx-auto px-4 py-8">
+      <BrowsingHistoryRecorder schoolId={parseInt(school.school_id)} />
 
-        {notification && (
-          <div
-            className={`mb-4 p-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-          >
-            {notification.message}
-          </div>
-        )}
-
-        {/* Navigation */}
-        <div className="mb-8">
-          <Link href="/list" className="text-green-500 hover:underline mb-4 inline-block">
-            {translations.backToList}
-          </Link>
+      {notification && (
+        <div
+          className={`mb-4 p-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+        >
+          {notification.message}
         </div>
+      )}
 
-        {/* Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-4 overflow-x-auto pb-2">
-            {Object.entries(translations.tabs).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => {
-                  setActiveTab(key);
-                  setIsEditing(false); // Reset edit mode when changing tabs
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === key
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+      {/* Tabs */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            {[
+              { id: 'overview', name: translations.tabs.overview },
+              { id: 'education', name: translations.tabs.education },
+              { id: 'admissions', name: translations.tabs.admissions },
+              { id: 'campus', name: translations.tabs.campus },
+              { id: 'studentLife', name: translations.tabs.studentLife },
+              { id: 'employment', name: translations.tabs.employment },
+              { id: 'policies', name: translations.tabs.policies },
+            ].map((tab) => {
+              const isDisabled = !isAuthenticated && tab.id !== 'overview';
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`
+                    ${activeTab === tab.id
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                    whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium
+                  `}
+                  disabled={isDisabled}
+                >
+                  {tab.name}
+                  {isDisabled && (
+                    <span className="ml-1 text-xs text-gray-400">
+                      {language === 'en' ? '(Login required)' : '(ログインが必要)'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
         </div>
+      </div>
 
-        {/* Tab Content */}
+      {/* Content */}
+      <div className="mt-8">
         {renderTab()}
       </div>
+
+      {/* Login/Register prompt for non-authenticated users */}
+      {!isAuthenticated && activeTab === 'overview' && (
+        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900">
+              {language === 'en'
+                ? 'Want to see more details about this school?'
+                : 'この学校の詳細をもっと見たいですか？'}
+            </h3>
+            <p className="mt-2 text-sm text-gray-600">
+              {language === 'en'
+                ? 'Create an account or log in to access all school information.'
+                : 'アカウントを作成またはログインして、すべての学校情報にアクセスしてください。'}
+            </p>
+            <div className="mt-4 flex justify-center space-x-4">
+              <Link
+                href="/login"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
+              >
+                {language === 'en' ? 'Login' : 'ログイン'}
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50"
+              >
+                {language === 'en' ? 'Register' : '登録'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
