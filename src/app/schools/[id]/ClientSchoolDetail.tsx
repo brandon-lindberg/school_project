@@ -341,16 +341,17 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
               { id: 'studentLife', name: translations.tabs.studentLife },
               { id: 'employment', name: translations.tabs.employment },
               { id: 'policies', name: translations.tabs.policies },
-            ].map((tab) => {
+            ].map(tab => {
               const isDisabled = !isAuthenticated && tab.id !== 'overview';
               return (
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={`
-                    ${activeTab === tab.id
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ${
+                      activeTab === tab.id
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium
@@ -371,9 +372,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
       </div>
 
       {/* Content */}
-      <div className="mt-8">
-        {renderTab()}
-      </div>
+      <div className="mt-8">{renderTab()}</div>
 
       {/* Login/Register prompt for non-authenticated users */}
       {!isAuthenticated && activeTab === 'overview' && (

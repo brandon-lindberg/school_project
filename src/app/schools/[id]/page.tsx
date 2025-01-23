@@ -59,20 +59,30 @@ export async function generateMetadata(
 
   // Enhanced keywords with more relevant terms in both languages
   const keywords = [
-    'international school', 'インターナショナルスクール',
-    'education', '教育',
-    'private school', '私立学校',
-    school.name_en || '', school.name_jp || '',
-    school.country_en || '', school.country_jp || '',
-    school.region_en || '', school.region_jp || '',
+    'international school',
+    'インターナショナルスクール',
+    'education',
+    '教育',
+    'private school',
+    '私立学校',
+    school.name_en || '',
+    school.name_jp || '',
+    school.country_en || '',
+    school.country_jp || '',
+    school.region_en || '',
+    school.region_jp || '',
     ...(school.education_programs_offered_en?.filter(Boolean) || []),
     ...(school.education_programs_offered_jp?.filter(Boolean) || []),
     ...(school.accreditation_en?.filter(Boolean) || []),
     ...(school.accreditation_jp?.filter(Boolean) || []),
-    'international education', '国際教育',
-    'school profile', '学校プロフィール',
-    'admissions', '入学案内',
-    'curriculum', 'カリキュラム',
+    'international education',
+    '国際教育',
+    'school profile',
+    '学校プロフィール',
+    'admissions',
+    '入学案内',
+    'curriculum',
+    'カリキュラム',
   ].filter(Boolean);
 
   const description_en = (school.short_description_en || school.description_en || '')
@@ -91,16 +101,19 @@ export async function generateMetadata(
     keywords: keywords,
     authors: [{ name: 'My International Schools' }],
     openGraph: {
-      title: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'International School'),
+      title: language === 'jp' ? school.name_jp || '' : school.name_en || 'International School',
       description: language === 'jp' ? description_jp : description_en,
       url: schoolUrl,
-      siteName: language === 'jp' ? 'My International Schools - インターナショナルスクール' : 'My International Schools',
+      siteName:
+        language === 'jp'
+          ? 'My International Schools - インターナショナルスクール'
+          : 'My International Schools',
       images: [
         {
           url: school.image_url || '/logo.png',
           width: 1200,
           height: 630,
-          alt: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'School Image'),
+          alt: language === 'jp' ? school.name_jp || '' : school.name_en || 'School Image',
         },
         ...previousImages,
       ],
@@ -121,7 +134,7 @@ export async function generateMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'International School'),
+      title: language === 'jp' ? school.name_jp || '' : school.name_en || 'International School',
       description: language === 'jp' ? description_jp : description_en,
       images: [school.image_url || '/logo.png'],
       creator: '@myinternationalschools',
@@ -196,18 +209,28 @@ export default async function SchoolDetailPage({ params, searchParams }: PagePro
       { '@language': 'ja', '@value': school.email_jp || '' },
     ],
     image: school.image_url || '/logo.png',
-    ...(school.accreditation_en?.length || school.accreditation_jp?.length ? {
-      accreditation: [
-        ...(school.accreditation_en?.map(acc => ({ '@language': 'en', '@value': acc })) || []),
-        ...(school.accreditation_jp?.map(acc => ({ '@language': 'ja', '@value': acc })) || []),
-      ],
-    } : {}),
-    ...(school.education_programs_offered_en?.length || school.education_programs_offered_jp?.length ? {
-      educationalProgramme: [
-        ...(school.education_programs_offered_en?.map(prog => ({ '@language': 'en', '@value': prog })) || []),
-        ...(school.education_programs_offered_jp?.map(prog => ({ '@language': 'ja', '@value': prog })) || []),
-      ],
-    } : {}),
+    ...(school.accreditation_en?.length || school.accreditation_jp?.length
+      ? {
+          accreditation: [
+            ...(school.accreditation_en?.map(acc => ({ '@language': 'en', '@value': acc })) || []),
+            ...(school.accreditation_jp?.map(acc => ({ '@language': 'ja', '@value': acc })) || []),
+          ],
+        }
+      : {}),
+    ...(school.education_programs_offered_en?.length || school.education_programs_offered_jp?.length
+      ? {
+          educationalProgramme: [
+            ...(school.education_programs_offered_en?.map(prog => ({
+              '@language': 'en',
+              '@value': prog,
+            })) || []),
+            ...(school.education_programs_offered_jp?.map(prog => ({
+              '@language': 'ja',
+              '@value': prog,
+            })) || []),
+          ],
+        }
+      : {}),
   };
 
   return (
