@@ -1,4 +1,3 @@
-import { Session } from 'next-auth';
 import prisma from '@/lib/prisma';
 
 export async function canEditSchool(userId: string, schoolId: number): Promise<boolean> {
@@ -17,7 +16,7 @@ export async function canEditSchool(userId: string, schoolId: number): Promise<b
   if (user?.role === 'SUPER_ADMIN') return true;
 
   // School admins can only edit their assigned schools
-  return user?.managedSchools.length > 0;
+  return Boolean(user?.managedSchools?.length);
 }
 
 export async function isSuperAdmin(userId: string): Promise<boolean> {
@@ -38,13 +37,13 @@ export async function isSchoolAdmin(userId: string, schoolId?: number): Promise<
     where: { user_id: parseInt(userId) },
     include: schoolId
       ? {
-          managedSchools: {
-            where: { school_id: schoolId },
-          },
-        }
-      : {
-          managedSchools: true,
+        managedSchools: {
+          where: { school_id: schoolId },
         },
+      }
+      : {
+        managedSchools: true,
+      },
   });
 
   return user?.role === 'SCHOOL_ADMIN' && (!schoolId || user.managedSchools.length > 0);

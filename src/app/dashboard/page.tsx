@@ -14,41 +14,6 @@ import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 import { DashboardProvider, useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
 
-// Define the type for user list items
-type UserList = {
-  list_id: number;
-  list_name: string;
-  created_at: string;
-  updated_at: string;
-  user_id: number;
-  schools: {
-    list_id: number;
-    school_id: number;
-    created_at: string;
-    school: {
-      name_en: string | null;
-      name_jp: string | null;
-    };
-  }[];
-};
-
-type ManagedSchool = {
-  school_id: number;
-  name: string;
-};
-
-// Function to fetch the user ID dynamically
-const getUserId = async (): Promise<number> => {
-  const response = await fetch('/api/user');
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to fetch user ID');
-  }
-
-  return data.userId;
-};
-
 function DashboardContent() {
   const router = useRouter();
   const { status } = useSession();

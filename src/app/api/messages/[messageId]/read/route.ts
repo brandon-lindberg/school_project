@@ -3,11 +3,20 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 
-export async function POST(request: Request, { params }: { params: { messageId: string } }) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get the message ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const messageId = parseInt(pathParts[3]); // /api/messages/[messageId]/read
+
+    if (isNaN(messageId)) {
+      return NextResponse.json({ error: 'Invalid message ID' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -17,11 +26,6 @@ export async function POST(request: Request, { params }: { params: { messageId: 
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const messageId = parseInt(params.messageId);
-    if (isNaN(messageId)) {
-      return NextResponse.json({ error: 'Invalid message ID' }, { status: 400 });
     }
 
     // Mark message as read

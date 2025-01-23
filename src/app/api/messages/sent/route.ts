@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    let whereClause: Prisma.MessageWhereInput = {
+    const whereClause: Prisma.MessageWhereInput = {
       sender_id: user.user_id,
     };
 

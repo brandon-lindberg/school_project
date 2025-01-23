@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -11,7 +11,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const schoolId = parseInt(params.id);
+    // Get the school ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
+
     if (isNaN(schoolId)) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
@@ -83,7 +87,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -91,7 +95,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const schoolId = parseInt(params.id);
+    // Get the school ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
+
     if (isNaN(schoolId)) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }

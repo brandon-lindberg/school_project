@@ -2,7 +2,8 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcrypt';
-import { UserRole } from '@prisma/client';
+import { Session } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -74,10 +75,10 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    session: async ({ session, token }) => {
+    session: async ({ session, token }: { session: Session; token: JWT }) => {
       if (token) {
-        (session.user as any).role = token.role;
-        (session.user as any).managedSchoolId = token.managedSchoolId;
+        session.user.role = token.role;
+        session.user.managedSchoolId = token.managedSchoolId;
       }
       return session;
     },

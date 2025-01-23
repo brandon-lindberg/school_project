@@ -5,7 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronDownIcon, ChevronUpIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useDashboard } from '../contexts/DashboardContext';
 
-type MessageContent = {
+export type MessageContent = {
   message_id: number;
   title: string;
   content: string;
@@ -29,6 +29,7 @@ export default function MessagesSection() {
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
   const { language } = useLanguage();
   const { messages, refreshData } = useDashboard();
+  const typedMessages: Message[] = messages;
 
   const markAsRead = async (messageId: number) => {
     try {
@@ -121,23 +122,22 @@ export default function MessagesSection() {
       </h2>
 
       <div className="space-y-4">
-        {!messages || messages.length === 0 ? (
+        {!typedMessages || typedMessages.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             {language === 'en' ? 'No messages' : 'メッセージはありません'}
           </div>
         ) : (
-          messages.map(msg => (
+          typedMessages.map(msg => (
             <div key={msg.message.message_id} className="space-y-2">
               {/* Message Preview */}
               <button
                 onClick={() => handleMessageClick(msg.message.message_id)}
-                className={`w-full text-left transition-colors ${
-                  expandedMessageId === msg.message.message_id
-                    ? 'bg-blue-50'
-                    : msg.is_read
-                      ? 'bg-white hover:bg-gray-50'
-                      : 'bg-blue-50 hover:bg-blue-100'
-                } p-4 rounded-lg border flex items-start justify-between group`}
+                className={`w-full text-left transition-colors ${expandedMessageId === msg.message.message_id
+                  ? 'bg-blue-50'
+                  : msg.is_read
+                    ? 'bg-white hover:bg-gray-50'
+                    : 'bg-blue-50 hover:bg-blue-100'
+                  } p-4 rounded-lg border flex items-start justify-between group`}
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">

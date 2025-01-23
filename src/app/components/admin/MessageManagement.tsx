@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns';
 import {
@@ -6,7 +6,6 @@ import {
   MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
 
 type User = {
@@ -57,24 +56,7 @@ export default function MessageManagement() {
   const [messageSearch, setMessageSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-  useEffect(() => {
-    fetchUsers();
-    fetchMessages();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/users');
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/messages/sent?page=${currentPage}&limit=${MESSAGES_PER_PAGE}&filter=${messageFilter}&search=${messageSearch}&sort=${sortOrder}`
@@ -87,11 +69,24 @@ export default function MessageManagement() {
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  };
+  }, [currentPage, messageFilter, messageSearch, sortOrder]);
 
   useEffect(() => {
+    fetchUsers();
     fetchMessages();
-  }, [currentPage, messageFilter, messageSearch, sortOrder]);
+  }, [fetchMessages]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!title.trim() || !content.trim()) {
@@ -421,13 +416,13 @@ export default function MessageManagement() {
                   <div className="text-sm text-gray-700">
                     {language === 'en'
                       ? `Showing ${(currentPage - 1) * MESSAGES_PER_PAGE + 1} to ${Math.min(
-                          currentPage * MESSAGES_PER_PAGE,
-                          totalMessages
-                        )} of ${totalMessages} messages`
+                        currentPage * MESSAGES_PER_PAGE,
+                        totalMessages
+                      )} of ${totalMessages} messages`
                       : `${totalMessages}件中${(currentPage - 1) * MESSAGES_PER_PAGE + 1}～${Math.min(
-                          currentPage * MESSAGES_PER_PAGE,
-                          totalMessages
-                        )}件を表示`}
+                        currentPage * MESSAGES_PER_PAGE,
+                        totalMessages
+                      )}件を表示`}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -441,11 +436,10 @@ export default function MessageManagement() {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 rounded-lg ${
-                          currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'hover:bg-gray-200 text-gray-700'
-                        }`}
+                        className={`px-3 py-1 rounded-lg ${currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'hover:bg-gray-200 text-gray-700'
+                          }`}
                       >
                         {page}
                       </button>

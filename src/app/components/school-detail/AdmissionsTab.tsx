@@ -19,7 +19,6 @@ export function AdmissionsTab({
   translations,
   language,
   getFeeLevelContent,
-  hasFeeLevelFees,
   isSchoolAdmin,
   onEdit,
 }: AdmissionsTabProps) {

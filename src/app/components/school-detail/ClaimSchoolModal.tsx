@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import NotificationBanner from '@/app/components/NotificationBanner';
 
 interface ClaimSchoolModalProps {
   schoolId: number;
@@ -12,7 +9,6 @@ interface ClaimSchoolModalProps {
   onClose: () => void;
   onSuccess: () => void;
   onNotification: (notification: { type: 'success' | 'error'; message: string } | null) => void;
-  setHasPendingClaim: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function ClaimSchoolModal({
@@ -21,7 +17,6 @@ export function ClaimSchoolModal({
   onClose,
   onSuccess,
   onNotification,
-  setHasPendingClaim,
 }: ClaimSchoolModalProps) {
   const [verificationMethod, setVerificationMethod] = useState<'EMAIL' | 'DOCUMENT'>('EMAIL');
   const [verificationData, setVerificationData] = useState('');
@@ -29,8 +24,6 @@ export function ClaimSchoolModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
-  const { data: session } = useSession();
-  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -67,8 +60,6 @@ export function ClaimSchoolModal({
         type: 'success',
         message: language === 'en' ? 'Claim submitted successfully!' : '申請が完了しました！',
       });
-      // Update the parent component's state to reflect the pending claim
-      setHasPendingClaim(true);
     } catch (error) {
       console.error('Error submitting claim:', error);
       setError(
@@ -89,6 +80,12 @@ export function ClaimSchoolModal({
         <h2 className="text-xl font-bold mb-4">
           {language === 'en' ? 'Claim School' : '学校の申請'}
         </h2>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

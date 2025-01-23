@@ -6,7 +6,6 @@ import { Translations } from '../../../interfaces/Translations';
 import { useSession } from 'next-auth/react';
 import { ClaimSchoolModal } from './ClaimSchoolModal';
 import NotificationBanner from '@/app/components/NotificationBanner';
-import { useLanguage } from '@/app/contexts/LanguageContext';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
 interface OverviewTabProps {
@@ -34,13 +33,6 @@ export function OverviewTab({
   translations,
   name,
   shortDescription,
-  location,
-  address,
-  region,
-  country,
-  email,
-  phone,
-  url,
   description,
   affiliations,
   accreditations,
@@ -49,8 +41,6 @@ export function OverviewTab({
   onEdit,
 }: OverviewTabProps) {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
-  const [hasPendingClaim, setHasPendingClaim] = useState(false);
-  const [isClaimed, setIsClaimed] = useState(false);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -74,8 +64,6 @@ export function OverviewTab({
         if (response.ok) {
           const data = await response.json();
           setClaimStatus(data);
-          setHasPendingClaim(data.hasPendingClaim);
-          setIsClaimed(data.isClaimed);
         }
       } catch (error) {
         console.error('Error fetching claim status:', error);
@@ -86,13 +74,12 @@ export function OverviewTab({
   }, [session?.user?.email, school.school_id]);
 
   const handleClaimSuccess = () => {
-    setHasPendingClaim(true);
     setClaimStatus(prevStatus =>
       prevStatus
         ? {
-            ...prevStatus,
-            hasPendingClaim: true,
-          }
+          ...prevStatus,
+          hasPendingClaim: true,
+        }
         : null
     );
   };
@@ -200,15 +187,14 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
-                  claimStatus?.hasPendingClaim
-                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                    : claimStatus?.isClaimed
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
+                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                  : claimStatus?.isClaimed
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : claimStatus?.hasExistingSchool
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : claimStatus?.hasExistingSchool
-                        ? 'bg-gray-500 cursor-not-allowed'
-                        : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white`}
                 disabled={
                   claimStatus?.hasPendingClaim ||
                   claimStatus?.isClaimed ||
@@ -299,7 +285,6 @@ export function OverviewTab({
           onClose={() => setIsClaimModalOpen(false)}
           onSuccess={handleClaimSuccess}
           onNotification={setNotification}
-          setHasPendingClaim={setHasPendingClaim}
         />
       )}
     </div>

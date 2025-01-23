@@ -10,13 +10,13 @@ interface SchoolEditFormProps {
   onSave: (data: Partial<School>) => Promise<void>;
   onCancel: () => void;
   section:
-    | 'basic'
-    | 'education'
-    | 'admissions'
-    | 'campus'
-    | 'studentLife'
-    | 'employment'
-    | 'policies';
+  | 'basic'
+  | 'education'
+  | 'admissions'
+  | 'campus'
+  | 'studentLife'
+  | 'employment'
+  | 'policies';
 }
 
 type SchoolEditableFields = Omit<
@@ -30,7 +30,6 @@ type FormData = {
 
 export function SchoolEditForm({
   school,
-  translations,
   language,
   onSave,
   onCancel,
@@ -247,7 +246,7 @@ export function SchoolEditForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const submitData = Object.fromEntries(
-      Object.entries(formData).filter(([_, value]) => value !== undefined && value !== '')
+      Object.entries(formData).filter(([, value]) => value !== undefined && value !== '')
     );
     await onSave(submitData as Partial<School>);
   };

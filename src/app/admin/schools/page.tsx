@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
@@ -38,26 +38,7 @@ export default function SchoolsManagement() {
   const [loading, setLoading] = useState(true);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-
-    if (!session) {
-      router.push('/login');
-      return;
-    }
-
-    if (
-      !session.user.role ||
-      (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'SCHOOL_ADMIN')
-    ) {
-      router.push('/');
-      return;
-    }
-
-    fetchSchools();
-  }, [session, status, router]);
-
-  const fetchSchools = async () => {
+  const fetchSchools = useCallback(async () => {
     try {
       let response;
       if (session?.user.role === 'SUPER_ADMIN') {
@@ -80,7 +61,26 @@ export default function SchoolsManagement() {
       toast.error('Failed to fetch schools');
       setLoading(false);
     }
-  };
+  }, [session?.user.role, session?.user.managedSchoolId]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+
+    if (
+      !session.user.role ||
+      (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'SCHOOL_ADMIN')
+    ) {
+      router.push('/');
+      return;
+    }
+
+    fetchSchools();
+  }, [session, status, router, fetchSchools]);
 
   const handleEditClick = (school: School) => {
     setEditingSchool(school);

@@ -169,12 +169,6 @@ const ListPage: React.FC = () => {
     }
   };
 
-  const loadInitialSchools = useCallback(async () => {
-    const initialSchools = await fetchAllSchools();
-    setSchools(initialSchools);
-    setAllSchools(initialSchools);
-  }, []);
-
   const fetchSearchResults = async (query: string, filters: SearchFilters) => {
     try {
       const queryParams = new URLSearchParams();

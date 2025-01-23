@@ -71,7 +71,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
       setIsEditing(false);
       // Refresh the page to show updated data
       window.location.reload();
-    } catch (error) {
+    } catch {
       setNotification({
         type: 'error',
         message:
@@ -343,11 +343,10 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
                   setActiveTab(key);
                   setIsEditing(false); // Reset edit mode when changing tabs
                 }}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === key
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === key
+                  ? 'bg-green-500 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
               >
                 {label}
               </button>

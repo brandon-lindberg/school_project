@@ -9,7 +9,7 @@ type Props = {
   managedSchoolId?: number;
 };
 
-export default function AdminMenu({ userRole, managedSchoolId }: Props) {
+export default function AdminMenu({ userRole }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Only show admin menu for super admins

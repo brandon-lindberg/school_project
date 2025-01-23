@@ -4,19 +4,24 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import MessageManagement from '../components/admin/MessageManagement';
+import { UserRole } from '@prisma/client';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'unauthenticated' || session?.user?.role !== UserRole.SUPER_ADMIN) {
       router.replace('/');
     }
-  }, [status, router]);
+  }, [status, router, session]);
 
   if (status === 'loading') {
     return <div>Loading...</div>;
+  }
+
+  if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+    return null; // or a "Not authorized" message
   }
 
   return (
