@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { redirect } from 'next/navigation';
 import { School, FeeLevel, FeeType } from '@/types/school';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';

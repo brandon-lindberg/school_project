@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { School } from '@/types/school';
 import ClientSchoolDetail from '@/app/schools/[id]/ClientSchoolDetail';
+import Script from 'next/script';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -38,52 +39,72 @@ async function getSchool(id: string): Promise<School | null> {
 }
 
 export async function generateMetadata(
-  { params }: PageProps,
+  { params, searchParams }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const school = await getSchool(resolvedParams.id);
+  const language = resolvedSearchParams?.lang === 'ja' ? 'jp' : 'en';
 
   if (!school) {
     return {
-      title: 'School Not Found',
+      title: language === 'jp' ? '学校が見つかりません' : 'School Not Found',
     };
   }
 
   const previousImages = (await parent).openGraph?.images || [];
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const schoolUrl = `${baseUrl}/schools/${school.school_id}`;
 
-  // Filter out null values from arrays and provide fallbacks for null strings
+  // Enhanced keywords with more relevant terms in both languages
   const keywords = [
-    'international school',
-    'education',
-    school.name_en || '',
-    school.country_en || '',
-    school.region_en || '',
+    'international school', 'インターナショナルスクール',
+    'education', '教育',
+    'private school', '私立学校',
+    school.name_en || '', school.name_jp || '',
+    school.country_en || '', school.country_jp || '',
+    school.region_en || '', school.region_jp || '',
     ...(school.education_programs_offered_en?.filter(Boolean) || []),
+    ...(school.education_programs_offered_jp?.filter(Boolean) || []),
     ...(school.accreditation_en?.filter(Boolean) || []),
-  ];
+    ...(school.accreditation_jp?.filter(Boolean) || []),
+    'international education', '国際教育',
+    'school profile', '学校プロフィール',
+    'admissions', '入学案内',
+    'curriculum', 'カリキュラム',
+  ].filter(Boolean);
 
-  return {
-    title: `${school.name_en || 'School'} - International School Profile`,
-    description:
-      school.short_description_en || school.description_en || 'International School Profile',
+  const description_en = (school.short_description_en || school.description_en || '')
+    .slice(0, 155)
+    .trim();
+  const description_jp = (school.short_description_jp || school.description_jp || '')
+    .slice(0, 155)
+    .trim();
+
+  const title_en = `${school.name_en || 'School'} - International School in ${school.country_en || ''} | My International Schools`;
+  const title_jp = `${school.name_jp || '学校'} - ${school.country_jp || ''}のインターナショナルスクール | My International Schools`;
+
+  const metadata: Metadata = {
+    title: language === 'jp' ? title_jp : title_en,
+    description: language === 'jp' ? description_jp : description_en,
     keywords: keywords,
+    authors: [{ name: 'My International Schools' }],
     openGraph: {
-      title: school.name_en || 'International School',
-      description:
-        school.short_description_en || school.description_en || 'International School Profile',
-      url: `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}`,
-      siteName: 'My International Schools',
+      title: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'International School'),
+      description: language === 'jp' ? description_jp : description_en,
+      url: schoolUrl,
+      siteName: language === 'jp' ? 'My International Schools - インターナショナルスクール' : 'My International Schools',
       images: [
         {
           url: school.image_url || '/logo.png',
           width: 1200,
           height: 630,
-          alt: school.name_en || 'School Image',
+          alt: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'School Image'),
         },
         ...previousImages,
       ],
-      locale: 'en_US',
+      locale: language === 'jp' ? 'ja_JP' : 'en_US',
       type: 'website',
     },
     robots: {
@@ -96,29 +117,33 @@ export async function generateMetadata(
         'max-image-preview': 'large',
         'max-snippet': -1,
       },
+      nocache: true,
     },
     twitter: {
       card: 'summary_large_image',
-      title: school.name_en || 'International School',
-      description:
-        school.short_description_en || school.description_en || 'International School Profile',
+      title: language === 'jp' ? (school.name_jp || '') : (school.name_en || 'International School'),
+      description: language === 'jp' ? description_jp : description_en,
       images: [school.image_url || '/logo.png'],
+      creator: '@myinternationalschools',
     },
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}`,
+      canonical: schoolUrl,
       languages: {
-        'en-US': `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}?lang=en`,
-        'ja-JP': `${process.env.NEXT_PUBLIC_API_URL}/schools/${school.school_id}?lang=jp`,
+        'en-US': `${schoolUrl}?lang=en`,
+        'ja-JP': `${schoolUrl}?lang=jp`,
       },
     },
+    verification: {
+      google: 'your-google-site-verification',
+    },
   };
+
+  return metadata;
 }
 
 export default async function SchoolDetailPage({ params, searchParams }: PageProps) {
   const [resolvedParams, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const school = await getSchool(resolvedParams.id);
-
-  // Get the language from search params
   const language = resolvedSearchParams.lang === 'ja' ? 'jp' : 'en';
 
   if (!school) {
@@ -131,5 +156,66 @@ export default async function SchoolDetailPage({ params, searchParams }: PagePro
     );
   }
 
-  return <ClientSchoolDetail school={school} />;
+  // Create structured data for the school with both languages
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'EducationalOrganization',
+    name: [
+      { '@language': 'en', '@value': school.name_en || '' },
+      { '@language': 'ja', '@value': school.name_jp || '' },
+    ],
+    description: [
+      { '@language': 'en', '@value': school.short_description_en || school.description_en || '' },
+      { '@language': 'ja', '@value': school.short_description_jp || school.description_jp || '' },
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: [
+        { '@language': 'en', '@value': school.country_en || '' },
+        { '@language': 'ja', '@value': school.country_jp || '' },
+      ],
+      addressRegion: [
+        { '@language': 'en', '@value': school.region_en || '' },
+        { '@language': 'ja', '@value': school.region_jp || '' },
+      ],
+      addressLocality: [
+        { '@language': 'en', '@value': school.location_en || '' },
+        { '@language': 'ja', '@value': school.location_jp || '' },
+      ],
+    },
+    url: [
+      { '@language': 'en', '@value': school.url_en || '' },
+      { '@language': 'ja', '@value': school.url_jp || '' },
+    ],
+    telephone: [
+      { '@language': 'en', '@value': school.phone_en || '' },
+      { '@language': 'ja', '@value': school.phone_jp || '' },
+    ],
+    email: [
+      { '@language': 'en', '@value': school.email_en || '' },
+      { '@language': 'ja', '@value': school.email_jp || '' },
+    ],
+    image: school.image_url || '/logo.png',
+    ...(school.accreditation_en?.length || school.accreditation_jp?.length ? {
+      accreditation: [
+        ...(school.accreditation_en?.map(acc => ({ '@language': 'en', '@value': acc })) || []),
+        ...(school.accreditation_jp?.map(acc => ({ '@language': 'ja', '@value': acc })) || []),
+      ],
+    } : {}),
+    ...(school.education_programs_offered_en?.length || school.education_programs_offered_jp?.length ? {
+      educationalProgramme: [
+        ...(school.education_programs_offered_en?.map(prog => ({ '@language': 'en', '@value': prog })) || []),
+        ...(school.education_programs_offered_jp?.map(prog => ({ '@language': 'ja', '@value': prog })) || []),
+      ],
+    } : {}),
+  };
+
+  return (
+    <>
+      <Script id="school-structured-data" type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </Script>
+      <ClientSchoolDetail school={school} />
+    </>
+  );
 }
