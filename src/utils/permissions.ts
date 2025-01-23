@@ -37,13 +37,13 @@ export async function isSchoolAdmin(userId: string, schoolId?: number): Promise<
     where: { user_id: parseInt(userId) },
     include: schoolId
       ? {
-        managedSchools: {
-          where: { school_id: schoolId },
-        },
-      }
+          managedSchools: {
+            where: { school_id: schoolId },
+          },
+        }
       : {
-        managedSchools: true,
-      },
+          managedSchools: true,
+        },
   });
 
   return user?.role === 'SCHOOL_ADMIN' && (!schoolId || user.managedSchools.length > 0);

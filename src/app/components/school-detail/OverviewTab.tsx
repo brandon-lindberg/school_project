@@ -77,9 +77,9 @@ export function OverviewTab({
     setClaimStatus(prevStatus =>
       prevStatus
         ? {
-          ...prevStatus,
-          hasPendingClaim: true,
-        }
+            ...prevStatus,
+            hasPendingClaim: true,
+          }
         : null
     );
   };
@@ -187,14 +187,15 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
-                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                  : claimStatus?.isClaimed
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : claimStatus?.hasExistingSchool
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
+                  claimStatus?.hasPendingClaim
+                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                    : claimStatus?.isClaimed
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : 'bg-green-500 hover:bg-green-600'
-                  } text-white`}
+                      : claimStatus?.hasExistingSchool
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
                 disabled={
                   claimStatus?.hasPendingClaim ||
                   claimStatus?.isClaimed ||

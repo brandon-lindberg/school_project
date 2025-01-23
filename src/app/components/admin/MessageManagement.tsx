@@ -416,13 +416,13 @@ export default function MessageManagement() {
                   <div className="text-sm text-gray-700">
                     {language === 'en'
                       ? `Showing ${(currentPage - 1) * MESSAGES_PER_PAGE + 1} to ${Math.min(
-                        currentPage * MESSAGES_PER_PAGE,
-                        totalMessages
-                      )} of ${totalMessages} messages`
+                          currentPage * MESSAGES_PER_PAGE,
+                          totalMessages
+                        )} of ${totalMessages} messages`
                       : `${totalMessages}件中${(currentPage - 1) * MESSAGES_PER_PAGE + 1}～${Math.min(
-                        currentPage * MESSAGES_PER_PAGE,
-                        totalMessages
-                      )}件を表示`}
+                          currentPage * MESSAGES_PER_PAGE,
+                          totalMessages
+                        )}件を表示`}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -436,10 +436,11 @@ export default function MessageManagement() {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 rounded-lg ${currentPage === page
-                          ? 'bg-blue-600 text-white'
-                          : 'hover:bg-gray-200 text-gray-700'
-                          }`}
+                        className={`px-3 py-1 rounded-lg ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'hover:bg-gray-200 text-gray-700'
+                        }`}
                       >
                         {page}
                       </button>

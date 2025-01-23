@@ -10,13 +10,13 @@ interface SchoolEditFormProps {
   onSave: (data: Partial<School>) => Promise<void>;
   onCancel: () => void;
   section:
-  | 'basic'
-  | 'education'
-  | 'admissions'
-  | 'campus'
-  | 'studentLife'
-  | 'employment'
-  | 'policies';
+    | 'basic'
+    | 'education'
+    | 'admissions'
+    | 'campus'
+    | 'studentLife'
+    | 'employment'
+    | 'policies';
 }
 
 type SchoolEditableFields = Omit<
