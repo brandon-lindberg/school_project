@@ -46,8 +46,9 @@ export function OverviewTab({
     message: string;
   } | null>(null);
   const { data: session } = useSession();
-  const canEdit = isSchoolAdmin || session?.user?.role === 'SUPER_ADMIN';
+  const isAuthenticated = !!session;
 
+  // Only fetch claim status if user is authenticated
   const [claimStatus, setClaimStatus] = useState<{
     isSchoolAdmin: boolean;
     hasExistingSchool: boolean;
@@ -70,8 +71,10 @@ export function OverviewTab({
       }
     };
 
-    fetchClaimStatus();
-  }, [session?.user?.email, school.school_id]);
+    if (isAuthenticated) {
+      fetchClaimStatus();
+    }
+  }, [session?.user?.email, school.school_id, isAuthenticated]);
 
   const handleClaimSuccess = () => {
     setClaimStatus(prevStatus =>
@@ -93,6 +96,8 @@ export function OverviewTab({
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  const canEdit = isSchoolAdmin || session?.user?.role === 'SUPER_ADMIN';
 
   return (
     <div className="space-y-6">
@@ -173,8 +178,8 @@ export function OverviewTab({
           </div>
         </div>
 
-        {/* School Administration Card */}
-        {!canEdit ? (
+        {/* School Administration Card - Only show if authenticated */}
+        {isAuthenticated && !canEdit ? (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
@@ -227,7 +232,7 @@ export function OverviewTab({
               </button>
             </div>
           </div>
-        ) : (
+        ) : canEdit ? (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
@@ -239,7 +244,7 @@ export function OverviewTab({
               </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Description */}
@@ -279,7 +284,7 @@ export function OverviewTab({
         )}
       </div>
 
-      {isClaimModalOpen && (
+      {isClaimModalOpen && isAuthenticated && (
         <ClaimSchoolModal
           schoolId={parseInt(school.school_id)}
           isOpen={isClaimModalOpen}
