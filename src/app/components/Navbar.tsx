@@ -212,7 +212,7 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
             <>
               <button
                 onClick={() => {
-                  signOut();
+                  signOut({ callbackUrl: '/list' });
                   setIsMobileMenuOpen(false);
                 }}
                 className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group mb-4"
@@ -341,7 +341,7 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
                   <>
                     <button
                       onClick={() => {
-                        signOut();
+                        signOut({ callbackUrl: '/list' });
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group mb-4"
