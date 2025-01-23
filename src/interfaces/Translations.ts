@@ -12,4 +12,7 @@ export interface Translations {
   sections: {
     [key: string]: string;
   };
+  buttons: {
+    edit: string;
+  };
 }

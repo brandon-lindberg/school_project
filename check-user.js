@@ -1,0 +1,1 @@
+const { PrismaClient } = require("@prisma/client"); async function checkUser() { const prisma = new PrismaClient(); try { const user = await prisma.user.findUnique({ where: { email: "yabaiboys@gmail.com" } }); console.log(user); } catch (error) { console.error(error); } finally { await prisma.$disconnect(); } } checkUser();

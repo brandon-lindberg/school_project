@@ -8,11 +8,32 @@ interface CampusTabProps {
   translations: Translations;
   language: Language;
   facilities: string[];
+  isSchoolAdmin?: boolean;
+  onEdit?: () => void;
 }
 
-export function CampusTab({ school, translations, language, facilities }: CampusTabProps) {
+export function CampusTab({
+  school,
+  translations,
+  language,
+  facilities,
+  isSchoolAdmin,
+  onEdit,
+}: CampusTabProps) {
   return (
     <div className="space-y-6">
+      {/* Admin Edit Button */}
+      {isSchoolAdmin && (
+        <div className="flex justify-end">
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            {translations.buttons?.edit || 'Edit Campus Information'}
+          </button>
+        </div>
+      )}
+
       {/* Facilities */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-2xl font-bold mb-6">{translations.sections.facilities}</h2>

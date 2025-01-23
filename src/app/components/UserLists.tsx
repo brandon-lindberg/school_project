@@ -23,11 +23,11 @@ type UserList = {
 };
 
 type UserListsProps = {
-  userLists: UserList[];
+  userLists?: UserList[];
   onDeleteSchool: (listId: number, schoolId: number) => Promise<void>;
 };
 
-const UserLists: React.FC<UserListsProps> = ({ userLists, onDeleteSchool }) => {
+const UserLists: React.FC<UserListsProps> = ({ userLists = [], onDeleteSchool }) => {
   const { language } = useLanguage();
 
   const getSchoolName = (school: { name_en: string | null; name_jp: string | null }) => {
@@ -37,7 +37,7 @@ const UserLists: React.FC<UserListsProps> = ({ userLists, onDeleteSchool }) => {
     return school.name_jp || school.name_en || '名称未設定の学校';
   };
 
-  if (userLists.length === 0) {
+  if (!userLists || userLists.length === 0) {
     return (
       <div className="text-gray-500 text-center py-8">
         {language === 'en' ? 'No lists created yet.' : 'リストがまだ作成されていません。'}

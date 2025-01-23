@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { redirect } from 'next/navigation';
 import { School, FeeLevel, FeeType } from '@/types/school';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import {
   StudentLifeTab,
   EmploymentTab,
   PoliciesTab,
+  SchoolEditForm,
 } from '@/app/components/school-detail';
 
 type Language = 'en' | 'jp';
@@ -27,8 +28,13 @@ interface ClientSchoolDetailProps {
 
 export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) {
   const { language } = useLanguage() as { language: Language };
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState('overview');
+  const [isEditing, setIsEditing] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const translations = getSchoolDetailTranslations(language);
 
@@ -37,6 +43,54 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
       redirect('/login');
     }
   }, [status]);
+
+  // Check if user is a school admin for this school or a super admin
+  const canEdit =
+    session?.user?.role === 'SUPER_ADMIN' ||
+    (session?.user?.role === 'SCHOOL_ADMIN' &&
+      session?.user?.managedSchoolId === parseInt(school.school_id));
+
+  const handleSave = async (data: Partial<School>) => {
+    try {
+      const response = await fetch(`/api/schools/${school.school_id}/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update school');
+      }
+
+      setNotification({
+        type: 'success',
+        message: language === 'en' ? 'School updated successfully' : '学校情報が更新されました',
+      });
+      setIsEditing(false);
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch {
+      setNotification({
+        type: 'error',
+        message:
+          language === 'en'
+            ? 'Failed to update school information'
+            : '学校情報の更新に失敗しました',
+      });
+    }
+  };
+
+  // Add notification auto-dismiss
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   if (status === 'loading') {
     return (
@@ -131,6 +185,31 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
   };
 
   const renderTab = () => {
+    // If editing, render the edit form for the current tab
+    if (isEditing && canEdit) {
+      // Map tab names to section names
+      const sectionMap = {
+        overview: 'basic',
+        education: 'education',
+        admissions: 'admissions',
+        campus: 'campus',
+        studentLife: 'studentLife',
+        employment: 'employment',
+        policies: 'policies',
+      } as const;
+
+      return (
+        <SchoolEditForm
+          school={school}
+          translations={translations}
+          language={language}
+          onSave={handleSave}
+          onCancel={() => setIsEditing(false)}
+          section={sectionMap[activeTab as keyof typeof sectionMap]}
+        />
+      );
+    }
+
     switch (activeTab) {
       case 'overview':
         return (
@@ -150,6 +229,8 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             affiliations={affiliations}
             accreditations={accreditations}
             language={language}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -160,6 +241,8 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             programs={programs}
             academicSupport={academicSupport}
             extracurricular={extracurricular}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -171,6 +254,8 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             language={language}
             getFeeLevelContent={getFeeLevelContent}
             hasFeeLevelFees={hasFeeLevelFees}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -181,6 +266,8 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             translations={translations}
             language={language}
             facilities={facilities}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -191,6 +278,8 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             translations={translations}
             language={language}
             supportServices={supportServices}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -203,11 +292,21 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             openPositions={openPositions}
             staffList={staffList}
             boardMembers={boardMembers}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'policies':
-        return <PoliciesTab school={school} translations={translations} language={language} />;
+        return (
+          <PoliciesTab
+            school={school}
+            translations={translations}
+            language={language}
+            isSchoolAdmin={canEdit}
+            onEdit={() => setIsEditing(true)}
+          />
+        );
 
       default:
         return null;
@@ -218,6 +317,14 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <BrowsingHistoryRecorder schoolId={school.school_id} />
+
+        {notification && (
+          <div
+            className={`mb-4 p-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+          >
+            {notification.message}
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="mb-8">
@@ -232,7 +339,10 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             {Object.entries(translations.tabs).map(([key, label]) => (
               <button
                 key={key}
-                onClick={() => setActiveTab(key)}
+                onClick={() => {
+                  setActiveTab(key);
+                  setIsEditing(false); // Reset edit mode when changing tabs
+                }}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === key
                     ? 'bg-green-500 text-white'

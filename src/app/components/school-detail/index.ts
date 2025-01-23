@@ -5,3 +5,4 @@ export { CampusTab } from './CampusTab';
 export { StudentLifeTab } from './StudentLifeTab';
 export { EmploymentTab } from './EmploymentTab';
 export { PoliciesTab } from './PoliciesTab';
+export { SchoolEditForm } from './SchoolEditForm';

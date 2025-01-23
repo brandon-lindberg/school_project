@@ -19,6 +19,10 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { usePathname, useRouter } from 'next/navigation';
+import AdminMenu from './AdminMenu';
+import { UserRole } from '@prisma/client';
+import { Session } from 'next-auth';
+import NotificationsDropdown from './NotificationsDropdown';
 
 interface NavbarProps {
   schools?: School[];
@@ -26,12 +30,25 @@ interface NavbarProps {
   viewMode?: 'list' | 'grid';
 }
 
+type ExtendedSession = Session & {
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    role?: UserRole;
+    managedSchoolId?: number;
+  };
+};
+
 export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' }: NavbarProps) {
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
   const { language, toggleLanguage } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  console.log('Navbar session:', JSON.stringify(session, null, 2));
+  console.log('Navbar session user:', JSON.stringify(session?.user, null, 2));
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -158,16 +175,22 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
             </Link>
 
             {session && (
-              <Link
-                href="/dashboard"
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-                <span className="group-hover:text-[#0057B7]">
-                  {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
-                </span>
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                  <span className="group-hover:text-[#0057B7]">
+                    {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
+                  </span>
+                </Link>
+                <AdminMenu
+                  userRole={session?.user?.role as UserRole}
+                  managedSchoolId={session?.user?.managedSchoolId as number}
+                />
+              </>
             )}
           </div>
 
@@ -184,33 +207,50 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
         </div>
 
         {/* Bottom Actions */}
-        <div className="p-4 border-t border-gray-100 space-y-2">
-          <button
-            onClick={() => {
-              toggleLanguage();
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-          >
-            <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-            <span className="group-hover:text-[#0057B7]">
-              {language === 'en' ? '日本語' : 'English'}
-            </span>
-          </button>
-
+        <div className="p-4 border-t border-gray-100">
           {session ? (
-            <button
-              onClick={() => {
-                signOut();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
-            >
-              <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-              <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  signOut({ callbackUrl: '/list' });
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group mb-4"
+              >
+                <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
+              </button>
+
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    toggleLanguage();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                >
+                  <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                  <span className="group-hover:text-[#0057B7]">
+                    {language === 'en' ? '日本語' : 'English'}
+                  </span>
+                </button>
+                <NotificationsDropdown />
+              </div>
+            </>
           ) : (
             <>
+              <button
+                onClick={() => {
+                  toggleLanguage();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+              >
+                <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                <span className="group-hover:text-[#0057B7]">
+                  {language === 'en' ? '日本語' : 'English'}
+                </span>
+              </button>
               <Link
                 href="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -278,45 +318,68 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
                 </Link>
 
                 {session && (
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-                    <span className="group-hover:text-[#0057B7]">
-                      {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
-                    </span>
-                  </Link>
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <UserCircleIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                      <span className="group-hover:text-[#0057B7]">
+                        {language === 'en' ? 'Dashboard' : 'ダッシュボード'}
+                      </span>
+                    </Link>
+                    <AdminMenu
+                      userRole={session?.user?.role as UserRole}
+                      managedSchoolId={session?.user?.managedSchoolId as number}
+                    />
+                  </>
                 )}
               </div>
               <div className="pt-4 border-t border-gray-100 space-y-2">
-                <button
-                  onClick={() => {
-                    toggleLanguage();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
-                >
-                  <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
-                  <span className="group-hover:text-[#0057B7]">
-                    {language === 'en' ? '日本語' : 'English'}
-                  </span>
-                </button>
-
                 {session ? (
-                  <button
-                    onClick={() => {
-                      signOut();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group"
-                  >
-                    <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-                    <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        signOut({ callbackUrl: '/list' });
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-4 py-3 text-[#D9534F] hover:bg-red-50 rounded-lg transition-colors group mb-4"
+                    >
+                      <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                      <span>{language === 'en' ? 'Logout' : 'ログアウト'}</span>
+                    </button>
+
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          toggleLanguage();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                      >
+                        <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                        <span className="group-hover:text-[#0057B7]">
+                          {language === 'en' ? '日本語' : 'English'}
+                        </span>
+                      </button>
+                      <NotificationsDropdown />
+                    </div>
+                  </>
                 ) : (
                   <>
+                    <button
+                      onClick={() => {
+                        toggleLanguage();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-[#F5F5F5] rounded-lg transition-colors group"
+                    >
+                      <GlobeAltIcon className="w-6 h-6 text-gray-400 group-hover:text-[#0057B7]" />
+                      <span className="group-hover:text-[#0057B7]">
+                        {language === 'en' ? '日本語' : 'English'}
+                      </span>
+                    </button>
                     <Link
                       href="/login"
                       onClick={() => setIsMobileMenuOpen(false)}
