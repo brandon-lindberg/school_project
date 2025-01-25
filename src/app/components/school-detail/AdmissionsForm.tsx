@@ -25,6 +25,10 @@ export function AdmissionsForm({
     admissions_application_guidelines_jp: school.admissions_application_guidelines_jp ?? '',
     admissions_age_requirements_en: school.admissions_age_requirements_en ?? '',
     admissions_age_requirements_jp: school.admissions_age_requirements_jp ?? '',
+    admissions_fees_en: school.admissions_fees_en ?? '',
+    admissions_fees_jp: school.admissions_fees_jp ?? '',
+    admissions_procedure_en: school.admissions_procedure_en ?? '',
+    admissions_procedure_jp: school.admissions_procedure_jp ?? '',
     admissions_language_requirements_students_en: school.admissions_language_requirements_students_en ?? '',
     admissions_language_requirements_students_jp: school.admissions_language_requirements_students_jp ?? '',
     admissions_language_requirements_parents_en: school.admissions_language_requirements_parents_en ?? '',
@@ -55,6 +59,24 @@ export function AdmissionsForm({
     admissions_breakdown_fees_grade_junior_high_registration_fee_jp: school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp ?? '',
     admissions_breakdown_fees_grade_junior_high_maintenance_fee_en: school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en ?? '',
     admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp: school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp ?? '',
+    admissions_breakdown_fees_grade_high_school_tuition_en: school.admissions_breakdown_fees_grade_high_school_tuition_en ?? '',
+    admissions_breakdown_fees_grade_high_school_tuition_jp: school.admissions_breakdown_fees_grade_high_school_tuition_jp ?? '',
+    admissions_breakdown_fees_grade_high_school_registration_fee_en: school.admissions_breakdown_fees_grade_high_school_registration_fee_en ?? '',
+    admissions_breakdown_fees_grade_high_school_registration_fee_jp: school.admissions_breakdown_fees_grade_high_school_registration_fee_jp ?? '',
+    admissions_breakdown_fees_grade_high_school_maintenance_fee_en: school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en ?? '',
+    admissions_breakdown_fees_grade_high_school_maintenance_fee_jp: school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp ?? '',
+    admissions_breakdown_fees_summer_school_tuition_en: school.admissions_breakdown_fees_summer_school_tuition_en ?? '',
+    admissions_breakdown_fees_summer_school_tuition_jp: school.admissions_breakdown_fees_summer_school_tuition_jp ?? '',
+    admissions_breakdown_fees_summer_school_registration_fee_en: school.admissions_breakdown_fees_summer_school_registration_fee_en ?? '',
+    admissions_breakdown_fees_summer_school_registration_fee_jp: school.admissions_breakdown_fees_summer_school_registration_fee_jp ?? '',
+    admissions_breakdown_fees_summer_school_maintenance_fee_en: school.admissions_breakdown_fees_summer_school_maintenance_fee_en ?? '',
+    admissions_breakdown_fees_summer_school_maintenance_fee_jp: school.admissions_breakdown_fees_summer_school_maintenance_fee_jp ?? '',
+    admissions_breakdown_fees_other_tuition_en: school.admissions_breakdown_fees_other_tuition_en ?? '',
+    admissions_breakdown_fees_other_tuition_jp: school.admissions_breakdown_fees_other_tuition_jp ?? '',
+    admissions_breakdown_fees_other_registration_fee_en: school.admissions_breakdown_fees_other_registration_fee_en ?? '',
+    admissions_breakdown_fees_other_registration_fee_jp: school.admissions_breakdown_fees_other_registration_fee_jp ?? '',
+    admissions_breakdown_fees_other_maintenance_fee_en: school.admissions_breakdown_fees_other_maintenance_fee_en ?? '',
+    admissions_breakdown_fees_other_maintenance_fee_jp: school.admissions_breakdown_fees_other_maintenance_fee_jp ?? ''
   });
 
   const handleChange = (field: keyof typeof formData, value: string) => {
@@ -145,7 +167,7 @@ export function AdmissionsForm({
               value={formData.admissions_age_requirements_en}
               onChange={e => handleChange('admissions_age_requirements_en', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
             />
           </div>
           <div>
@@ -156,7 +178,65 @@ export function AdmissionsForm({
               value={formData.admissions_age_requirements_jp}
               onChange={e => handleChange('admissions_age_requirements_jp', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* General Fees */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">{translations.sections.generalFees}</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {language === 'en' ? 'General Fees (English)' : '一般費用（英語）'}
+            </label>
+            <textarea
+              value={formData.admissions_fees_en}
+              onChange={e => handleChange('admissions_fees_en', e.target.value)}
+              className="w-full rounded-md border border-gray-300 p-2"
+              rows={4}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {language === 'en' ? 'General Fees (Japanese)' : '一般費用（日本語）'}
+            </label>
+            <textarea
+              value={formData.admissions_fees_jp}
+              onChange={e => handleChange('admissions_fees_jp', e.target.value)}
+              className="w-full rounded-md border border-gray-300 p-2"
+              rows={4}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Procedure */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">{translations.sections.procedure}</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {language === 'en' ? 'Procedure (English)' : '手続き（英語）'}
+            </label>
+            <textarea
+              value={formData.admissions_procedure_en}
+              onChange={e => handleChange('admissions_procedure_en', e.target.value)}
+              className="w-full rounded-md border border-gray-300 p-2"
+              rows={4}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {language === 'en' ? 'Procedure (Japanese)' : '手続き（日本語）'}
+            </label>
+            <textarea
+              value={formData.admissions_procedure_jp}
+              onChange={e => handleChange('admissions_procedure_jp', e.target.value)}
+              className="w-full rounded-md border border-gray-300 p-2"
+              rows={4}
             />
           </div>
         </div>
@@ -174,7 +254,7 @@ export function AdmissionsForm({
               value={formData.admissions_language_requirements_students_en}
               onChange={e => handleChange('admissions_language_requirements_students_en', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
             />
           </div>
           <div>
@@ -185,7 +265,7 @@ export function AdmissionsForm({
               value={formData.admissions_language_requirements_students_jp}
               onChange={e => handleChange('admissions_language_requirements_students_jp', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
             />
           </div>
         </div>
@@ -203,7 +283,7 @@ export function AdmissionsForm({
               value={formData.admissions_language_requirements_parents_en}
               onChange={e => handleChange('admissions_language_requirements_parents_en', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
             />
           </div>
           <div>
@@ -214,7 +294,7 @@ export function AdmissionsForm({
               value={formData.admissions_language_requirements_parents_jp}
               onChange={e => handleChange('admissions_language_requirements_parents_jp', e.target.value)}
               className="w-full rounded-md border border-gray-300 p-2"
-              rows={3}
+              rows={4}
             />
           </div>
         </div>
@@ -249,10 +329,10 @@ export function AdmissionsForm({
         </div>
       </div>
 
-      {/* School Level Fees */}
-      {['day_care', 'kindergarten', 'elementary', 'junior_high'].map((level) => {
+      {/* Fee Breakdowns by Level */}
+      {['daycare', 'kindergarten', 'elementary', 'junior_high', 'high_school', 'summer_school', 'other'].map((level) => {
         const fieldMapping = {
-          day_care: {
+          daycare: {
             tuition: 'admissions_breakdown_fees_day_care_fee_tuition',
             registration: 'admissions_breakdown_fees_day_care_fee_registration_fee',
             maintenance: 'admissions_breakdown_fees_day_care_fee_maintenance_fee'
@@ -271,13 +351,34 @@ export function AdmissionsForm({
             tuition: 'admissions_breakdown_fees_grade_junior_high_tuition',
             registration: 'admissions_breakdown_fees_grade_junior_high_registration_fee',
             maintenance: 'admissions_breakdown_fees_grade_junior_high_maintenance_fee'
+          },
+          high_school: {
+            tuition: 'admissions_breakdown_fees_grade_high_school_tuition',
+            registration: 'admissions_breakdown_fees_grade_high_school_registration_fee',
+            maintenance: 'admissions_breakdown_fees_grade_high_school_maintenance_fee'
+          },
+          summer_school: {
+            tuition: 'admissions_breakdown_fees_summer_school_tuition',
+            registration: 'admissions_breakdown_fees_summer_school_registration_fee',
+            maintenance: 'admissions_breakdown_fees_summer_school_maintenance_fee'
+          },
+          other: {
+            tuition: 'admissions_breakdown_fees_other_tuition',
+            registration: 'admissions_breakdown_fees_other_registration_fee',
+            maintenance: 'admissions_breakdown_fees_other_maintenance_fee'
           }
         };
 
         return (
           <div key={level} className="space-y-4">
             <h3 className="text-lg font-semibold">
-              {translations.sections[level === 'day_care' ? 'daycare' : level === 'junior_high' ? 'juniorhigh' : level]}
+              {level === 'daycare' ? translations.sections.daycare :
+                level === 'kindergarten' ? translations.sections.kindergarten :
+                  level === 'elementary' ? translations.sections.elementary :
+                    level === 'junior_high' ? translations.sections.juniorhigh :
+                      level === 'high_school' ? translations.sections.highschool :
+                        level === 'summer_school' ? translations.sections.summerSchool :
+                          translations.sections.otherFees}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Tuition */}
@@ -302,6 +403,7 @@ export function AdmissionsForm({
                   />
                 </div>
               </div>
+
               {/* Registration Fee */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -324,6 +426,7 @@ export function AdmissionsForm({
                   />
                 </div>
               </div>
+
               {/* Maintenance Fee */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -352,17 +455,17 @@ export function AdmissionsForm({
       })}
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-4 pt-4 border-t">
+      <div className="flex justify-end space-x-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
           {language === 'en' ? 'Cancel' : 'キャンセル'}
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {language === 'en' ? 'Save Changes' : '変更を保存'}
         </button>

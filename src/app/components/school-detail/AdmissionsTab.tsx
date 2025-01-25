@@ -2,14 +2,11 @@ import React from 'react';
 import { School } from '@/types/school';
 import { Language, getLocalizedContent } from '@/utils/language';
 import { Translations } from '../../../interfaces/Translations';
-import { FeeLevel, FeeType } from '@/types/school';
 
 interface AdmissionsTabProps {
   school: School;
   translations: Translations;
   language: Language;
-  getFeeLevelContent: (school: School, level: FeeLevel, feeType: FeeType, lang: Language) => string;
-  hasFeeLevelFees: (school: School, level: FeeLevel) => boolean;
   isSchoolAdmin?: boolean;
   onEdit?: () => void;
 }
@@ -18,7 +15,6 @@ export function AdmissionsTab({
   school,
   translations,
   language,
-  getFeeLevelContent,
   isSchoolAdmin,
   onEdit,
 }: AdmissionsTabProps) {
@@ -69,10 +65,36 @@ export function AdmissionsTab({
         {/* Age Requirements */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">{translations.sections.ageRequirements}</h3>
-          <p className="text-gray-700">
-            {language === 'en'
-              ? school.admissions_age_requirements_en || translations.sections.noInfo
-              : school.admissions_age_requirements_jp || translations.sections.noInfo}
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.admissions_age_requirements_en,
+              school.admissions_age_requirements_jp,
+              language
+            ) || translations.sections.noInfo}
+          </p>
+        </div>
+
+        {/* General Fees */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">{translations.sections.generalFees}</h3>
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.admissions_fees_en,
+              school.admissions_fees_jp,
+              language
+            ) || translations.sections.noInfo}
+          </p>
+        </div>
+
+        {/* Procedure */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">{translations.sections.procedure}</h3>
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.admissions_procedure_en,
+              school.admissions_procedure_jp,
+              language
+            ) || translations.sections.noInfo}
           </p>
         </div>
 
@@ -81,10 +103,12 @@ export function AdmissionsTab({
           <h3 className="text-lg font-semibold mb-2">
             {translations.sections.languageRequirementsStudents}
           </h3>
-          <p className="text-gray-700">
-            {language === 'en'
-              ? school.admissions_language_requirements_students_en || translations.sections.noInfo
-              : school.admissions_language_requirements_students_jp || translations.sections.noInfo}
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.admissions_language_requirements_students_en,
+              school.admissions_language_requirements_students_jp,
+              language
+            ) || translations.sections.noInfo}
           </p>
         </div>
 
@@ -93,10 +117,12 @@ export function AdmissionsTab({
           <h3 className="text-lg font-semibold mb-2">
             {translations.sections.languageRequirementsParents}
           </h3>
-          <p className="text-gray-700">
-            {language === 'en'
-              ? school.admissions_language_requirements_parents_en || translations.sections.noInfo
-              : school.admissions_language_requirements_parents_jp || translations.sections.noInfo}
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.admissions_language_requirements_parents_en,
+              school.admissions_language_requirements_parents_jp,
+              language
+            ) || translations.sections.noInfo}
           </p>
         </div>
       </div>
@@ -129,8 +155,11 @@ export function AdmissionsTab({
               <div className="bg-gray-50 p-4 rounded">
                 <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'day_care', 'tuition', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_day_care_fee_tuition_en,
+                    school.admissions_breakdown_fees_day_care_fee_tuition_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Registration */}
@@ -139,8 +168,11 @@ export function AdmissionsTab({
                   {translations.sections.registration}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'day_care', 'registration_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_day_care_fee_registration_fee_en,
+                    school.admissions_breakdown_fees_day_care_fee_registration_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Maintenance */}
@@ -149,8 +181,11 @@ export function AdmissionsTab({
                   {translations.sections.maintenance}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'day_care', 'maintenance_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en,
+                    school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
             </div>
@@ -164,8 +199,11 @@ export function AdmissionsTab({
               <div className="bg-gray-50 p-4 rounded">
                 <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'kindergarten', 'tuition', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_kindergarten_tuition_en,
+                    school.admissions_breakdown_fees_kindergarten_tuition_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Registration */}
@@ -174,8 +212,11 @@ export function AdmissionsTab({
                   {translations.sections.registration}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'kindergarten', 'registration_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_kindergarten_registration_fee_en,
+                    school.admissions_breakdown_fees_kindergarten_registration_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Maintenance */}
@@ -184,8 +225,11 @@ export function AdmissionsTab({
                   {translations.sections.maintenance}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'kindergarten', 'maintenance_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_kindergarten_maintenance_fee_en,
+                    school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
             </div>
@@ -199,8 +243,11 @@ export function AdmissionsTab({
               <div className="bg-gray-50 p-4 rounded">
                 <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'elementary', 'tuition', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_elementary_tuition_en,
+                    school.admissions_breakdown_fees_grade_elementary_tuition_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Registration */}
@@ -209,8 +256,11 @@ export function AdmissionsTab({
                   {translations.sections.registration}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'elementary', 'registration_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_elementary_registration_fee_en,
+                    school.admissions_breakdown_fees_grade_elementary_registration_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Maintenance */}
@@ -219,8 +269,11 @@ export function AdmissionsTab({
                   {translations.sections.maintenance}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'elementary', 'maintenance_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en,
+                    school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
             </div>
@@ -234,8 +287,11 @@ export function AdmissionsTab({
               <div className="bg-gray-50 p-4 rounded">
                 <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'junior_high', 'tuition', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_junior_high_tuition_en,
+                    school.admissions_breakdown_fees_grade_junior_high_tuition_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Registration */}
@@ -244,8 +300,11 @@ export function AdmissionsTab({
                   {translations.sections.registration}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'junior_high', 'registration_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_junior_high_registration_fee_en,
+                    school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Maintenance */}
@@ -254,8 +313,11 @@ export function AdmissionsTab({
                   {translations.sections.maintenance}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'junior_high', 'maintenance_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en,
+                    school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
             </div>
@@ -269,8 +331,11 @@ export function AdmissionsTab({
               <div className="bg-gray-50 p-4 rounded">
                 <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'high_school', 'tuition', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_high_school_tuition_en,
+                    school.admissions_breakdown_fees_grade_high_school_tuition_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Registration */}
@@ -279,8 +344,11 @@ export function AdmissionsTab({
                   {translations.sections.registration}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'high_school', 'registration_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_high_school_registration_fee_en,
+                    school.admissions_breakdown_fees_grade_high_school_registration_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
               {/* Maintenance */}
@@ -289,8 +357,11 @@ export function AdmissionsTab({
                   {translations.sections.maintenance}
                 </h4>
                 <p className="text-gray-700">
-                  {getFeeLevelContent(school, 'high_school', 'maintenance_fee', language) ||
-                    translations.sections.noFeeInfo}
+                  {getLocalizedContent(
+                    school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en,
+                    school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp,
+                    language
+                  ) || translations.sections.noFeeInfo}
                 </p>
               </div>
             </div>

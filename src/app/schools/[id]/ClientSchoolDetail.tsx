@@ -63,7 +63,18 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
 
   const handleSave = async (data: Partial<School>) => {
     try {
-      const endpoint = activeTab === 'overview' ? 'basic' : activeTab;
+      // Map tab names to their corresponding API endpoints
+      const endpointMap = {
+        overview: 'basic',
+        admissions: 'admissions',
+        campus: 'campus',
+        education: 'education',
+        studentLife: 'student-life',
+        employment: 'employment',
+        policies: 'policies'
+      };
+
+      const endpoint = endpointMap[activeTab as keyof typeof endpointMap] || activeTab;
       const response = await fetch(`/api/schools/${school.school_id}/${endpoint}`, {
         method: 'PUT',
         headers: {
@@ -185,134 +196,42 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
     language
   );
 
-  const getFeeLevelContent = (
-    school: School,
-    level: FeeLevel,
-    feeType: FeeType,
-    lang: Language
-  ): string => {
-    const key = `admissions_breakdown_fees_${level}_${feeType}` as keyof School;
-    const enKey = `${key}_en` as keyof School;
-    const jpKey = `${key}_jp` as keyof School;
-    return getLocalizedContent(school[enKey] as string, school[jpKey] as string, lang) || '';
-  };
-
-  const hasFeeLevelFees = (school: School, level: FeeLevel): boolean => {
-    return (
-      !!getFeeLevelContent(school, level, 'tuition', 'en') ||
-      !!getFeeLevelContent(school, level, 'registration_fee', 'en') ||
-      !!getFeeLevelContent(school, level, 'maintenance_fee', 'en')
-    );
-  };
-
   const renderTab = () => {
-    // Map tab names to section names for the edit form
-    const sectionMap = {
-      overview: 'basic',
-      education: 'education',
-      admissions: 'admissions',
-      campus: 'campus',
-      studentLife: 'studentLife',
-      employment: 'employment',
-      policies: 'policies',
-    } as const;
-
-    // If editing, render the appropriate edit form for the current tab
-    if (isEditing && canEdit) {
-      if (activeTab === 'overview') {
-        return (
-          <BasicInfoForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'education') {
-        return (
-          <EducationForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'admissions') {
-        return (
-          <AdmissionsForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'campus') {
-        return (
-          <CampusForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'studentLife') {
-        return (
-          <StudentLifeForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'employment') {
-        return (
-          <EmploymentForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      if (activeTab === 'policies') {
-        return (
-          <PoliciesForm
-            school={school}
-            translations={translations}
-            language={language}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        );
-      }
-
-      return null;
-    }
-
-    // Common props for all tabs
     const commonTabProps = {
       translations,
       language,
       isSchoolAdmin: canEdit,
       onEdit: () => setIsEditing(true),
     };
+
+    if (isEditing) {
+      const commonFormProps = {
+        school,
+        translations,
+        language,
+        onSave: handleSave,
+        onCancel: () => setIsEditing(false),
+      };
+
+      switch (activeTab) {
+        case 'overview':
+          return <BasicInfoForm {...commonFormProps} />;
+        case 'education':
+          return <EducationForm {...commonFormProps} />;
+        case 'admissions':
+          return <AdmissionsForm {...commonFormProps} />;
+        case 'campus':
+          return <CampusForm {...commonFormProps} />;
+        case 'studentLife':
+          return <StudentLifeForm {...commonFormProps} />;
+        case 'employment':
+          return <EmploymentForm {...commonFormProps} />;
+        case 'policies':
+          return <PoliciesForm {...commonFormProps} />;
+        default:
+          return null;
+      }
+    }
 
     switch (activeTab) {
       case 'overview':
@@ -334,11 +253,11 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             accreditations={accreditations}
           />
         );
-
       case 'education':
         return (
           <EducationTab
             {...commonTabProps}
+            school={school}
             programs={programs}
             academicSupport={academicSupport}
             extracurricular={extracurricular}
@@ -349,17 +268,13 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             )}
           />
         );
-
       case 'admissions':
         return (
           <AdmissionsTab
             {...commonTabProps}
             school={school}
-            getFeeLevelContent={getFeeLevelContent}
-            hasFeeLevelFees={hasFeeLevelFees}
           />
         );
-
       case 'campus':
         return (
           <CampusTab
@@ -368,7 +283,6 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             facilities={facilities}
           />
         );
-
       case 'studentLife':
         return (
           <StudentLifeTab
@@ -377,7 +291,6 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             supportServices={supportServices}
           />
         );
-
       case 'employment':
         return (
           <EmploymentTab
@@ -388,7 +301,6 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             boardMembers={boardMembers}
           />
         );
-
       case 'policies':
         return (
           <PoliciesTab
@@ -396,7 +308,6 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             school={school}
           />
         );
-
       default:
         return null;
     }

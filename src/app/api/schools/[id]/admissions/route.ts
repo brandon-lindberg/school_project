@@ -63,8 +63,8 @@ const admissionsSchema = z.object({
   admissions_breakdown_fees_other_registration_fee_en: z.string().nullable().default(''),
   admissions_breakdown_fees_other_registration_fee_jp: z.string().nullable().default(''),
   admissions_breakdown_fees_other_maintenance_fee_en: z.string().nullable().default(''),
-  admissions_breakdown_fees_other_maintenance_fee_jp: z.string().nullable().default(''),
-});
+  admissions_breakdown_fees_other_maintenance_fee_jp: z.string().nullable().default('')
+}).partial();
 
 export async function PUT(
   request: NextRequest,

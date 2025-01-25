@@ -69,6 +69,7 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       privacyPolicy: language === 'en' ? 'Privacy Policy' : 'プライバシーポリシー',
       termsOfUse: language === 'en' ? 'Terms of Use' : '利用規約',
       daycare: language === 'en' ? 'Day Care' : '保育',
+      kindergarten: language === 'en' ? 'Kindergarten' : '幼稚園',
       elementary: language === 'en' ? 'Elementary School' : '小学校',
       juniorhigh: language === 'en' ? 'Junior High School' : '中学校',
       highschool: language === 'en' ? 'High School' : '高校',
