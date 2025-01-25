@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[3]);
+    const schoolId = parseInt(pathParts[pathParts.length - 2]);
 
     if (!schoolId || isNaN(schoolId)) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
@@ -138,8 +138,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    const data = await request.json();
-    const validatedData = admissionsSchema.parse(data);
+    const body = await request.json();
+    if (!body || Object.keys(body).length === 0) {
+      return NextResponse.json({ error: 'Request body is required' }, { status: 400 });
+    }
+    const validatedData = admissionsSchema.parse(body);
 
     const processedData = {
       ...validatedData,

@@ -5,28 +5,27 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { SchoolAdmin } from '@prisma/client';
 
-const urlSchema = z.string()
+const urlSchema = z
+  .string()
+  .nullable()
   .transform(val => {
     if (!val || val.trim() === '') return '';
-    if (!/^https?:\/\//i.test(val)) {
-      return `https://${val.trim()}`;
-    }
-    return val.trim();
+    return val;
   })
-  .pipe(
-    z.string()
-      .refine(
-        (val) => {
-          if (!val) return true;
-          try {
-            new URL(val);
-            return true;
-          } catch {
-            return false;
-          }
-        },
-        { message: 'Invalid URL format' }
-      )
+  .refine(
+    val => {
+      if (!val) return true;
+      try {
+        if (!val.startsWith('http://') && !val.startsWith('https://')) {
+          return false;
+        }
+        new URL(val);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid URL format' }
   );
 
 const basicSchema = z.object({
@@ -64,14 +63,30 @@ const basicSchema = z.object({
   staff_board_members_jp: z.array(z.string()).nullable().default([]),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
-    // Parse and validate request body first
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = parseInt(pathParts[pathParts.length - 2]);
+
+    if (!schoolId || isNaN(schoolId)) {
+      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
+    }
+
     const body = await request.json();
-    const validatedData = basicSchema.parse(body);
+    let validatedData;
+
+    try {
+      validatedData = basicSchema.parse(body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Invalid request data', details: error.errors },
+          { status: 400 }
+        );
+      }
+      throw error;
+    }
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -85,13 +100,6 @@ export async function PUT(
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Get the school ID from params
-    const { id } = params;
-    const schoolId = parseInt(id);
-    if (!schoolId || isNaN(schoolId)) {
-      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
     const school = await prisma.school.findUnique({
@@ -140,9 +148,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to update basic information' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update basic information' }, { status: 500 });
   }
 }

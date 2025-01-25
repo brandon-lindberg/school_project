@@ -140,6 +140,15 @@ describe('PUT /api/schools/[id]/admissions', () => {
     admissions_breakdown_fees_other_maintenance_fee_jp: null,
   };
 
+  const invalidData = {
+    admissions_acceptance_policy_en: 123,
+    admissions_application_guidelines_en: true,
+    admissions_age_requirements_en: [],
+    admissions_language_requirements_students_en: {},
+    admissions_language_requirements_parents_en: 456,
+    admissions_application_fee_en: 'not a number',
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (getServerSession as jest.Mock).mockResolvedValue({
@@ -167,7 +176,7 @@ describe('PUT /api/schools/[id]/admissions', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(401);
   });
 
@@ -179,17 +188,17 @@ describe('PUT /api/schools/[id]/admissions', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(404);
   });
 
-  it('should successfully update admissions information with valid data', async () => {
+  it('should update admissions information successfully', async () => {
     const request = new NextRequest('http://localhost:3000/api/schools/1/admissions', {
       method: 'PUT',
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
     const responseData = await response.json();
     expect(responseData.message).toBe('Admissions information updated successfully');
@@ -201,7 +210,27 @@ describe('PUT /api/schools/[id]/admissions', () => {
       body: JSON.stringify(dataWithNulls),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
+  });
+
+  it('should validate required fields', async () => {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/admissions', {
+      method: 'PUT',
+      body: JSON.stringify({}),
+    });
+
+    const response = await PUT(request);
+    expect(response.status).toBe(400);
+  });
+
+  it('should handle invalid data types', async () => {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/admissions', {
+      method: 'PUT',
+      body: JSON.stringify(invalidData),
+    });
+
+    const response = await PUT(request);
+    expect(response.status).toBe(400);
   });
 });

@@ -115,7 +115,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(401);
   });
 
@@ -127,7 +127,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(404);
   });
 
@@ -137,7 +137,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
     const responseData = await response.json();
     expect(responseData.message).toBe('Basic information updated successfully');
@@ -149,7 +149,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(dataWithNulls),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
   });
 
@@ -160,7 +160,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(invalidData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(400);
   });
 
@@ -175,7 +175,7 @@ describe('PUT /api/schools/[id]/basic', () => {
       body: JSON.stringify(invalidData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(400);
   });
 });
