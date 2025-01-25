@@ -70,7 +70,7 @@ export function EmploymentTab({
       {/* Staff List */}
       {staffList.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">{translations.sections.staffList}</h2>
+          <h2 className="text-2xl font-bold mb-4">{translations.sections.staff}</h2>
           <ul className="space-y-3">
             {staffList.map((staff, index) => (
               <li key={index} className="flex items-start space-x-2">

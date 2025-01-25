@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { School } from '@/types/school';
+import { School } from '@prisma/client';
 import FallbackImage from '../FallbackImage';
 import { Language, getLocalizedContent } from '@/utils/language';
 import { Translations } from '../../../interfaces/Translations';
@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { ClaimSchoolModal } from './ClaimSchoolModal';
 import NotificationBanner from '@/app/components/NotificationBanner';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { OverviewForm } from './OverviewForm';
 
 interface OverviewTabProps {
   school: School;
@@ -26,6 +27,7 @@ interface OverviewTabProps {
   language: Language;
   isSchoolAdmin?: boolean;
   onEdit?: () => void;
+  onSave?: (data: Partial<School>) => Promise<void>;
 }
 
 export function OverviewTab({
@@ -34,13 +36,11 @@ export function OverviewTab({
   name,
   shortDescription,
   description,
-  affiliations,
-  accreditations,
   language,
   isSchoolAdmin,
-  onEdit,
 }: OverviewTabProps) {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -99,6 +99,63 @@ export function OverviewTab({
 
   const canEdit = isSchoolAdmin || session?.user?.role === 'SUPER_ADMIN';
 
+  const handleSave = async (data: Partial<School>) => {
+    try {
+      const response = await fetch(`/api/schools/${school.school_id}/basic`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+
+      const result = await response.json();
+
+      // Update the school data with the response
+      Object.assign(school, result.school);
+
+      setIsEditing(false);
+      setNotification({
+        type: 'success',
+        message: language === 'en' ? 'Changes saved successfully' : '変更が保存されました',
+      });
+
+      // Force a page refresh to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      setNotification({
+        type: 'error',
+        message: language === 'en' ? 'Failed to save changes' : '変更の保存に失敗しました',
+      });
+    }
+  };
+
+  if (isEditing && canEdit) {
+    return (
+      <div className="space-y-6">
+        {notification && (
+          <NotificationBanner
+            type={notification.type}
+            message={notification.message}
+            onClose={() => setNotification(null)}
+          />
+        )}
+        <OverviewForm
+          school={school}
+          translations={translations}
+          language={language}
+          onSave={handleSave}
+          onCancel={() => setIsEditing(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {notification && (
@@ -153,6 +210,12 @@ export function OverviewTab({
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">{translations.sections.contactInfo}</h2>
           <div className="space-y-2">
+            {getLocalizedContent(school.address_en, school.address_jp, language) && (
+              <p className="text-gray-600">
+                <span className="font-medium">{translations.sections.address}:</span>{' '}
+                {getLocalizedContent(school.address_en, school.address_jp, language)}
+              </p>
+            )}
             {getLocalizedContent(school.email_en, school.email_jp, language) && (
               <p className="text-gray-600">
                 <span className="font-medium">{translations.sections.email}:</span>{' '}
@@ -237,7 +300,7 @@ export function OverviewTab({
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{translations.sections.schoolAdmin}</h2>
               <button
-                onClick={onEdit}
+                onClick={() => setIsEditing(true)}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
               >
                 <span>{translations.buttons.edit}</span>
@@ -248,51 +311,50 @@ export function OverviewTab({
       </div>
 
       {/* Description */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">{translations.sections.aboutSchool}</h2>
-        </div>
-        <p className="text-gray-700 whitespace-pre-wrap">{description}</p>
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h2 className="text-xl font-semibold mb-4">{translations.sections.description}</h2>
+        <p className="text-gray-600 whitespace-pre-wrap">{description}</p>
       </div>
 
       {/* Affiliations & Accreditations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {affiliations.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">{translations.sections.affiliations}</h3>
-            <ul className="list-disc list-inside space-y-2">
-              {affiliations.map((item, index) => (
-                <li key={index} className="text-gray-700">
-                  {item}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Affiliations */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">{translations.sections.affiliations}</h2>
+          <ul className="list-disc list-inside space-y-2">
+            {(language === 'en' ? school.affiliations_en : school.affiliations_jp)?.map(
+              (affiliation, index) => (
+                <li key={index} className="text-gray-600">
+                  {affiliation}
                 </li>
-              ))}
-            </ul>
-          </div>
-        )}
+              )
+            )}
+          </ul>
+        </div>
 
-        {accreditations.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">{translations.sections.accreditations}</h3>
-            <ul className="list-disc list-inside space-y-2">
-              {accreditations.map((item, index) => (
-                <li key={index} className="text-gray-700">
-                  {item}
+        {/* Accreditations */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">{translations.sections.accreditations}</h2>
+          <ul className="list-disc list-inside space-y-2">
+            {(language === 'en' ? school.accreditation_en : school.accreditation_jp)?.map(
+              (accreditation, index) => (
+                <li key={index} className="text-gray-600">
+                  {accreditation}
                 </li>
-              ))}
-            </ul>
-          </div>
-        )}
+              )
+            )}
+          </ul>
+        </div>
       </div>
 
-      {isClaimModalOpen && isAuthenticated && (
-        <ClaimSchoolModal
-          schoolId={parseInt(school.school_id)}
-          isOpen={isClaimModalOpen}
-          onClose={() => setIsClaimModalOpen(false)}
-          onSuccess={handleClaimSuccess}
-          onNotification={setNotification}
-        />
-      )}
+      {/* Claim School Modal */}
+      <ClaimSchoolModal
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        onSuccess={handleClaimSuccess}
+        schoolId={school.school_id}
+        onNotification={setNotification}
+      />
     </div>
   );
 }

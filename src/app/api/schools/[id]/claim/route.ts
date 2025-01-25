@@ -13,16 +13,19 @@ const claimRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body first
-    const body = await request.json();
-    const validatedData = claimRequestSchema.parse(body);
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = parseInt(pathParts[pathParts.length - 2]);
+
+    if (isNaN(schoolId)) {
+      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
+    }
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user from database
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -31,88 +34,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get the school ID from the URL
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[3]); // /api/schools/[id]/claim
-
-    if (!schoolId || isNaN(schoolId)) {
-      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
-    }
-
-    // Check if school exists
     const school = await prisma.school.findUnique({
       where: { school_id: schoolId },
-      include: {
-        claims: {
-          where: {
-            user_id: user.user_id,
-            status: 'PENDING',
-          },
-        },
-      },
     });
 
     if (!school) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Check if user already has a pending claim
-    if (school.claims.length > 0) {
+    const existingClaim = await prisma.schoolClaim.findFirst({
+      where: {
+        user_id: user.user_id,
+        school_id: schoolId,
+        status: 'PENDING',
+      },
+    });
+
+    if (existingClaim) {
       return NextResponse.json(
         { error: 'You already have a pending claim for this school' },
         { status: 400 }
       );
     }
 
-    // Create the claim
+    const body = await request.json();
+    const validatedData = claimRequestSchema.parse(body);
+
     const claim = await prisma.schoolClaim.create({
       data: {
-        school_id: schoolId,
         user_id: user.user_id,
+        school_id: schoolId,
+        status: 'PENDING',
         verification_method: validatedData.verificationMethod,
         verification_data: validatedData.verificationData,
         notes: validatedData.notes,
-        status: 'PENDING',
       },
     });
 
-    // Notify all super admins about the new claim
-    const superAdmins = await prisma.user.findMany({
-      where: { role: 'SUPER_ADMIN' },
-      select: { user_id: true },
-    });
-
-    const schoolName = school.name_en || school.name_jp || 'School';
-    const claimantName =
-      [user.first_name, user.family_name].filter(Boolean).join(' ') || user.email;
-
-    await prisma.$transaction(
-      superAdmins.map(admin =>
-        prisma.notification.create({
-          data: {
-            user_id: admin.user_id,
-            type: 'CLAIM_SUBMITTED',
-            title: `New School Claim: ${schoolName}`,
-            message: `${claimantName} has submitted a claim for ${schoolName}. Verification method: ${validatedData.verificationMethod}`,
-          },
-        })
-      )
+    return NextResponse.json(
+      {
+        status: claim.status,
+        claim_id: claim.claim_id,
+      },
+      { status: 200 }
     );
-
-    return NextResponse.json({
-      message: 'Claim submitted successfully',
-      status: 'PENDING',
-      claim_id: claim.claim_id,
-    });
   } catch (error) {
-    console.error('Error processing school claim:', error);
+    console.error('Error claiming school:', error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       );
     }
-    return NextResponse.json({ error: 'Failed to process claim' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to claim school' }, { status: 500 });
   }
 }
