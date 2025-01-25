@@ -214,6 +214,12 @@ export function OverviewTab({
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">{translations.sections.contactInfo}</h2>
           <div className="space-y-2">
+            {getLocalizedContent(school.address_en, school.address_jp, language) && (
+              <p className="text-gray-600">
+                <span className="font-medium">{translations.sections.address}:</span>{' '}
+                {getLocalizedContent(school.address_en, school.address_jp, language)}
+              </p>
+            )}
             {getLocalizedContent(school.email_en, school.email_jp, language) && (
               <p className="text-gray-600">
                 <span className="font-medium">{translations.sections.email}:</span>{' '}
