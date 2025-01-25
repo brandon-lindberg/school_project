@@ -72,9 +72,6 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to update policies information' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update policies information' }, { status: 500 });
   }
 }

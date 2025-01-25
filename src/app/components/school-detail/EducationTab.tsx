@@ -20,14 +20,12 @@ interface EducationTabProps {
 
 export function EducationTab({
   translations,
-  language,
   programs,
   academicSupport,
   extracurricular,
   curriculum,
   isSchoolAdmin,
   onEdit,
-  school,
 }: EducationTabProps) {
   return (
     <div className="space-y-6">

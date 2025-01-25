@@ -53,20 +53,26 @@ export async function PUT(request: NextRequest) {
 
     // Filter out null/empty values from arrays
     const processedData = {
-      employment_open_positions_en: (validatedData.employment_open_positions_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      employment_open_positions_jp: (validatedData.employment_open_positions_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
+      employment_open_positions_en: (validatedData.employment_open_positions_en ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      employment_open_positions_jp: (validatedData.employment_open_positions_jp ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
       employment_application_process_en: validatedData.employment_application_process_en ?? '',
       employment_application_process_jp: validatedData.employment_application_process_jp ?? '',
-      staff_staff_list_en: (validatedData.staff_staff_list_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      staff_staff_list_jp: (validatedData.staff_staff_list_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
-      staff_board_members_en: (validatedData.staff_board_members_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      staff_board_members_jp: (validatedData.staff_board_members_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
+      staff_staff_list_en: (validatedData.staff_staff_list_en ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      staff_staff_list_jp: (validatedData.staff_staff_list_jp ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      staff_board_members_en: (validatedData.staff_board_members_en ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      staff_board_members_jp: (validatedData.staff_board_members_jp ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
     };
 
     const updatedSchool = await prisma.school.update({
@@ -86,9 +92,6 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to update employment information' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update employment information' }, { status: 500 });
   }
 }

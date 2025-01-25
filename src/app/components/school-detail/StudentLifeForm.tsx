@@ -86,7 +86,9 @@ export function StudentLifeForm({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === 'en' ? 'Counseling Services (English)' : 'カウンセリングサービス（英語）'}
+              {language === 'en'
+                ? 'Counseling Services (English)'
+                : 'カウンセリングサービス（英語）'}
             </label>
             <textarea
               value={formData.student_life_counseling_en}
@@ -97,7 +99,9 @@ export function StudentLifeForm({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === 'en' ? 'Counseling Services (Japanese)' : 'カウンセリングサービス（日本語）'}
+              {language === 'en'
+                ? 'Counseling Services (Japanese)'
+                : 'カウンセリングサービス（日本語）'}
             </label>
             <textarea
               value={formData.student_life_counseling_jp}
@@ -123,7 +127,9 @@ export function StudentLifeForm({
                 <input
                   type="text"
                   value={service}
-                  onChange={e => handleArrayChange('student_life_support_services_en', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('student_life_support_services_en', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={language === 'en' ? 'Enter service' : 'サービスを入力'}
                 />
@@ -155,7 +161,9 @@ export function StudentLifeForm({
                 <input
                   type="text"
                   value={service}
-                  onChange={e => handleArrayChange('student_life_support_services_jp', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('student_life_support_services_jp', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={language === 'en' ? 'Enter service' : 'サービスを入力'}
                 />

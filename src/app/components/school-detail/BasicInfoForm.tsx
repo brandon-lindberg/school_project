@@ -11,13 +11,7 @@ interface BasicInfoFormProps {
   onCancel: () => void;
 }
 
-export function BasicInfoForm({
-  school,
-  translations,
-  language,
-  onSave,
-  onCancel,
-}: BasicInfoFormProps) {
+export function BasicInfoForm({ school, language, onSave, onCancel }: BasicInfoFormProps) {
   const [formData, setFormData] = useState({
     name_en: school.name_en ?? '',
     name_jp: school.name_jp ?? '',

@@ -92,7 +92,9 @@ export function EmploymentForm({
                 <input
                   type="text"
                   value={position}
-                  onChange={e => handleArrayChange('employment_open_positions_en', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('employment_open_positions_en', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={language === 'en' ? 'Enter position' : '職種を入力'}
                 />
@@ -124,7 +126,9 @@ export function EmploymentForm({
                 <input
                   type="text"
                   value={position}
-                  onChange={e => handleArrayChange('employment_open_positions_jp', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('employment_open_positions_jp', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={language === 'en' ? 'Enter position' : '職種を入力'}
                 />

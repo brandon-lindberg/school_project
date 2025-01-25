@@ -64,7 +64,7 @@ describe('PUT /api/schools/[id]/campus', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(401);
   });
 
@@ -76,7 +76,7 @@ describe('PUT /api/schools/[id]/campus', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(404);
   });
 
@@ -86,7 +86,7 @@ describe('PUT /api/schools/[id]/campus', () => {
       body: JSON.stringify(validData),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
     const responseData = await response.json();
     expect(responseData.message).toBe('Campus information updated successfully');
@@ -98,7 +98,7 @@ describe('PUT /api/schools/[id]/campus', () => {
       body: JSON.stringify(dataWithNulls),
     });
 
-    const response = await PUT(request, { params: { id: '1' } });
+    const response = await PUT(request);
     expect(response.status).toBe(200);
 
     const updateCall = (prisma.school.update as jest.Mock).mock.calls[0][0];

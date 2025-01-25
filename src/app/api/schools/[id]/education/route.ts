@@ -53,18 +53,24 @@ export async function PUT(request: NextRequest) {
 
     // Filter out null/empty values from arrays and convert nulls to empty strings
     const processedData = {
-      education_programs_offered_en: (validatedData.education_programs_offered_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      education_programs_offered_jp: (validatedData.education_programs_offered_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
-      education_academic_support_en: (validatedData.education_academic_support_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      education_academic_support_jp: (validatedData.education_academic_support_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
-      education_extracurricular_activities_en: (validatedData.education_extracurricular_activities_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      education_extracurricular_activities_jp: (validatedData.education_extracurricular_activities_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
+      education_programs_offered_en: (validatedData.education_programs_offered_en ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      education_programs_offered_jp: (validatedData.education_programs_offered_jp ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      education_academic_support_en: (validatedData.education_academic_support_en ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      education_academic_support_jp: (validatedData.education_academic_support_jp ?? []).filter(
+        (item): item is string => Boolean(item)
+      ),
+      education_extracurricular_activities_en: (
+        validatedData.education_extracurricular_activities_en ?? []
+      ).filter((item): item is string => Boolean(item)),
+      education_extracurricular_activities_jp: (
+        validatedData.education_extracurricular_activities_jp ?? []
+      ).filter((item): item is string => Boolean(item)),
       education_curriculum_en: validatedData.education_curriculum_en ?? '',
       education_curriculum_jp: validatedData.education_curriculum_jp ?? '',
     };
@@ -86,9 +92,6 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to update education information' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update education information' }, { status: 500 });
   }
 }

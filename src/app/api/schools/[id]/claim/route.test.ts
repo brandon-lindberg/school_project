@@ -48,7 +48,7 @@ describe('POST /api/schools/[id]/claim', () => {
       }),
     });
 
-    const response = await POST(request, { params: { id: '1' } });
+    const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -69,7 +69,7 @@ describe('POST /api/schools/[id]/claim', () => {
       }),
     });
 
-    const response = await POST(request, { params: { id: '1' } });
+    const response = await POST(request);
     expect(response.status).toBe(404);
   });
 
@@ -92,7 +92,7 @@ describe('POST /api/schools/[id]/claim', () => {
       }),
     });
 
-    const response = await POST(request, { params: { id: 'invalid' } });
+    const response = await POST(request);
     expect(response.status).toBe(400);
   });
 
@@ -116,9 +116,7 @@ describe('POST /api/schools/[id]/claim', () => {
       claim_id: 1,
       status: 'PENDING',
     });
-    (prisma.user.findMany as jest.Mock).mockResolvedValue([
-      { user_id: 2, role: 'SUPER_ADMIN' },
-    ]);
+    (prisma.user.findMany as jest.Mock).mockResolvedValue([{ user_id: 2, role: 'SUPER_ADMIN' }]);
     (prisma.$transaction as jest.Mock).mockResolvedValue([]);
 
     const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
@@ -129,7 +127,7 @@ describe('POST /api/schools/[id]/claim', () => {
       }),
     });
 
-    const response = await POST(request, { params: { id: '1' } });
+    const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -162,7 +160,7 @@ describe('POST /api/schools/[id]/claim', () => {
       }),
     });
 
-    const response = await POST(request, { params: { id: '1' } });
+    const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(400);

@@ -57,10 +57,12 @@ export async function PUT(request: NextRequest) {
     const processedData = {
       student_life_counseling_en: validatedData.student_life_counseling_en ?? '',
       student_life_counseling_jp: validatedData.student_life_counseling_jp ?? '',
-      student_life_support_services_en: (validatedData.student_life_support_services_en ?? [])
-        .filter((item): item is string => Boolean(item)),
-      student_life_support_services_jp: (validatedData.student_life_support_services_jp ?? [])
-        .filter((item): item is string => Boolean(item)),
+      student_life_support_services_en: (
+        validatedData.student_life_support_services_en ?? []
+      ).filter((item): item is string => Boolean(item)),
+      student_life_support_services_jp: (
+        validatedData.student_life_support_services_jp ?? []
+      ).filter((item): item is string => Boolean(item)),
       student_life_library_en: validatedData.student_life_library_en ?? '',
       student_life_library_jp: validatedData.student_life_library_jp ?? '',
       student_life_calendar_en: validatedData.student_life_calendar_en ?? '',

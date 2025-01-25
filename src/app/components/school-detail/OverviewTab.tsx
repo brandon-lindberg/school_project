@@ -36,12 +36,8 @@ export function OverviewTab({
   name,
   shortDescription,
   description,
-  affiliations,
-  accreditations,
   language,
   isSchoolAdmin,
-  onEdit,
-  onSave,
 }: OverviewTabProps) {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -84,9 +80,9 @@ export function OverviewTab({
     setClaimStatus(prevStatus =>
       prevStatus
         ? {
-          ...prevStatus,
-          hasPendingClaim: true,
-        }
+            ...prevStatus,
+            hasPendingClaim: true,
+          }
         : null
     );
   };
@@ -259,14 +255,15 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
-                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                  : claimStatus?.isClaimed
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : claimStatus?.hasExistingSchool
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
+                  claimStatus?.hasPendingClaim
+                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                    : claimStatus?.isClaimed
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : 'bg-green-500 hover:bg-green-600'
-                  } text-white`}
+                      : claimStatus?.hasExistingSchool
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
                 disabled={
                   claimStatus?.hasPendingClaim ||
                   claimStatus?.isClaimed ||
@@ -325,11 +322,13 @@ export function OverviewTab({
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">{translations.sections.affiliations}</h2>
           <ul className="list-disc list-inside space-y-2">
-            {(language === 'en' ? school.affiliations_en : school.affiliations_jp)?.map((affiliation, index) => (
-              <li key={index} className="text-gray-600">
-                {affiliation}
-              </li>
-            ))}
+            {(language === 'en' ? school.affiliations_en : school.affiliations_jp)?.map(
+              (affiliation, index) => (
+                <li key={index} className="text-gray-600">
+                  {affiliation}
+                </li>
+              )
+            )}
           </ul>
         </div>
 
@@ -337,11 +336,13 @@ export function OverviewTab({
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">{translations.sections.accreditations}</h2>
           <ul className="list-disc list-inside space-y-2">
-            {(language === 'en' ? school.accreditation_en : school.accreditation_jp)?.map((accreditation, index) => (
-              <li key={index} className="text-gray-600">
-                {accreditation}
-              </li>
-            ))}
+            {(language === 'en' ? school.accreditation_en : school.accreditation_jp)?.map(
+              (accreditation, index) => (
+                <li key={index} className="text-gray-600">
+                  {accreditation}
+                </li>
+              )
+            )}
           </ul>
         </div>
       </div>

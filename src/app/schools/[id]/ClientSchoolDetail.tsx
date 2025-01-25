@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { School, FeeLevel, FeeType } from '@/types/school';
+import { School } from '@/types/school';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import BrowsingHistoryRecorder from '../../components/BrowsingHistoryRecorder';
@@ -71,7 +71,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         education: 'education',
         studentLife: 'student-life',
         employment: 'employment',
-        policies: 'policies'
+        policies: 'policies',
       };
 
       const endpoint = endpointMap[activeTab as keyof typeof endpointMap] || activeTab;
@@ -92,7 +92,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
       // Update the local school data with the new values
       setSchool(prevSchool => ({
         ...prevSchool,
-        ...data
+        ...data,
       }));
 
       setNotification({
@@ -261,21 +261,9 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
           <EducationTab
             {...commonTabProps}
             school={school}
-            programs={getLocalizedArray(
-              school.education_programs_offered_en,
-              school.education_programs_offered_jp,
-              language
-            )}
-            academicSupport={getLocalizedArray(
-              school.education_academic_support_en,
-              school.education_academic_support_jp,
-              language
-            )}
-            extracurricular={getLocalizedArray(
-              school.education_extracurricular_activities_en,
-              school.education_extracurricular_activities_jp,
-              language
-            )}
+            programs={programs}
+            academicSupport={academicSupport}
+            extracurricular={extracurricular}
             curriculum={getLocalizedContent(
               school.education_curriculum_en,
               school.education_curriculum_jp,
@@ -284,61 +272,25 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
           />
         );
       case 'admissions':
-        return (
-          <AdmissionsTab
-            {...commonTabProps}
-            school={school}
-          />
-        );
+        return <AdmissionsTab {...commonTabProps} school={school} />;
       case 'campus':
-        return (
-          <CampusTab
-            {...commonTabProps}
-            school={school}
-            facilities={facilities}
-          />
-        );
+        return <CampusTab {...commonTabProps} school={school} facilities={facilities} />;
       case 'studentLife':
         return (
-          <StudentLifeTab
-            {...commonTabProps}
-            school={school}
-            supportServices={getLocalizedArray(
-              school.student_life_support_services_en,
-              school.student_life_support_services_jp,
-              language
-            )}
-          />
+          <StudentLifeTab {...commonTabProps} school={school} supportServices={supportServices} />
         );
       case 'employment':
         return (
           <EmploymentTab
             {...commonTabProps}
             school={school}
-            openPositions={getLocalizedArray(
-              school.employment_open_positions_en,
-              school.employment_open_positions_jp,
-              language
-            )}
-            staffList={getLocalizedArray(
-              school.staff_staff_list_en,
-              school.staff_staff_list_jp,
-              language
-            )}
-            boardMembers={getLocalizedArray(
-              school.staff_board_members_en,
-              school.staff_board_members_jp,
-              language
-            )}
+            openPositions={openPositions}
+            staffList={staffList}
+            boardMembers={boardMembers}
           />
         );
       case 'policies':
-        return (
-          <PoliciesTab
-            {...commonTabProps}
-            school={school}
-          />
-        );
+        return <PoliciesTab {...commonTabProps} school={school} />;
       default:
         return null;
     }
@@ -375,9 +327,10 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={`
-                    ${activeTab === tab.id
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ${
+                      activeTab === tab.id
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium

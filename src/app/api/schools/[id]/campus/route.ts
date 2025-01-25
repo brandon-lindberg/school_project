@@ -3,30 +3,36 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { SchoolAdmin } from '@prisma/client';
-
-const urlSchema = z.string().nullable().transform(val => {
-  if (!val) return '';
-  try {
-    new URL(val);
-    return val;
-  } catch {
-    return '';
-  }
-});
 
 const campusSchema = z.object({
-  campus_facilities_en: z.array(z.string()).nullable().transform(val => val ?? []),
-  campus_facilities_jp: z.array(z.string()).nullable().transform(val => val ?? []),
-  campus_virtual_tour_en: z.string().nullable().transform(val => val ?? ''),
-  campus_virtual_tour_jp: z.string().nullable().transform(val => val ?? ''),
+  campus_facilities_en: z
+    .array(z.string())
+    .nullable()
+    .transform(val => val ?? []),
+  campus_facilities_jp: z
+    .array(z.string())
+    .nullable()
+    .transform(val => val ?? []),
+  campus_virtual_tour_en: z
+    .string()
+    .nullable()
+    .transform(val => val ?? ''),
+  campus_virtual_tour_jp: z
+    .string()
+    .nullable()
+    .transform(val => val ?? ''),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = parseInt(pathParts[3]);
+
+    if (!schoolId || isNaN(schoolId)) {
+      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -44,9 +50,8 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const schoolId = params.id;
     const school = await prisma.school.findUnique({
-      where: { school_id: parseInt(schoolId) },
+      where: { school_id: schoolId },
     });
 
     if (!school) {
@@ -64,7 +69,7 @@ export async function PUT(
     };
 
     await prisma.school.update({
-      where: { school_id: parseInt(schoolId) },
+      where: { school_id: schoolId },
       data: processedData,
     });
 
@@ -79,9 +84,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to update campus information' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update campus information' }, { status: 500 });
   }
 }

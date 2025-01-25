@@ -74,7 +74,10 @@ describe('PUT /api/schools/[id]/student-life', () => {
     expect(response.status).toBe(200);
     expect(responseData.message).toBe('Student life information updated successfully');
     expect(responseData.school.student_life_counseling_en).toBe('Counseling services available');
-    expect(responseData.school.student_life_support_services_en).toEqual(['Academic Support', 'Career Guidance']);
+    expect(responseData.school.student_life_support_services_en).toEqual([
+      'Academic Support',
+      'Career Guidance',
+    ]);
   });
 
   it('should handle null values and empty arrays correctly', async () => {

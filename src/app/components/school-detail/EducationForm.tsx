@@ -81,9 +81,7 @@ export function EducationForm({
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Programs Offered */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">
-          {translations.sections.programsOffered}
-        </h3>
+        <h3 className="text-lg font-semibold">{translations.sections.programsOffered}</h3>
         <div className="grid grid-cols-2 gap-4">
           {/* English Programs */}
           <div>
@@ -95,7 +93,9 @@ export function EducationForm({
                 <input
                   type="text"
                   value={program}
-                  onChange={e => handleArrayChange('education_programs_offered_en', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('education_programs_offered_en', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
@@ -126,7 +126,9 @@ export function EducationForm({
                 <input
                   type="text"
                   value={program}
-                  onChange={e => handleArrayChange('education_programs_offered_jp', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('education_programs_offered_jp', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
@@ -151,9 +153,7 @@ export function EducationForm({
 
       {/* Curriculum */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">
-          {translations.sections.curriculum}
-        </h3>
+        <h3 className="text-lg font-semibold">{translations.sections.curriculum}</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -182,9 +182,7 @@ export function EducationForm({
 
       {/* Academic Support */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">
-          {translations.sections.academicSupportTitle}
-        </h3>
+        <h3 className="text-lg font-semibold">{translations.sections.academicSupportTitle}</h3>
         <div className="grid grid-cols-2 gap-4">
           {/* English Academic Support */}
           <div>
@@ -196,7 +194,9 @@ export function EducationForm({
                 <input
                   type="text"
                   value={support}
-                  onChange={e => handleArrayChange('education_academic_support_en', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('education_academic_support_en', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
@@ -227,7 +227,9 @@ export function EducationForm({
                 <input
                   type="text"
                   value={support}
-                  onChange={e => handleArrayChange('education_academic_support_jp', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange('education_academic_support_jp', e.target.value, index)
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
@@ -252,9 +254,7 @@ export function EducationForm({
 
       {/* Extracurricular Activities */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">
-          {translations.sections.extracurricular}
-        </h3>
+        <h3 className="text-lg font-semibold">{translations.sections.extracurricular}</h3>
         <div className="grid grid-cols-2 gap-4">
           {/* English Extracurricular */}
           <div>
@@ -266,12 +266,20 @@ export function EducationForm({
                 <input
                   type="text"
                   value={activity}
-                  onChange={e => handleArrayChange('education_extracurricular_activities_en', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange(
+                      'education_extracurricular_activities_en',
+                      e.target.value,
+                      index
+                    )
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
                   type="button"
-                  onClick={() => handleRemoveArrayItem('education_extracurricular_activities_en', index)}
+                  onClick={() =>
+                    handleRemoveArrayItem('education_extracurricular_activities_en', index)
+                  }
                   className="ml-2 text-red-500 hover:text-red-700"
                 >
                   ✕
@@ -297,12 +305,20 @@ export function EducationForm({
                 <input
                   type="text"
                   value={activity}
-                  onChange={e => handleArrayChange('education_extracurricular_activities_jp', e.target.value, index)}
+                  onChange={e =>
+                    handleArrayChange(
+                      'education_extracurricular_activities_jp',
+                      e.target.value,
+                      index
+                    )
+                  }
                   className="flex-1 rounded-md border border-gray-300 p-2"
                 />
                 <button
                   type="button"
-                  onClick={() => handleRemoveArrayItem('education_extracurricular_activities_jp', index)}
+                  onClick={() =>
+                    handleRemoveArrayItem('education_extracurricular_activities_jp', index)
+                  }
                   className="ml-2 text-red-500 hover:text-red-700"
                 >
                   ✕

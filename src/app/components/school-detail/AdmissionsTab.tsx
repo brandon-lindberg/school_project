@@ -78,11 +78,8 @@ export function AdmissionsTab({
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">{translations.sections.generalFees}</h3>
           <p className="text-gray-700 whitespace-pre-wrap">
-            {getLocalizedContent(
-              school.admissions_fees_en,
-              school.admissions_fees_jp,
-              language
-            ) || translations.sections.noInfo}
+            {getLocalizedContent(school.admissions_fees_en, school.admissions_fees_jp, language) ||
+              translations.sections.noInfo}
           </p>
         </div>
 

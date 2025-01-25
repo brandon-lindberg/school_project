@@ -65,9 +65,9 @@ export function OverviewForm({
   // Add validation state
   const isFormValid = Boolean(
     formData.name_en?.trim() &&
-    formData.location_en?.trim() &&
-    (!formData.url_en || /^https?:\/\//i.test(formData.url_en)) &&
-    (!formData.url_jp || /^https?:\/\//i.test(formData.url_jp))
+      formData.location_en?.trim() &&
+      (!formData.url_en || /^https?:\/\//i.test(formData.url_en)) &&
+      (!formData.url_jp || /^https?:\/\//i.test(formData.url_jp))
   );
 
   const handleChange = (field: keyof typeof formData, value: string | string[]) => {
@@ -110,7 +110,12 @@ export function OverviewForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newErrors: { name_en?: string; location_en?: string; url_en?: string; url_jp?: string } = {};
+      const newErrors: {
+        name_en?: string;
+        location_en?: string;
+        url_en?: string;
+        url_jp?: string;
+      } = {};
 
       // Validate required fields
       if (!formData.name_en?.trim()) {
@@ -188,12 +193,11 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, name_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${errors.name_en ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`w-full rounded-md border p-2 ${
+                errors.name_en ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
-            {errors.name_en && (
-              <p className="mt-1 text-sm text-red-500">{errors.name_en}</p>
-            )}
+            {errors.name_en && <p className="mt-1 text-sm text-red-500">{errors.name_en}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -288,8 +292,9 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, location_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${errors.location_en ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`w-full rounded-md border p-2 ${
+                errors.location_en ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
             {errors.location_en && (
               <p className="mt-1 text-sm text-red-500">{errors.location_en}</p>
@@ -393,13 +398,12 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, url_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${errors.url_en ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`w-full rounded-md border p-2 ${
+                errors.url_en ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="https://example.com"
             />
-            {errors.url_en && (
-              <p className="mt-1 text-sm text-red-500">{errors.url_en}</p>
-            )}
+            {errors.url_en && <p className="mt-1 text-sm text-red-500">{errors.url_en}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -414,13 +418,12 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, url_jp: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${errors.url_jp ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`w-full rounded-md border p-2 ${
+                errors.url_jp ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="https://example.com"
             />
-            {errors.url_jp && (
-              <p className="mt-1 text-sm text-red-500">{errors.url_jp}</p>
-            )}
+            {errors.url_jp && <p className="mt-1 text-sm text-red-500">{errors.url_jp}</p>}
           </div>
         </div>
       </div>
@@ -656,10 +659,11 @@ export function OverviewForm({
           <button
             type="submit"
             disabled={!isFormValid}
-            className={`px-4 py-2 rounded transition-colors ${isFormValid
-              ? 'bg-green-500 text-white hover:bg-green-600'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+            className={`px-4 py-2 rounded transition-colors ${
+              isFormValid
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             {language === 'en' ? 'Save Changes' : '変更を保存'}
           </button>

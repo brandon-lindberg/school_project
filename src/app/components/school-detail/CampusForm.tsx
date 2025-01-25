@@ -11,13 +11,7 @@ interface CampusFormProps {
   onCancel: () => void;
 }
 
-export function CampusForm({
-  school,
-  translations,
-  language,
-  onSave,
-  onCancel,
-}: CampusFormProps) {
+export function CampusForm({ school, translations, language, onSave, onCancel }: CampusFormProps) {
   const [formData, setFormData] = useState({
     campus_facilities_en: school.campus_facilities_en ?? [],
     campus_facilities_jp: school.campus_facilities_jp ?? [],
