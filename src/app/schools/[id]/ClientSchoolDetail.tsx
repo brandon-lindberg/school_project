@@ -16,7 +16,6 @@ import {
   StudentLifeTab,
   EmploymentTab,
   PoliciesTab,
-  SchoolEditForm,
 } from '@/app/components/school-detail';
 import { BasicInfoForm } from '@/app/components/school-detail/BasicInfoForm';
 import { EducationForm } from '@/app/components/school-detail/EducationForm';
@@ -64,15 +63,13 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
 
   const handleSave = async (data: Partial<School>) => {
     try {
-      const response = await fetch(`/api/schools/${school.school_id}/update`, {
+      const endpoint = activeTab === 'overview' ? 'basic' : activeTab;
+      const response = await fetch(`/api/schools/${school.school_id}/${endpoint}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          section: activeTab === 'overview' ? 'basic' : activeTab,
-          data,
-        }),
+        body: JSON.stringify(data),
       });
 
       const responseData = await response.json();
@@ -306,16 +303,7 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
         );
       }
 
-      return (
-        <SchoolEditForm
-          school={school}
-          translations={translations}
-          language={language}
-          onSave={handleSave}
-          onCancel={() => setIsEditing(false)}
-          section={sectionMap[activeTab as keyof typeof sectionMap]}
-        />
-      );
+      return null;
     }
 
     // Common props for all tabs

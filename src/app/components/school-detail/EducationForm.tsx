@@ -70,9 +70,23 @@ export function EducationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSave(formData);
+      const response = await fetch(`/api/schools/${school.school_id}/education`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+
+      const result = await response.json();
+      await onSave(result.school);
     } catch (error) {
       console.error('Error in form submission:', error);
+      throw error;
     }
   };
 
