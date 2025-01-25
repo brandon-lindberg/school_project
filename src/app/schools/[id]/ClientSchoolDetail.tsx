@@ -315,9 +315,21 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
           <EmploymentTab
             {...commonTabProps}
             school={school}
-            openPositions={openPositions}
-            staffList={staffList}
-            boardMembers={boardMembers}
+            openPositions={getLocalizedArray(
+              school.employment_open_positions_en,
+              school.employment_open_positions_jp,
+              language
+            )}
+            staffList={getLocalizedArray(
+              school.staff_staff_list_en,
+              school.staff_staff_list_jp,
+              language
+            )}
+            boardMembers={getLocalizedArray(
+              school.staff_board_members_en,
+              school.staff_board_members_jp,
+              language
+            )}
           />
         );
       case 'policies':

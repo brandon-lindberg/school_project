@@ -10,6 +10,10 @@ const employmentSchema = z.object({
   employment_open_positions_jp: z.array(z.string().nullable()).nullable().default([]),
   employment_application_process_en: z.string().nullable().default(''),
   employment_application_process_jp: z.string().nullable().default(''),
+  staff_staff_list_en: z.array(z.string().nullable()).nullable().default([]),
+  staff_staff_list_jp: z.array(z.string().nullable()).nullable().default([]),
+  staff_board_members_en: z.array(z.string().nullable()).nullable().default([]),
+  staff_board_members_jp: z.array(z.string().nullable()).nullable().default([]),
 });
 
 export async function PUT(request: NextRequest) {
@@ -55,6 +59,14 @@ export async function PUT(request: NextRequest) {
         .filter((item): item is string => Boolean(item)),
       employment_application_process_en: validatedData.employment_application_process_en ?? '',
       employment_application_process_jp: validatedData.employment_application_process_jp ?? '',
+      staff_staff_list_en: (validatedData.staff_staff_list_en ?? [])
+        .filter((item): item is string => Boolean(item)),
+      staff_staff_list_jp: (validatedData.staff_staff_list_jp ?? [])
+        .filter((item): item is string => Boolean(item)),
+      staff_board_members_en: (validatedData.staff_board_members_en ?? [])
+        .filter((item): item is string => Boolean(item)),
+      staff_board_members_jp: (validatedData.staff_board_members_jp ?? [])
+        .filter((item): item is string => Boolean(item)),
     };
 
     const updatedSchool = await prisma.school.update({

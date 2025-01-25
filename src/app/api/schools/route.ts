@@ -139,6 +139,14 @@ export async function GET(request: Request) {
           student_life_calendar_jp: true,
           student_life_tour_en: true,
           student_life_tour_jp: true,
+          employment_open_positions_en: true,
+          employment_open_positions_jp: true,
+          employment_application_process_en: true,
+          employment_application_process_jp: true,
+          staff_staff_list_en: true,
+          staff_staff_list_jp: true,
+          staff_board_members_en: true,
+          staff_board_members_jp: true,
         },
       });
 
@@ -319,6 +327,14 @@ export async function GET(request: Request) {
         student_life_calendar_jp: true,
         student_life_tour_en: true,
         student_life_tour_jp: true,
+        employment_open_positions_en: true,
+        employment_open_positions_jp: true,
+        employment_application_process_en: true,
+        employment_application_process_jp: true,
+        staff_staff_list_en: true,
+        staff_staff_list_jp: true,
+        staff_board_members_en: true,
+        staff_board_members_jp: true,
       },
     });
 
