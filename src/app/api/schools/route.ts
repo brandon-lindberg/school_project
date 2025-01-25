@@ -147,6 +147,10 @@ export async function GET(request: Request) {
           staff_staff_list_jp: true,
           staff_board_members_en: true,
           staff_board_members_jp: true,
+          policies_privacy_policy_en: true,
+          policies_privacy_policy_jp: true,
+          policies_terms_of_use_en: true,
+          policies_terms_of_use_jp: true,
         },
       });
 
@@ -335,6 +339,10 @@ export async function GET(request: Request) {
         staff_staff_list_jp: true,
         staff_board_members_en: true,
         staff_board_members_jp: true,
+        policies_privacy_policy_en: true,
+        policies_privacy_policy_jp: true,
+        policies_terms_of_use_en: true,
+        policies_terms_of_use_jp: true,
       },
     });
 
