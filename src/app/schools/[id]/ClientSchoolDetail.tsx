@@ -31,11 +31,12 @@ interface ClientSchoolDetailProps {
   school: School;
 }
 
-export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) {
+export default function ClientSchoolDetail({ school: initialSchool }: ClientSchoolDetailProps) {
   const { language } = useLanguage() as { language: Language };
   const { status, data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState('overview');
   const [isEditing, setIsEditing] = useState(false);
+  const [school, setSchool] = useState(initialSchool);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -63,7 +64,6 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
 
   const handleSave = async (data: Partial<School>) => {
     try {
-      // Map tab names to their corresponding API endpoints
       const endpointMap = {
         overview: 'basic',
         admissions: 'admissions',
@@ -90,7 +90,10 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
       }
 
       // Update the local school data with the new values
-      Object.assign(school, data);
+      setSchool(prevSchool => ({
+        ...prevSchool,
+        ...data
+      }));
 
       setNotification({
         type: 'success',
@@ -258,9 +261,21 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
           <EducationTab
             {...commonTabProps}
             school={school}
-            programs={programs}
-            academicSupport={academicSupport}
-            extracurricular={extracurricular}
+            programs={getLocalizedArray(
+              school.education_programs_offered_en,
+              school.education_programs_offered_jp,
+              language
+            )}
+            academicSupport={getLocalizedArray(
+              school.education_academic_support_en,
+              school.education_academic_support_jp,
+              language
+            )}
+            extracurricular={getLocalizedArray(
+              school.education_extracurricular_activities_en,
+              school.education_extracurricular_activities_jp,
+              language
+            )}
             curriculum={getLocalizedContent(
               school.education_curriculum_en,
               school.education_curriculum_jp,

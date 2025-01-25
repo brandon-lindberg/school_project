@@ -3,25 +3,31 @@ import { Translations } from '@/interfaces/Translations';
 import { Card } from '../shared/Card';
 import { SectionTitle } from '../shared/SectionTitle';
 import { BulletList } from '../shared/BulletList';
+import { Language } from '@/utils/language';
+import { School } from '@/types/school';
 
 interface EducationTabProps {
   translations: Translations;
+  language: Language;
   programs: string[];
   academicSupport: string[];
   extracurricular: string[];
   curriculum?: string;
   isSchoolAdmin?: boolean;
   onEdit?: () => void;
+  school: School;
 }
 
 export function EducationTab({
   translations,
+  language,
   programs,
   academicSupport,
   extracurricular,
   curriculum,
   isSchoolAdmin,
   onEdit,
+  school,
 }: EducationTabProps) {
   return (
     <div className="space-y-6">
