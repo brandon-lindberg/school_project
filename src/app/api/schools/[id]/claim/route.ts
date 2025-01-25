@@ -11,7 +11,10 @@ const claimRequestSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     // Parse and validate request body first
     const body = await request.json();
@@ -31,11 +34,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get the school ID from the URL
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[3]); // /api/schools/[id]/claim
-
+    // Get the school ID from params
+    const schoolId = parseInt(params.id);
     if (!schoolId || isNaN(schoolId)) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }

@@ -18,6 +18,13 @@ import {
   PoliciesTab,
   SchoolEditForm,
 } from '@/app/components/school-detail';
+import { BasicInfoForm } from '@/app/components/school-detail/BasicInfoForm';
+import { EducationForm } from '@/app/components/school-detail/EducationForm';
+import { AdmissionsForm } from '@/app/components/school-detail/AdmissionsForm';
+import { CampusForm } from '@/app/components/school-detail/CampusForm';
+import { StudentLifeForm } from '@/app/components/school-detail/StudentLifeForm';
+import { EmploymentForm } from '@/app/components/school-detail/EmploymentForm';
+import { PoliciesForm } from '@/app/components/school-detail/PoliciesForm';
 
 type Language = 'en' | 'jp';
 
@@ -48,10 +55,11 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
   const handleTabClick = (tab: string) => {
     if (!isAuthenticated && tab !== 'overview') {
       // Redirect to list page for non-authenticated users trying to access other tabs
-      window.location.href = '/list';
+      window.location.href = '/login';
       return;
     }
     setActiveTab(tab);
+    setIsEditing(false); // Reset edit mode when changing tabs
   };
 
   const handleSave = async (data: Partial<School>) => {
@@ -61,27 +69,39 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          section: activeTab === 'overview' ? 'basic' : activeTab,
+          data,
+        }),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to update school');
+        throw new Error(responseData.message || 'Failed to update school');
       }
+
+      // Update the local school data with the new values
+      Object.assign(school, data);
 
       setNotification({
         type: 'success',
         message: language === 'en' ? 'School updated successfully' : '学校情報が更新されました',
       });
       setIsEditing(false);
-      // Refresh the page to show updated data
-      window.location.reload();
-    } catch {
+
+      // Clear notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Error updating school:', error);
       setNotification({
         type: 'error',
         message:
           language === 'en'
-            ? 'Failed to update school information'
-            : '学校情報の更新に失敗しました',
+            ? 'Failed to update school information. Please try again.'
+            : '学校情報の更新に失敗しました。もう一度お試しください。',
       });
     }
   };
@@ -189,18 +209,102 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
   };
 
   const renderTab = () => {
-    // If editing, render the edit form for the current tab
+    // Map tab names to section names for the edit form
+    const sectionMap = {
+      overview: 'basic',
+      education: 'education',
+      admissions: 'admissions',
+      campus: 'campus',
+      studentLife: 'studentLife',
+      employment: 'employment',
+      policies: 'policies',
+    } as const;
+
+    // If editing, render the appropriate edit form for the current tab
     if (isEditing && canEdit) {
-      // Map tab names to section names
-      const sectionMap = {
-        overview: 'basic',
-        education: 'education',
-        admissions: 'admissions',
-        campus: 'campus',
-        studentLife: 'studentLife',
-        employment: 'employment',
-        policies: 'policies',
-      } as const;
+      if (activeTab === 'overview') {
+        return (
+          <BasicInfoForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'education') {
+        return (
+          <EducationForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'admissions') {
+        return (
+          <AdmissionsForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'campus') {
+        return (
+          <CampusForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'studentLife') {
+        return (
+          <StudentLifeForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'employment') {
+        return (
+          <EmploymentForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
+
+      if (activeTab === 'policies') {
+        return (
+          <PoliciesForm
+            school={school}
+            translations={translations}
+            language={language}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        );
+      }
 
       return (
         <SchoolEditForm
@@ -214,12 +318,20 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
       );
     }
 
+    // Common props for all tabs
+    const commonTabProps = {
+      translations,
+      language,
+      isSchoolAdmin: canEdit,
+      onEdit: () => setIsEditing(true),
+    };
+
     switch (activeTab) {
       case 'overview':
         return (
           <OverviewTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
             name={name}
             shortDescription={shortDescription}
             location={location}
@@ -232,83 +344,68 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
             description={description}
             affiliations={affiliations}
             accreditations={accreditations}
-            language={language}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'education':
         return (
           <EducationTab
-            translations={translations}
+            {...commonTabProps}
             programs={programs}
             academicSupport={academicSupport}
             extracurricular={extracurricular}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
+            curriculum={getLocalizedContent(
+              school.education_curriculum_en,
+              school.education_curriculum_jp,
+              language
+            )}
           />
         );
 
       case 'admissions':
         return (
           <AdmissionsTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
-            language={language}
             getFeeLevelContent={getFeeLevelContent}
             hasFeeLevelFees={hasFeeLevelFees}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'campus':
         return (
           <CampusTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
-            language={language}
             facilities={facilities}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'studentLife':
         return (
           <StudentLifeTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
-            language={language}
             supportServices={supportServices}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'employment':
         return (
           <EmploymentTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
-            language={language}
             openPositions={openPositions}
             staffList={staffList}
             boardMembers={boardMembers}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
       case 'policies':
         return (
           <PoliciesTab
+            {...commonTabProps}
             school={school}
-            translations={translations}
-            language={language}
-            isSchoolAdmin={canEdit}
-            onEdit={() => setIsEditing(true)}
           />
         );
 
@@ -348,10 +445,9 @@ export default function ClientSchoolDetail({ school }: ClientSchoolDetailProps) 
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={`
-                    ${
-                      activeTab === tab.id
-                        ? 'border-green-500 text-green-600'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ${activeTab === tab.id
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium

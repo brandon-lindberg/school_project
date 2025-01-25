@@ -26,6 +26,9 @@ jest.mock('@/lib/prisma', () => ({
     schoolAdmin: {
       create: jest.fn(),
     },
+    notification: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn(),
   },
 }));
@@ -55,10 +58,12 @@ describe('POST /api/schools/claims/process', () => {
 
   it('should return 403 if user is not a super admin', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1' },
+      user: { email: 'test@example.com' },
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
       role: 'USER',
     });
 
@@ -79,10 +84,12 @@ describe('POST /api/schools/claims/process', () => {
 
   it('should approve a claim and create school admin', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1' },
+      user: { email: 'test@example.com' },
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
       role: 'SUPER_ADMIN',
     });
 
@@ -91,6 +98,11 @@ describe('POST /api/schools/claims/process', () => {
       school_id: 1,
       user_id: 2,
       status: 'PENDING',
+      school: {
+        school_id: 1,
+        name_en: 'Test School',
+        name_jp: null,
+      },
     });
 
     (prisma.$transaction as jest.Mock).mockResolvedValue([
@@ -118,10 +130,12 @@ describe('POST /api/schools/claims/process', () => {
 
   it('should reject a claim', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1' },
+      user: { email: 'test@example.com' },
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
       role: 'SUPER_ADMIN',
     });
 
@@ -130,6 +144,11 @@ describe('POST /api/schools/claims/process', () => {
       school_id: 1,
       user_id: 2,
       status: 'PENDING',
+      school: {
+        school_id: 1,
+        name_en: 'Test School',
+        name_jp: null,
+      },
     });
 
     (prisma.schoolClaim.update as jest.Mock).mockResolvedValue({
@@ -156,10 +175,12 @@ describe('POST /api/schools/claims/process', () => {
 
   it('should return 404 if claim not found', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1' },
+      user: { email: 'test@example.com' },
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
       role: 'SUPER_ADMIN',
     });
 

@@ -9,6 +9,7 @@ interface EducationTabProps {
   programs: string[];
   academicSupport: string[];
   extracurricular: string[];
+  curriculum?: string;
   isSchoolAdmin?: boolean;
   onEdit?: () => void;
 }
@@ -18,6 +19,7 @@ export function EducationTab({
   programs,
   academicSupport,
   extracurricular,
+  curriculum,
   isSchoolAdmin,
   onEdit,
 }: EducationTabProps) {
@@ -43,6 +45,12 @@ export function EducationTab({
           columns={2}
           emptyMessage={translations.sections.noProgramsListed}
         />
+        {curriculum && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">{translations.sections.curriculum}</h3>
+            <p className="text-gray-700 whitespace-pre-wrap">{curriculum}</p>
+          </div>
+        )}
       </Card>
 
       {/* Academic Support */}

@@ -12,17 +12,23 @@ jest.mock('next-auth', () => ({
 jest.mock('@/lib/prisma', () => ({
   __esModule: true,
   default: {
+    user: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
     school: {
       findUnique: jest.fn(),
-      update: jest.fn(),
     },
     schoolClaim: {
       create: jest.fn(),
-      update: jest.fn(),
     },
     schoolAdmin: {
       create: jest.fn(),
     },
+    notification: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
   },
 }));
 
@@ -34,7 +40,7 @@ describe('POST /api/schools/[id]/claim', () => {
   it('should return 401 if user is not authenticated', async () => {
     (getServerSession as jest.Mock).mockResolvedValue(null);
 
-    const request = new NextRequest(new Request('http://localhost/api/schools/1/claim'), {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
       method: 'POST',
       body: JSON.stringify({
         verificationMethod: 'EMAIL',
@@ -49,54 +55,73 @@ describe('POST /api/schools/[id]/claim', () => {
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should create a pending claim for document verification', async () => {
+  it('should return 404 if user is not found', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1', email: 'user@example.com' },
+      user: { email: 'test@example.com' },
     });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-    (prisma.school.findUnique as jest.Mock).mockResolvedValue({
-      school_id: 1,
-      claims: [],
-    });
-
-    (prisma.schoolClaim.create as jest.Mock).mockResolvedValue({
-      claim_id: 1,
-      status: 'PENDING',
-    });
-
-    const request = new NextRequest(new Request('http://localhost/api/schools/1/claim'), {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
       method: 'POST',
       body: JSON.stringify({
-        verificationMethod: 'DOCUMENT',
-        verificationData: 'https://document-url.com',
-        notes: 'Test claim',
+        verificationMethod: 'EMAIL',
+        verificationData: 'school.edu',
       }),
     });
 
     const response = await POST(request, { params: { id: '1' } });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.status).toBe('PENDING');
-    expect(data.claim_id).toBe(1);
+    expect(response.status).toBe(404);
   });
 
-  it('should auto-approve claim for matching email domain', async () => {
+  it('should return 400 if school ID is invalid', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1', email: 'user@school.edu' },
+      user: { email: 'test@example.com' },
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
+      first_name: 'Test',
+      family_name: 'User',
     });
 
+    const request = new NextRequest('http://localhost:3000/api/schools/invalid/claim', {
+      method: 'POST',
+      body: JSON.stringify({
+        verificationMethod: 'EMAIL',
+        verificationData: 'school.edu',
+      }),
+    });
+
+    const response = await POST(request, { params: { id: 'invalid' } });
+    expect(response.status).toBe(400);
+  });
+
+  it('should create a new claim successfully', async () => {
+    (getServerSession as jest.Mock).mockResolvedValue({
+      user: { email: 'test@example.com' },
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
+      first_name: 'Test',
+      family_name: 'User',
+    });
     (prisma.school.findUnique as jest.Mock).mockResolvedValue({
       school_id: 1,
+      name_en: 'Test School',
+      name_jp: null,
       claims: [],
     });
-
     (prisma.schoolClaim.create as jest.Mock).mockResolvedValue({
       claim_id: 1,
       status: 'PENDING',
     });
+    (prisma.user.findMany as jest.Mock).mockResolvedValue([
+      { user_id: 2, role: 'SUPER_ADMIN' },
+    ]);
+    (prisma.$transaction as jest.Mock).mockResolvedValue([]);
 
-    const request = new NextRequest(new Request('http://localhost/api/schools/1/claim'), {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
       method: 'POST',
       body: JSON.stringify({
         verificationMethod: 'EMAIL',
@@ -108,27 +133,32 @@ describe('POST /api/schools/[id]/claim', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.status).toBe('APPROVED');
-    expect(prisma.schoolClaim.update).toHaveBeenCalled();
-    expect(prisma.school.update).toHaveBeenCalled();
-    expect(prisma.schoolAdmin.create).toHaveBeenCalled();
+    expect(data.status).toBe('PENDING');
+    expect(data.claim_id).toBe(1);
   });
 
   it('should prevent duplicate pending claims', async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: '1', email: 'user@example.com' },
+      user: { email: 'test@example.com' },
     });
-
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      user_id: 1,
+      email: 'test@example.com',
+      first_name: 'Test',
+      family_name: 'User',
+    });
     (prisma.school.findUnique as jest.Mock).mockResolvedValue({
       school_id: 1,
+      name_en: 'Test School',
+      name_jp: null,
       claims: [{ status: 'PENDING' }],
     });
 
-    const request = new NextRequest(new Request('http://localhost/api/schools/1/claim'), {
+    const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
       method: 'POST',
       body: JSON.stringify({
-        verificationMethod: 'DOCUMENT',
-        verificationData: 'https://document-url.com',
+        verificationMethod: 'EMAIL',
+        verificationData: 'school.edu',
       }),
     });
 

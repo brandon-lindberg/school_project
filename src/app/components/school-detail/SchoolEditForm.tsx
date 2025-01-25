@@ -10,13 +10,13 @@ interface SchoolEditFormProps {
   onSave: (data: Partial<School>) => Promise<void>;
   onCancel: () => void;
   section:
-    | 'basic'
-    | 'education'
-    | 'admissions'
-    | 'campus'
-    | 'studentLife'
-    | 'employment'
-    | 'policies';
+  | 'basic'
+  | 'education'
+  | 'admissions'
+  | 'campus'
+  | 'studentLife'
+  | 'employment'
+  | 'policies';
 }
 
 type SchoolEditableFields = Omit<
@@ -245,10 +245,92 @@ export function SchoolEditForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const submitData = Object.fromEntries(
-      Object.entries(formData).filter(([, value]) => value !== undefined && value !== '')
-    );
-    await onSave(submitData as Partial<School>);
+
+    try {
+      // Define fields for each section
+      const sectionFields = {
+        basic: [
+          'name_en', 'name_jp',
+          'short_description_en', 'short_description_jp',
+          'description_en', 'description_jp',
+          'location_en', 'location_jp',
+          'address_en', 'address_jp',
+          'region_en', 'region_jp',
+          'country_en', 'country_jp',
+          'geography_en', 'geography_jp',
+          'phone_en', 'phone_jp',
+          'email_en', 'email_jp',
+          'url_en', 'url_jp'
+        ],
+        education: [
+          'education_programs_offered_en', 'education_programs_offered_jp',
+          'education_curriculum_en', 'education_curriculum_jp',
+          'education_academic_support_en', 'education_academic_support_jp',
+          'education_extracurricular_activities_en', 'education_extracurricular_activities_jp',
+          'curriculum_en', 'curriculum_jp'
+        ],
+        admissions: [
+          'admissions_acceptance_policy_en', 'admissions_acceptance_policy_jp',
+          'admissions_application_guidelines_en', 'admissions_application_guidelines_jp',
+          'admissions_age_requirements_en', 'admissions_age_requirements_jp',
+          'admissions_fees_en', 'admissions_fees_jp',
+          'admissions_procedure_en', 'admissions_procedure_jp',
+          'admissions_language_requirements_students_en', 'admissions_language_requirements_students_jp',
+          'admissions_language_requirements_parents_en', 'admissions_language_requirements_parents_jp'
+        ],
+        campus: [
+          'campus_facilities_en', 'campus_facilities_jp',
+          'campus_virtual_tour_en', 'campus_virtual_tour_jp'
+        ],
+        studentLife: [
+          'student_life_counseling_en', 'student_life_counseling_jp',
+          'student_life_support_services_en', 'student_life_support_services_jp',
+          'student_life_library_en', 'student_life_library_jp',
+          'student_life_calendar_en', 'student_life_calendar_jp',
+          'student_life_tour_en', 'student_life_tour_jp',
+          'events_en', 'events_jp'
+        ],
+        employment: [
+          'employment_open_positions_en', 'employment_open_positions_jp',
+          'employment_application_process_en', 'employment_application_process_jp',
+          'staff_staff_list_en', 'staff_staff_list_jp',
+          'staff_board_members_en', 'staff_board_members_jp'
+        ],
+        policies: [
+          'policies_privacy_policy_en', 'policies_privacy_policy_jp',
+          'policies_terms_of_use_en', 'policies_terms_of_use_jp'
+        ]
+      };
+
+      // Get the relevant fields for the current section
+      const relevantFields = sectionFields[section];
+
+      // Filter formData to only include fields for the current section
+      const sectionData = Object.fromEntries(
+        Object.entries(formData)
+          .filter(([key]) => relevantFields.includes(key))
+          .map(([key, value]) => {
+            // For array fields, always include them but filter out empty strings
+            if (Array.isArray(value)) {
+              return [key, value.filter(item => item.trim() !== '')];
+            }
+            // For string fields, only include if they have content
+            return value !== undefined && value !== '' && value !== null
+              ? [key, value]
+              : [key, ''];
+          })
+          .filter(([_, value]) => {
+            // Keep all array fields
+            if (Array.isArray(value)) return true;
+            // For string fields, only include if they have content
+            return value !== undefined && value !== '' && value !== null;
+          })
+      );
+
+      await onSave(sectionData);
+    } catch (error) {
+      console.error('Error in form submission:', error);
+    }
   };
 
   const renderBasicInfoFields = () => (
@@ -590,8 +672,8 @@ export function SchoolEditForm({
             {language === 'en' ? 'Curriculum (English)' : 'カリキュラム（英語）'}
           </label>
           <textarea
-            value={formData.curriculum_en}
-            onChange={e => handleChange('curriculum_en', e.target.value)}
+            value={formData.education_curriculum_en || ''}
+            onChange={e => handleChange('education_curriculum_en', e.target.value)}
             className="w-full rounded-md border border-gray-300 p-2"
             rows={4}
           />
@@ -601,8 +683,8 @@ export function SchoolEditForm({
             {language === 'en' ? 'Curriculum (Japanese)' : 'カリキュラム（日本語）'}
           </label>
           <textarea
-            value={formData.curriculum_jp}
-            onChange={e => handleChange('curriculum_jp', e.target.value)}
+            value={formData.education_curriculum_jp || ''}
+            onChange={e => handleChange('education_curriculum_jp', e.target.value)}
             className="w-full rounded-md border border-gray-300 p-2"
             rows={4}
           />
@@ -687,19 +769,13 @@ export function SchoolEditForm({
                 type="text"
                 value={activity}
                 onChange={e =>
-                  handleArrayChange(
-                    'education_extracurricular_activities_en',
-                    e.target.value,
-                    index
-                  )
+                  handleArrayChange('education_extracurricular_activities_en', e.target.value, index)
                 }
                 className="flex-1 rounded-md border border-gray-300 p-2"
               />
               <button
                 type="button"
-                onClick={() =>
-                  handleRemoveArrayItem('education_extracurricular_activities_en', index)
-                }
+                onClick={() => handleRemoveArrayItem('education_extracurricular_activities_en', index)}
                 className="ml-2 text-red-500 hover:text-red-700"
               >
                 ✕
@@ -724,19 +800,13 @@ export function SchoolEditForm({
                 type="text"
                 value={activity}
                 onChange={e =>
-                  handleArrayChange(
-                    'education_extracurricular_activities_jp',
-                    e.target.value,
-                    index
-                  )
+                  handleArrayChange('education_extracurricular_activities_jp', e.target.value, index)
                 }
                 className="flex-1 rounded-md border border-gray-300 p-2"
               />
               <button
                 type="button"
-                onClick={() =>
-                  handleRemoveArrayItem('education_extracurricular_activities_jp', index)
-                }
+                onClick={() => handleRemoveArrayItem('education_extracurricular_activities_jp', index)}
                 className="ml-2 text-red-500 hover:text-red-700"
               >
                 ✕
