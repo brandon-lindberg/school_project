@@ -5,7 +5,29 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { SchoolAdmin } from '@prisma/client';
 
-const urlSchema = z.string().url().nullable().transform(val => val || '');
+const urlSchema = z.string()
+  .transform(val => {
+    if (!val || val.trim() === '') return '';
+    if (!/^https?:\/\//i.test(val)) {
+      return `https://${val.trim()}`;
+    }
+    return val.trim();
+  })
+  .pipe(
+    z.string()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          try {
+            new URL(val);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        { message: 'Invalid URL format' }
+      )
+  );
 
 const basicSchema = z.object({
   name_en: z.string().min(1, 'School name is required'),
@@ -47,6 +69,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Parse and validate request body first
+    const body = await request.json();
+    const validatedData = basicSchema.parse(body);
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -61,7 +87,9 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const schoolId = parseInt(params.id);
+    // Get the school ID from params
+    const { id } = params;
+    const schoolId = parseInt(id);
     if (!schoolId || isNaN(schoolId)) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
@@ -81,9 +109,6 @@ export async function PUT(
     if (!isAuthorized) {
       return NextResponse.json({ error: 'Not authorized to edit this school' }, { status: 403 });
     }
-
-    const body = await request.json();
-    const validatedData = basicSchema.parse(body);
 
     // Filter out empty values from arrays
     const processedData = {

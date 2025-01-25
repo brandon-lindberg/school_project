@@ -55,11 +55,34 @@ export function OverviewForm({
     staff_board_members_jp: school.staff_board_members_jp ?? [],
   });
 
+  const [errors, setErrors] = useState<{
+    name_en?: string;
+    location_en?: string;
+    url_en?: string;
+    url_jp?: string;
+  }>({});
+
+  // Add validation state
+  const isFormValid = Boolean(
+    formData.name_en?.trim() &&
+    formData.location_en?.trim() &&
+    (!formData.url_en || /^https?:\/\//i.test(formData.url_en)) &&
+    (!formData.url_jp || /^https?:\/\//i.test(formData.url_jp))
+  );
+
   const handleChange = (field: keyof typeof formData, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
+
+    // Clear error for the changed field
+    if (errors[field as keyof typeof errors]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
   };
 
   const handleArrayChange = (field: keyof typeof formData, value: string, index: number) => {
@@ -87,9 +110,59 @@ export function OverviewForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSave(formData);
+      const newErrors: { name_en?: string; location_en?: string; url_en?: string; url_jp?: string } = {};
+
+      // Validate required fields
+      if (!formData.name_en?.trim()) {
+        newErrors.name_en = language === 'en' ? 'School name is required' : '学校名は必須です';
+      }
+      if (!formData.location_en?.trim()) {
+        newErrors.location_en = language === 'en' ? 'Location is required' : '所在地は必須です';
+      }
+
+      // Format URLs to ensure they have proper protocol
+      const formatUrl = (url: string) => {
+        if (!url || url.trim() === '') return '';
+        const trimmedUrl = url.trim();
+        if (!/^https?:\/\//i.test(trimmedUrl)) {
+          return `https://${trimmedUrl}`;
+        }
+        return trimmedUrl;
+      };
+
+      // Validate URLs if they are not empty
+      const validateUrl = (url: string): boolean => {
+        if (!url || url.trim() === '') return true;
+        try {
+          new URL(formatUrl(url));
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      if (formData.url_en && !validateUrl(formData.url_en)) {
+        newErrors.url_en = language === 'en' ? 'Invalid URL format' : '無効なURL形式です';
+      }
+      if (formData.url_jp && !validateUrl(formData.url_jp)) {
+        newErrors.url_jp = language === 'en' ? 'Invalid URL format' : '無効なURL形式です';
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        throw new Error('Please fix the validation errors');
+      }
+
+      const dataToSubmit = {
+        ...formData,
+        url_en: formatUrl(formData.url_en),
+        url_jp: formatUrl(formData.url_jp),
+      };
+
+      await onSave(dataToSubmit);
     } catch (error) {
       console.error('Error in form submission:', error);
+      throw error;
     }
   };
 
@@ -100,15 +173,27 @@ export function OverviewForm({
         <h3 className="text-lg font-semibold">{translations.sections.name}</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === 'en' ? 'School Name (English)' : '学校名（英語）'}
+            <label className="block text-sm font-medium mb-2">
+              <span className="text-gray-700">
+                {language === 'en' ? 'School Name (English)' : '学校名（英語）'}
+              </span>
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <input
               type="text"
               value={formData.name_en}
-              onChange={e => handleChange('name_en', e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
+              onChange={e => {
+                handleChange('name_en', e.target.value);
+                if (errors.name_en) {
+                  setErrors(prev => ({ ...prev, name_en: undefined }));
+                }
+              }}
+              className={`w-full rounded-md border p-2 ${errors.name_en ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
+            {errors.name_en && (
+              <p className="mt-1 text-sm text-red-500">{errors.name_en}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -188,15 +273,27 @@ export function OverviewForm({
         <div className="grid grid-cols-2 gap-4">
           {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === 'en' ? 'Location (English)' : '所在地（英語）'}
+            <label className="block text-sm font-medium mb-2">
+              <span className="text-gray-700">
+                {language === 'en' ? 'Location (English)' : '所在地（英語）'}
+              </span>
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <input
               type="text"
               value={formData.location_en}
-              onChange={e => handleChange('location_en', e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
+              onChange={e => {
+                handleChange('location_en', e.target.value);
+                if (errors.location_en) {
+                  setErrors(prev => ({ ...prev, location_en: undefined }));
+                }
+              }}
+              className={`w-full rounded-md border p-2 ${errors.location_en ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
+            {errors.location_en && (
+              <p className="mt-1 text-sm text-red-500">{errors.location_en}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -290,9 +387,19 @@ export function OverviewForm({
             <input
               type="url"
               value={formData.url_en}
-              onChange={e => handleChange('url_en', e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
+              onChange={e => {
+                handleChange('url_en', e.target.value);
+                if (errors.url_en) {
+                  setErrors(prev => ({ ...prev, url_en: undefined }));
+                }
+              }}
+              className={`w-full rounded-md border p-2 ${errors.url_en ? 'border-red-500' : 'border-gray-300'
+                }`}
+              placeholder="https://example.com"
             />
+            {errors.url_en && (
+              <p className="mt-1 text-sm text-red-500">{errors.url_en}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -301,9 +408,19 @@ export function OverviewForm({
             <input
               type="url"
               value={formData.url_jp}
-              onChange={e => handleChange('url_jp', e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
+              onChange={e => {
+                handleChange('url_jp', e.target.value);
+                if (errors.url_jp) {
+                  setErrors(prev => ({ ...prev, url_jp: undefined }));
+                }
+              }}
+              className={`w-full rounded-md border p-2 ${errors.url_jp ? 'border-red-500' : 'border-gray-300'
+                }`}
+              placeholder="https://example.com"
             />
+            {errors.url_jp && (
+              <p className="mt-1 text-sm text-red-500">{errors.url_jp}</p>
+            )}
           </div>
         </div>
       </div>
@@ -523,20 +640,30 @@ export function OverviewForm({
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-4 pt-4 border-t">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-        >
-          {language === 'en' ? 'Cancel' : 'キャンセル'}
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          {language === 'en' ? 'Save Changes' : '変更を保存'}
-        </button>
+      <div className="flex justify-between space-x-4 pt-4 border-t">
+        <p className="text-sm text-gray-600">
+          <span className="text-red-500">*</span>{' '}
+          {language === 'en' ? 'Required fields' : '必須項目'}
+        </p>
+        <div className="flex space-x-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+          >
+            {language === 'en' ? 'Cancel' : 'キャンセル'}
+          </button>
+          <button
+            type="submit"
+            disabled={!isFormValid}
+            className={`px-4 py-2 rounded transition-colors ${isFormValid
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+          >
+            {language === 'en' ? 'Save Changes' : '変更を保存'}
+          </button>
+        </div>
       </div>
     </form>
   );

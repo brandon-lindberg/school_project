@@ -102,7 +102,7 @@ export async function POST(
 
     return NextResponse.json({
       message: 'Claim submitted successfully',
-      status: 'PENDING',
+      status: claim.status,
       claim_id: claim.claim_id,
     });
   } catch (error) {

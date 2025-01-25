@@ -117,11 +117,19 @@ export function OverviewTab({
         throw new Error('Failed to save changes');
       }
 
+      const result = await response.json();
+
+      // Update the school data with the response
+      Object.assign(school, result.school);
+
       setIsEditing(false);
       setNotification({
         type: 'success',
         message: language === 'en' ? 'Changes saved successfully' : '変更が保存されました',
       });
+
+      // Force a page refresh to show updated data
+      window.location.reload();
     } catch (error) {
       console.error('Error saving changes:', error);
       setNotification({
