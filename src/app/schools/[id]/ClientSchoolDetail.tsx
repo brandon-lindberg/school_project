@@ -303,7 +303,11 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
           <StudentLifeTab
             {...commonTabProps}
             school={school}
-            supportServices={supportServices}
+            supportServices={getLocalizedArray(
+              school.student_life_support_services_en,
+              school.student_life_support_services_jp,
+              language
+            )}
           />
         );
       case 'employment':

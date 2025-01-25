@@ -129,6 +129,16 @@ export async function GET(request: Request) {
           campus_facilities_jp: true,
           campus_virtual_tour_en: true,
           campus_virtual_tour_jp: true,
+          student_life_counseling_en: true,
+          student_life_counseling_jp: true,
+          student_life_support_services_en: true,
+          student_life_support_services_jp: true,
+          student_life_library_en: true,
+          student_life_library_jp: true,
+          student_life_calendar_en: true,
+          student_life_calendar_jp: true,
+          student_life_tour_en: true,
+          student_life_tour_jp: true,
         },
       });
 
@@ -299,6 +309,16 @@ export async function GET(request: Request) {
         campus_facilities_jp: true,
         campus_virtual_tour_en: true,
         campus_virtual_tour_jp: true,
+        student_life_counseling_en: true,
+        student_life_counseling_jp: true,
+        student_life_support_services_en: true,
+        student_life_support_services_jp: true,
+        student_life_library_en: true,
+        student_life_library_jp: true,
+        student_life_calendar_en: true,
+        student_life_calendar_jp: true,
+        student_life_tour_en: true,
+        student_life_tour_jp: true,
       },
     });
 

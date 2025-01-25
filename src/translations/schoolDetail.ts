@@ -82,6 +82,7 @@ export function getSchoolDetailTranslations(language: Language): Translations {
       languageRequirementsParents:
         language === 'en' ? 'Parent Language Requirements' : '保護者の言語要件',
       noInfo: language === 'en' ? 'No information available' : '情報なし',
+      tour: language === 'en' ? 'Campus Tour Information' : 'キャンパスツアー情報',
     },
   };
 }

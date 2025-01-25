@@ -90,6 +90,20 @@ export function StudentLifeTab({
           </p>
         </div>
       )}
+
+      {/* Tour */}
+      {(school.student_life_tour_en || school.student_life_tour_jp) && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold mb-4">{translations.sections.tour}</h2>
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {getLocalizedContent(
+              school.student_life_tour_en,
+              school.student_life_tour_jp,
+              language
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
