@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format, differenceInDays, isValid } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -27,9 +27,14 @@ type Message = {
 
 export default function MessagesSection() {
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const { language } = useLanguage();
   const { messages, refreshData } = useDashboard();
-  const typedMessages: Message[] = messages;
+
+  // Sync local messages with context messages
+  useEffect(() => {
+    setLocalMessages(messages);
+  }, [messages]);
 
   const markAsRead = async (messageId: number) => {
     try {
@@ -37,7 +42,16 @@ export default function MessagesSection() {
         method: 'POST',
       });
       if (response.ok) {
-        refreshData();
+        // Optimistically update the UI
+        setLocalMessages(prevMessages =>
+          prevMessages.map(msg =>
+            msg.message.message_id === messageId
+              ? { ...msg, is_read: true, read_at: new Date().toISOString() }
+              : msg
+          )
+        );
+        // Refresh data in the background
+        setTimeout(() => refreshData(), 1000);
       }
     } catch (error) {
       console.error('Error marking message as read:', error);
@@ -49,7 +63,7 @@ export default function MessagesSection() {
       setExpandedMessageId(null);
     } else {
       setExpandedMessageId(messageId);
-      const message = messages.find(msg => msg.message.message_id === messageId);
+      const message = localMessages.find(msg => msg.message.message_id === messageId);
       if (message && !message.is_read) {
         await markAsRead(messageId);
       }
@@ -122,23 +136,22 @@ export default function MessagesSection() {
       </h2>
 
       <div className="space-y-4">
-        {!typedMessages || typedMessages.length === 0 ? (
+        {!localMessages || localMessages.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             {language === 'en' ? 'No messages' : 'メッセージはありません'}
           </div>
         ) : (
-          typedMessages.map(msg => (
+          localMessages.map(msg => (
             <div key={msg.message.message_id} className="space-y-2">
               {/* Message Preview */}
               <button
                 onClick={() => handleMessageClick(msg.message.message_id)}
-                className={`w-full text-left transition-colors ${
-                  expandedMessageId === msg.message.message_id
-                    ? 'bg-blue-50'
-                    : msg.is_read
-                      ? 'bg-white hover:bg-gray-50'
-                      : 'bg-blue-50 hover:bg-blue-100'
-                } p-4 rounded-lg border flex items-start justify-between group`}
+                className={`w-full text-left transition-colors ${expandedMessageId === msg.message.message_id
+                  ? 'bg-blue-50'
+                  : msg.is_read
+                    ? 'bg-white hover:bg-gray-50'
+                    : 'bg-blue-50 hover:bg-blue-100'
+                  } p-4 rounded-lg border flex items-start justify-between group`}
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">
