@@ -2,13 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
-import { SchoolClaim, User, School } from '@prisma/client';
-import { Session } from 'next-auth';
-
-type ClaimWithRelations = SchoolClaim & {
-  school: Pick<School, 'name_en' | 'name_jp'>;
-  user: Pick<User, 'email' | 'family_name' | 'first_name'>;
-};
+import { NotificationType } from '@prisma/client';
 
 // Helper function to check if user is super admin
 async function isSuperAdmin(email: string | null | undefined) {
@@ -45,7 +39,16 @@ export async function PUT(request: Request) {
       // Get the current claim to know the old user
       const currentClaim = await tx.schoolClaim.findUnique({
         where: { claim_id: claimIdNumber },
-        include: { user: true },
+        include: {
+          user: true,
+          school: {
+            select: {
+              school_id: true,
+              name_en: true,
+              name_jp: true
+            }
+          }
+        },
       });
 
       if (!currentClaim) {
@@ -58,14 +61,44 @@ export async function PUT(request: Request) {
         select: { user_id: true },
       });
 
-      // Update the claim with the new user
-      const claim = await tx.schoolClaim.update({
+      // Delete the old claim and admin record
+      await tx.schoolClaim.delete({
         where: { claim_id: claimIdNumber },
+      });
+
+      await tx.schoolAdmin.deleteMany({
+        where: {
+          school_id: currentClaim.school_id,
+          user_id: currentClaim.user_id,
+        },
+      });
+
+      // Reset the old user's role to USER
+      await tx.user.update({
+        where: { user_id: currentClaim.user_id },
+        data: { role: 'USER' },
+      });
+
+      // Reset school verification status
+      await tx.school.update({
+        where: { school_id: currentClaim.school_id },
+        data: {
+          is_verified: false,
+          verification_date: null,
+          verified_by: null,
+        },
+      });
+
+      // Create new claim for the new user
+      const claim = await tx.schoolClaim.create({
         data: {
           user_id: newUserIdNumber,
-          status: 'APPROVED' as const,
+          school_id: currentClaim.school_id,
+          status: 'APPROVED',
           processed_at: new Date(),
           processed_by: adminUser.user_id,
+          verification_method: currentClaim.verification_method,
+          verification_data: currentClaim.verification_data,
         },
         include: {
           school: true,
@@ -76,27 +109,47 @@ export async function PUT(request: Request) {
       // Update the new user's role to SCHOOL_ADMIN
       await tx.user.update({
         where: { user_id: newUserIdNumber },
-        data: { role: 'SCHOOL_ADMIN' as const },
+        data: { role: 'SCHOOL_ADMIN' },
       });
 
-      // Check if the old user has any other active claims
-      const oldUserOtherClaims = await tx.schoolClaim.count({
-        where: {
-          AND: [
-            { user_id: currentClaim.user_id },
-            { status: { in: ['APPROVED', 'PENDING'] as const } },
-            { claim_id: { not: claimIdNumber } },
-          ],
+      // Create new school admin record
+      await tx.schoolAdmin.create({
+        data: {
+          school_id: currentClaim.school_id,
+          user_id: newUserIdNumber,
+          assigned_by: adminUser.user_id,
         },
       });
 
-      // If the old user has no other claims, revert their role to USER
-      if (oldUserOtherClaims === 0) {
-        await tx.user.update({
-          where: { user_id: currentClaim.user_id },
-          data: { role: 'USER' as const },
-        });
-      }
+      // Set school as verified with new admin
+      await tx.school.update({
+        where: { school_id: currentClaim.school_id },
+        data: {
+          is_verified: true,
+          verification_date: new Date(),
+          verified_by: adminUser.user_id,
+        },
+      });
+
+      // Create notification for the new user
+      await tx.notification.create({
+        data: {
+          user_id: newUserIdNumber,
+          type: NotificationType.CLAIM_APPROVED,
+          title: `School Transferred to You: ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'}`,
+          message: `A school claim has been transferred to you for ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'}. You now have admin access to manage this school.`,
+        },
+      });
+
+      // Create notification for the previous user
+      await tx.notification.create({
+        data: {
+          user_id: currentClaim.user_id,
+          type: NotificationType.CLAIM_REVOKED,
+          title: `School Transferred: ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'}`,
+          message: `Your claim for ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'} has been transferred to another user.`,
+        },
+      });
 
       return claim;
     });
@@ -120,64 +173,82 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const claimId = searchParams.get('claimId');
+    const url = new URL(request.url);
+    const claimId = url.searchParams.get('claimId');
+    const claimIdNumber = claimId ? parseInt(claimId, 10) : null;
 
-    if (!claimId) {
-      return NextResponse.json({ error: 'Missing claim ID' }, { status: 400 });
-    }
-
-    const claimIdNumber = parseInt(claimId, 10);
-    if (isNaN(claimIdNumber)) {
+    if (!claimIdNumber || isNaN(claimIdNumber)) {
       return NextResponse.json({ error: 'Invalid claim ID' }, { status: 400 });
     }
 
-    // Update the claim status to REJECTED
-    const revokedClaim = await prisma.$transaction(async tx => {
-      const adminUser = await tx.user.findUniqueOrThrow({
-        where: { email: session.user?.email || '' },
-        select: { user_id: true },
-      });
+    // Get the current admin user's ID
+    const adminUser = await prisma.user.findUniqueOrThrow({
+      where: { email: session.user.email },
+      select: { user_id: true },
+    });
 
-      // First, update the claim status
-      const claim = await tx.schoolClaim.update({
+    // Handle revocation in a transaction
+    await prisma.$transaction(async tx => {
+      // Get the claim to know the user and school
+      const claim = await tx.schoolClaim.findUnique({
         where: { claim_id: claimIdNumber },
-        data: {
-          status: 'REJECTED' as const,
-          processed_at: new Date(),
-          processed_by: adminUser.user_id,
-        },
         include: {
           user: true,
           school: true,
         },
       });
 
-      // Then, update the user's role back to USER if they have no other active claims
-      const otherActiveClaims = await tx.schoolClaim.count({
+      if (!claim) {
+        throw new Error('Claim not found');
+      }
+
+      // Delete the claim
+      await tx.schoolClaim.delete({
+        where: { claim_id: claimIdNumber },
+      });
+
+      // Delete the school admin record
+      await tx.schoolAdmin.deleteMany({
         where: {
-          AND: [
-            { user_id: claim.user_id },
-            { status: { in: ['APPROVED', 'PENDING'] as const } },
-            { claim_id: { not: claimIdNumber } },
-          ],
+          school_id: claim.school_id,
+          user_id: claim.user_id,
         },
       });
 
-      if (otherActiveClaims === 0) {
-        await tx.user.update({
-          where: { user_id: claim.user_id },
-          data: { role: 'USER' as const },
-        });
-      }
+      // Revert user role to USER
+      await tx.user.update({
+        where: { user_id: claim.user_id },
+        data: { role: 'USER' },
+      });
 
-      return claim;
+      // Update school verification status
+      await tx.school.update({
+        where: { school_id: claim.school_id },
+        data: {
+          is_verified: false,
+          verification_date: null,
+          verified_by: null,
+        },
+      });
+
+      // Create notification for the user
+      await tx.notification.create({
+        data: {
+          user_id: claim.user_id,
+          type: NotificationType.CLAIM_REVOKED,
+          title: `School Claim Revoked: ${claim.school.name_en || claim.school.name_jp || 'School'}`,
+          message: `Your claim for ${claim.school.name_en || claim.school.name_jp || 'School'} has been revoked by an administrator.`,
+        },
+      });
     });
 
-    return NextResponse.json(revokedClaim);
+    return NextResponse.json({ message: 'Claim revoked successfully' });
   } catch (error) {
-    console.error('Error in revoke claim:', error);
-    return NextResponse.json({ error: 'Failed to revoke claim' }, { status: 500 });
+    console.error('Error revoking claim:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to revoke claim' },
+      { status: 500 }
+    );
   }
 }
 

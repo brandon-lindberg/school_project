@@ -138,6 +138,28 @@ export default function ClaimsManagementPage() {
     setSearchResults([]);
   };
 
+  const handleProcessClaim = async (claimId: number, status: 'APPROVED' | 'REJECTED', notes?: string) => {
+    try {
+      const response = await fetch('/api/schools/claims/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ claimId, status, notes }),
+      });
+
+      if (response.ok) {
+        setMessage(`Claim ${status.toLowerCase()} successfully`);
+        fetchClaims();
+      } else {
+        setMessage(`Failed to ${status.toLowerCase()} claim`);
+      }
+    } catch (error) {
+      console.error(`Error ${status.toLowerCase()}ing claim:`, error);
+      setMessage(`Failed to ${status.toLowerCase()} claim`);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">School Claims Management</h1>
@@ -180,13 +202,12 @@ export default function ClaimsManagementPage() {
                   <td className="px-6 py-4 whitespace-nowrap">{claim.user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        claim.status === 'APPROVED'
-                          ? 'bg-green-100 text-green-800'
-                          : claim.status === 'REJECTED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${claim.status === 'APPROVED'
+                        ? 'bg-green-100 text-green-800'
+                        : claim.status === 'REJECTED'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                        }`}
                     >
                       {claim.status}
                     </span>
@@ -195,18 +216,42 @@ export default function ClaimsManagementPage() {
                     {new Date(claim.submitted_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedClaim(claim)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Transfer
-                    </button>
-                    <button
-                      onClick={() => handleRevokeClaim(claim.claim_id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Revoke
-                    </button>
+                    {claim.status === 'PENDING' ? (
+                      <>
+                        <button
+                          onClick={() => handleProcessClaim(claim.claim_id, 'APPROVED')}
+                          className="text-green-600 hover:text-green-900 mr-4"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => {
+                            const notes = window.prompt('Enter rejection reason:');
+                            if (notes !== null) {
+                              handleProcessClaim(claim.claim_id, 'REJECTED', notes);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setSelectedClaim(claim)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        >
+                          Transfer
+                        </button>
+                        <button
+                          onClick={() => handleRevokeClaim(claim.claim_id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Revoke
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -242,13 +287,12 @@ export default function ClaimsManagementPage() {
                   <div>
                     <label className="block text-xs text-gray-500">Claim Status</label>
                     <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        selectedClaim.status === 'APPROVED'
-                          ? 'bg-green-100 text-green-800'
-                          : selectedClaim.status === 'REJECTED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedClaim.status === 'APPROVED'
+                        ? 'bg-green-100 text-green-800'
+                        : selectedClaim.status === 'REJECTED'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                        }`}
                     >
                       {selectedClaim.status}
                     </span>
@@ -288,9 +332,8 @@ export default function ClaimsManagementPage() {
                         <div
                           key={user.user_id}
                           onClick={() => setSelectedUser(user)}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                            selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
-                          }`}
+                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
+                            }`}
                         >
                           <div className="font-medium">
                             {user.first_name} {user.family_name}
@@ -325,11 +368,10 @@ export default function ClaimsManagementPage() {
                 <button
                   onClick={handleTransferClaim}
                   disabled={!selectedUser}
-                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                    selectedUser
-                      ? 'bg-blue-500 hover:bg-blue-700'
-                      : 'bg-blue-300 cursor-not-allowed'
-                  }`}
+                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${selectedUser
+                    ? 'bg-blue-500 hover:bg-blue-700'
+                    : 'bg-blue-300 cursor-not-allowed'
+                    }`}
                 >
                   Transfer Claim
                 </button>

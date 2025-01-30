@@ -45,14 +45,13 @@ export async function POST(request: NextRequest) {
     const existingClaim = await prisma.schoolClaim.findFirst({
       where: {
         user_id: user.user_id,
-        school_id: schoolId,
         status: 'PENDING',
       },
     });
 
     if (existingClaim) {
       return NextResponse.json(
-        { error: 'You already have a pending claim for this school' },
+        { error: 'You already have a pending claim. You can only have one pending claim at a time.' },
         { status: 400 }
       );
     }
@@ -69,6 +68,22 @@ export async function POST(request: NextRequest) {
         verification_data: validatedData.verificationData,
         notes: validatedData.notes,
       },
+    });
+
+    // Create notifications for all SUPER_ADMIN users
+    const superAdmins = await prisma.user.findMany({
+      where: { role: 'SUPER_ADMIN' },
+      select: { user_id: true },
+    });
+
+    const schoolName = school.name_en || school.name_jp || 'School';
+    await prisma.notification.createMany({
+      data: superAdmins.map(admin => ({
+        user_id: admin.user_id,
+        type: 'CLAIM_SUBMITTED',
+        title: `New School Claim: ${schoolName}`,
+        message: `A new claim has been submitted for ${schoolName} by ${user.email}. Please review and process this claim.`,
+      })),
     });
 
     return NextResponse.json(

@@ -48,7 +48,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   const canEdit =
     session?.user?.role === 'SUPER_ADMIN' ||
     (session?.user?.role === 'SCHOOL_ADMIN' &&
-      session?.user?.managedSchoolId === parseInt(school.school_id));
+      session?.user?.managedSchools?.some(s => s.school_id === parseInt(school.school_id)));
 
   const isAuthenticated = status === 'authenticated';
 
@@ -327,10 +327,9 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={`
-                    ${
-                      activeTab === tab.id
-                        ? 'border-green-500 text-green-600'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ${activeTab === tab.id
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium

@@ -205,7 +205,7 @@ async function main() {
           region_jp: schoolData.region_jp || null,
           geography_en: schoolData.geography_en || null,
           geography_jp: schoolData.geography_jp || null,
-          is_verified: true
+          is_verified: false
         };
 
         const createdSchool = await prisma.school.create({

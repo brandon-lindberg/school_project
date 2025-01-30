@@ -1,3 +1,12 @@
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('USER', 'SCHOOL_ADMIN', 'SUPER_ADMIN');
+
+-- CreateEnum
+CREATE TYPE "ClaimStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "NotificationType" AS ENUM ('CLAIM_SUBMITTED', 'CLAIM_APPROVED', 'CLAIM_REJECTED', 'CLAIM_REVOKED', 'MESSAGE_RECEIVED');
+
 -- CreateTable
 CREATE TABLE "User" (
     "user_id" SERIAL NOT NULL,
@@ -8,6 +17,8 @@ CREATE TABLE "User" (
     "phone_number" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "preferred_view_mode" TEXT DEFAULT 'list',
+    "role" "UserRole" NOT NULL DEFAULT 'USER',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("user_id")
 );
@@ -143,6 +154,9 @@ CREATE TABLE "School" (
     "region_jp" TEXT,
     "geography_en" TEXT,
     "geography_jp" TEXT,
+    "is_verified" BOOLEAN NOT NULL DEFAULT false,
+    "verification_date" TIMESTAMP(3),
+    "verified_by" INTEGER,
 
     CONSTRAINT "School_pkey" PRIMARY KEY ("school_id")
 );
@@ -174,6 +188,68 @@ CREATE TABLE "BrowsingHistory" (
     "viewed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "BrowsingHistory_pkey" PRIMARY KEY ("history_id")
+);
+
+-- CreateTable
+CREATE TABLE "SchoolClaim" (
+    "claim_id" SERIAL NOT NULL,
+    "school_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "status" "ClaimStatus" NOT NULL DEFAULT 'PENDING',
+    "verification_method" TEXT NOT NULL,
+    "verification_data" TEXT NOT NULL,
+    "submitted_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "processed_at" TIMESTAMP(3),
+    "processed_by" INTEGER,
+    "notes" TEXT,
+
+    CONSTRAINT "SchoolClaim_pkey" PRIMARY KEY ("claim_id")
+);
+
+-- CreateTable
+CREATE TABLE "SchoolAdmin" (
+    "school_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "assigned_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "assigned_by" INTEGER NOT NULL,
+
+    CONSTRAINT "SchoolAdmin_pkey" PRIMARY KEY ("school_id","user_id")
+);
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "notification_id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "type" "NotificationType" NOT NULL,
+    "title" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "is_read" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("notification_id")
+);
+
+-- CreateTable
+CREATE TABLE "Message" (
+    "message_id" SERIAL NOT NULL,
+    "sender_id" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_broadcast" BOOLEAN NOT NULL DEFAULT false,
+    "scheduled_deletion" TIMESTAMP(3) NOT NULL DEFAULT NOW() + INTERVAL '30 days',
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("message_id")
+);
+
+-- CreateTable
+CREATE TABLE "MessageRecipient" (
+    "message_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "is_read" BOOLEAN NOT NULL DEFAULT false,
+    "read_at" TIMESTAMP(3),
+
+    CONSTRAINT "MessageRecipient_pkey" PRIMARY KEY ("message_id","user_id")
 );
 
 -- CreateIndex
@@ -218,6 +294,45 @@ CREATE INDEX "idx_school_geography" ON "School"("geography_en", "geography_jp");
 -- CreateIndex
 CREATE INDEX "idx_browsing_history_user_school" ON "BrowsingHistory"("user_id", "school_id");
 
+-- CreateIndex
+CREATE INDEX "SchoolClaim_school_id_idx" ON "SchoolClaim"("school_id");
+
+-- CreateIndex
+CREATE INDEX "SchoolClaim_user_id_idx" ON "SchoolClaim"("user_id");
+
+-- CreateIndex
+CREATE INDEX "SchoolClaim_status_idx" ON "SchoolClaim"("status");
+
+-- CreateIndex
+CREATE INDEX "SchoolAdmin_school_id_idx" ON "SchoolAdmin"("school_id");
+
+-- CreateIndex
+CREATE INDEX "SchoolAdmin_user_id_idx" ON "SchoolAdmin"("user_id");
+
+-- CreateIndex
+CREATE INDEX "Notification_user_id_idx" ON "Notification"("user_id");
+
+-- CreateIndex
+CREATE INDEX "Notification_created_at_idx" ON "Notification"("created_at");
+
+-- CreateIndex
+CREATE INDEX "Notification_is_read_idx" ON "Notification"("is_read");
+
+-- CreateIndex
+CREATE INDEX "Message_sender_id_idx" ON "Message"("sender_id");
+
+-- CreateIndex
+CREATE INDEX "Message_created_at_idx" ON "Message"("created_at");
+
+-- CreateIndex
+CREATE INDEX "Message_scheduled_deletion_idx" ON "Message"("scheduled_deletion");
+
+-- CreateIndex
+CREATE INDEX "MessageRecipient_user_id_idx" ON "MessageRecipient"("user_id");
+
+-- CreateIndex
+CREATE INDEX "MessageRecipient_is_read_idx" ON "MessageRecipient"("is_read");
+
 -- AddForeignKey
 ALTER TABLE "UserList" ADD CONSTRAINT "UserList_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -228,7 +343,37 @@ ALTER TABLE "UserListSchools" ADD CONSTRAINT "UserListSchools_list_id_fkey" FORE
 ALTER TABLE "UserListSchools" ADD CONSTRAINT "UserListSchools_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "School"("school_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "BrowsingHistory" ADD CONSTRAINT "BrowsingHistory_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "School"("school_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "BrowsingHistory" ADD CONSTRAINT "BrowsingHistory_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BrowsingHistory" ADD CONSTRAINT "BrowsingHistory_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "School"("school_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SchoolClaim" ADD CONSTRAINT "SchoolClaim_processed_by_fkey" FOREIGN KEY ("processed_by") REFERENCES "User"("user_id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SchoolClaim" ADD CONSTRAINT "SchoolClaim_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "School"("school_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SchoolClaim" ADD CONSTRAINT "SchoolClaim_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SchoolAdmin" ADD CONSTRAINT "SchoolAdmin_assigned_by_fkey" FOREIGN KEY ("assigned_by") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SchoolAdmin" ADD CONSTRAINT "SchoolAdmin_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "School"("school_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SchoolAdmin" ADD CONSTRAINT "SchoolAdmin_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MessageRecipient" ADD CONSTRAINT "MessageRecipient_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "Message"("message_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MessageRecipient" ADD CONSTRAINT "MessageRecipient_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
