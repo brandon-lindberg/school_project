@@ -29,7 +29,7 @@ export default function MessagesSection() {
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const { language } = useLanguage();
-  const { messages, refreshData } = useDashboard();
+  const { messages } = useDashboard();
 
   // Sync local messages with context messages
   useEffect(() => {
@@ -144,12 +144,13 @@ export default function MessagesSection() {
               {/* Message Preview */}
               <button
                 onClick={() => handleMessageClick(msg.message.message_id)}
-                className={`w-full text-left transition-colors ${expandedMessageId === msg.message.message_id
-                  ? 'bg-blue-50'
-                  : msg.is_read
-                    ? 'bg-white hover:bg-gray-50'
-                    : 'bg-blue-50 hover:bg-blue-100'
-                  } p-4 rounded-lg border flex items-start justify-between group`}
+                className={`w-full text-left transition-colors ${
+                  expandedMessageId === msg.message.message_id
+                    ? 'bg-blue-50'
+                    : msg.is_read
+                      ? 'bg-white hover:bg-gray-50'
+                      : 'bg-blue-50 hover:bg-blue-100'
+                } p-4 rounded-lg border flex items-start justify-between group`}
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">

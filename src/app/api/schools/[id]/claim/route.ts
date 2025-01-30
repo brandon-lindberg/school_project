@@ -51,7 +51,9 @@ export async function POST(request: NextRequest) {
 
     if (existingClaim) {
       return NextResponse.json(
-        { error: 'You already have a pending claim. You can only have one pending claim at a time.' },
+        {
+          error: 'You already have a pending claim. You can only have one pending claim at a time.',
+        },
         { status: 400 }
       );
     }
