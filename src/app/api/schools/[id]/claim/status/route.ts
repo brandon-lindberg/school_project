@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     // Check if user is already a school admin and has an existing school
     const isSchoolAdmin = user.role === 'SCHOOL_ADMIN';
     const hasExistingSchool = user.managedSchools.length > 0;
+    const isSuperAdmin = user.role === 'SUPER_ADMIN';
 
     // Check if school exists and if it's already claimed
     const school = await prisma.school.findUnique({
@@ -72,6 +73,7 @@ export async function GET(request: NextRequest) {
       hasExistingSchool,
       isClaimed,
       hasPendingClaim,
+      isSuperAdmin,
     });
   } catch (error) {
     console.error('Error checking claim status:', error);

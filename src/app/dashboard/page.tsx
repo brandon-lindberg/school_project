@@ -13,6 +13,7 @@ import { useListStatus } from '../contexts/ListStatusContext';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 import { DashboardProvider, useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
+import ClaimedSchools from '../components/ClaimedSchools';
 
 function DashboardContent() {
   const router = useRouter();
@@ -24,7 +25,7 @@ function DashboardContent() {
     deleteHistoryEntry: handleDeleteHistoryEntry,
     clearHistory: handleClearHistory,
   } = useBrowsingHistory();
-  const { userLists, managedSchools, userRole, isLoading, refreshData } = useDashboard();
+  const { userLists, managedSchools, claims, userRole, isLoading, refreshData } = useDashboard();
 
   if (status === 'loading' || isLoading) {
     return <DashboardSkeleton />;
@@ -60,7 +61,7 @@ function DashboardContent() {
     <div className="min-h-screen bg-[#F5F5F5] font-sans">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - My Lists and Managed Schools */}
+          {/* Left Column - My Lists, Managed Schools, and Claimed Schools */}
           <div className="space-y-6">
             {/* Managed Schools Section */}
             {userRole === 'SCHOOL_ADMIN' && managedSchools.length > 0 && (
@@ -82,6 +83,9 @@ function DashboardContent() {
                 </div>
               </div>
             )}
+
+            {/* Claimed Schools Section */}
+            <ClaimedSchools claims={claims} />
 
             {/* My Lists Section */}
             <div className="bg-white rounded-lg shadow-sm p-6">

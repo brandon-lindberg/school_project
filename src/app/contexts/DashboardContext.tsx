@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { ClaimStatus } from '@prisma/client';
 
 type MessageContent = {
   message_id: number;
@@ -52,15 +53,28 @@ type ManagedSchool = {
   name: string;
 };
 
-interface DashboardContextType {
+type ClaimedSchool = {
+  claim_id: number;
+  status: ClaimStatus;
+  notes: string | null;
+  processed_at: string | null;
+  school: {
+    school_id: number;
+    name_en: string | null;
+    name_jp: string | null;
+  };
+};
+
+type DashboardContextType = {
   messages: Message[];
   notifications: Notification[];
   userLists: UserList[];
   managedSchools: ManagedSchool[];
   userRole: string | null;
+  claims: ClaimedSchool[];
   isLoading: boolean;
   refreshData: () => Promise<void>;
-}
+};
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
@@ -69,6 +83,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userLists, setUserLists] = useState<UserList[]>([]);
   const [managedSchools, setManagedSchools] = useState<ManagedSchool[]>([]);
+  const [claims, setClaims] = useState<ClaimedSchool[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
@@ -97,12 +112,15 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         // Fetch all data in parallel
-        const [messagesRes, notificationsRes, userListsRes, roleRes] = await Promise.all([
-          fetch('/api/messages'),
-          fetch('/api/notifications'),
-          fetch(`/api/userLists?userId=${userData.userId}`),
-          fetch('/api/user/role'),
-        ]);
+        const [messagesRes, notificationsRes, userListsRes, roleRes, claimsRes] = await Promise.all(
+          [
+            fetch('/api/messages'),
+            fetch('/api/notifications'),
+            fetch(`/api/userLists?userId=${userData.userId}`),
+            fetch('/api/user/role'),
+            fetch('/api/schools/claims'),
+          ]
+        );
 
         if (!mounted) return;
 
@@ -112,6 +130,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           { name: 'notifications', res: notificationsRes },
           { name: 'userLists', res: userListsRes },
           { name: 'role', res: roleRes },
+          { name: 'claims', res: claimsRes },
         ].filter(req => !req.res.ok);
 
         if (failedRequests.length > 0) {
@@ -120,12 +139,14 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        const [messagesData, notificationsData, userListsData, roleData] = await Promise.all([
-          messagesRes.json(),
-          notificationsRes.json(),
-          userListsRes.json(),
-          roleRes.json(),
-        ]);
+        const [messagesData, notificationsData, userListsData, roleData, claimsData] =
+          await Promise.all([
+            messagesRes.json(),
+            notificationsRes.json(),
+            userListsRes.json(),
+            roleRes.json(),
+            claimsRes.json(),
+          ]);
 
         if (!mounted) return;
 
@@ -134,6 +155,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         setUserLists(userListsData.lists || []);
         setUserRole(roleData.role);
         setManagedSchools(roleData.managedSchools || []);
+        setClaims(claimsData.claims || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         // Reset states on error
@@ -143,6 +165,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           setUserLists([]);
           setUserRole(null);
           setManagedSchools([]);
+          setClaims([]);
         }
       } finally {
         if (mounted) {
@@ -173,6 +196,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         userLists,
         managedSchools,
         userRole,
+        claims,
         isLoading,
         refreshData,
       }}
