@@ -42,7 +42,7 @@ export default function MessagesSection() {
         method: 'POST',
       });
       if (response.ok) {
-        // Optimistically update the UI
+        // Update local state only
         setLocalMessages(prevMessages =>
           prevMessages.map(msg =>
             msg.message.message_id === messageId
@@ -50,8 +50,6 @@ export default function MessagesSection() {
               : msg
           )
         );
-        // Refresh data in the background
-        setTimeout(() => refreshData(), 1000);
       }
     } catch (error) {
       console.error('Error marking message as read:', error);
