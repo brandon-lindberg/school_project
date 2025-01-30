@@ -45,9 +45,9 @@ export async function PUT(request: Request) {
             select: {
               school_id: true,
               name_en: true,
-              name_jp: true
-            }
-          }
+              name_jp: true,
+            },
+          },
         },
       });
 
@@ -180,12 +180,6 @@ export async function DELETE(request: Request) {
     if (!claimIdNumber || isNaN(claimIdNumber)) {
       return NextResponse.json({ error: 'Invalid claim ID' }, { status: 400 });
     }
-
-    // Get the current admin user's ID
-    const adminUser = await prisma.user.findUniqueOrThrow({
-      where: { email: session.user.email },
-      select: { user_id: true },
-    });
 
     // Handle revocation in a transaction
     await prisma.$transaction(async tx => {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { ClaimStatus } from '@prisma/client';
 
 type Claim = {
@@ -28,7 +27,6 @@ type User = {
 };
 
 export default function ClaimsManagementPage() {
-  const { data: session } = useSession();
   const [claims, setClaims] = useState<Claim[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -138,7 +136,11 @@ export default function ClaimsManagementPage() {
     setSearchResults([]);
   };
 
-  const handleProcessClaim = async (claimId: number, status: 'APPROVED' | 'REJECTED', notes?: string) => {
+  const handleProcessClaim = async (
+    claimId: number,
+    status: 'APPROVED' | 'REJECTED',
+    notes?: string
+  ) => {
     try {
       const response = await fetch('/api/schools/claims/process', {
         method: 'POST',
@@ -202,12 +204,13 @@ export default function ClaimsManagementPage() {
                   <td className="px-6 py-4 whitespace-nowrap">{claim.user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${claim.status === 'APPROVED'
-                        ? 'bg-green-100 text-green-800'
-                        : claim.status === 'REJECTED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                        }`}
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        claim.status === 'APPROVED'
+                          ? 'bg-green-100 text-green-800'
+                          : claim.status === 'REJECTED'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                      }`}
                     >
                       {claim.status}
                     </span>
@@ -287,12 +290,13 @@ export default function ClaimsManagementPage() {
                   <div>
                     <label className="block text-xs text-gray-500">Claim Status</label>
                     <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedClaim.status === 'APPROVED'
-                        ? 'bg-green-100 text-green-800'
-                        : selectedClaim.status === 'REJECTED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                        }`}
+                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        selectedClaim.status === 'APPROVED'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedClaim.status === 'REJECTED'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                      }`}
                     >
                       {selectedClaim.status}
                     </span>
@@ -332,8 +336,9 @@ export default function ClaimsManagementPage() {
                         <div
                           key={user.user_id}
                           onClick={() => setSelectedUser(user)}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
-                            }`}
+                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
+                            selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
+                          }`}
                         >
                           <div className="font-medium">
                             {user.first_name} {user.family_name}
@@ -368,10 +373,11 @@ export default function ClaimsManagementPage() {
                 <button
                   onClick={handleTransferClaim}
                   disabled={!selectedUser}
-                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${selectedUser
-                    ? 'bg-blue-500 hover:bg-blue-700'
-                    : 'bg-blue-300 cursor-not-allowed'
-                    }`}
+                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                    selectedUser
+                      ? 'bg-blue-500 hover:bg-blue-700'
+                      : 'bg-blue-300 cursor-not-allowed'
+                  }`}
                 >
                   Transfer Claim
                 </button>

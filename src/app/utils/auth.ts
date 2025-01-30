@@ -1,10 +1,10 @@
-import { getSession, useSession, signOut, signIn } from 'next-auth/react';
+import { getSession, signOut, signIn } from 'next-auth/react';
 
 export async function refreshSession() {
   try {
     const response = await fetch('/api/auth/refresh', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     });
     const data = await response.json();
     console.log('[refreshSession] Response:', data);
