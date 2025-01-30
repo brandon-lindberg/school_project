@@ -101,7 +101,7 @@ export const authOptions: AuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 1 * 60, // Set session to expire in 1 minute (for testing)
+    maxAge: 24 * 60 * 60, // Set session to expire in 24 hours
   },
   pages: {
     signIn: '/login',
