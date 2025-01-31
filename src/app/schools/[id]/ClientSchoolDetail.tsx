@@ -328,9 +328,10 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                     key={tab.id}
                     onClick={() => handleTabClick(tab.id)}
                     className={`
-                      ${activeTab === tab.id
-                        ? 'border-green-500 text-green-600'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ${
+                        activeTab === tab.id
+                          ? 'border-green-500 text-green-600'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                       }
                       ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                       whitespace-nowrap border-b-2 py-3 px-3 sm:px-4 text-sm font-medium flex-shrink-0
