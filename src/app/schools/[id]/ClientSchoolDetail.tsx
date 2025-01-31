@@ -311,41 +311,43 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
       {/* Tabs */}
       <div className="mb-8">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            {[
-              { id: 'overview', name: translations.tabs.overview },
-              { id: 'education', name: translations.tabs.education },
-              { id: 'admissions', name: translations.tabs.admissions },
-              { id: 'campus', name: translations.tabs.campus },
-              { id: 'studentLife', name: translations.tabs.studentLife },
-              { id: 'employment', name: translations.tabs.employment },
-              { id: 'policies', name: translations.tabs.policies },
-            ].map(tab => {
-              const isDisabled = !isAuthenticated && tab.id !== 'overview';
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`
-                    ${
-                      activeTab === tab.id
+          <nav className="overflow-x-auto" aria-label="Tabs">
+            <div className="flex min-w-full whitespace-nowrap">
+              {[
+                { id: 'overview', name: translations.tabs.overview },
+                { id: 'education', name: translations.tabs.education },
+                { id: 'admissions', name: translations.tabs.admissions },
+                { id: 'campus', name: translations.tabs.campus },
+                { id: 'studentLife', name: translations.tabs.studentLife },
+                { id: 'employment', name: translations.tabs.employment },
+                { id: 'policies', name: translations.tabs.policies },
+              ].map(tab => {
+                const isDisabled = !isAuthenticated && tab.id !== 'overview';
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    className={`
+                      ${activeTab === tab.id
                         ? 'border-green-500 text-green-600'
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    }
-                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                    whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium
-                  `}
-                  disabled={isDisabled}
-                >
-                  {tab.name}
-                  {isDisabled && (
-                    <span className="ml-1 text-xs text-gray-400">
-                      {language === 'en' ? '(Login required)' : '(ログインが必要)'}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                      }
+                      ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                      whitespace-nowrap border-b-2 py-3 px-3 sm:px-4 text-sm font-medium flex-shrink-0
+                      flex items-center
+                    `}
+                    disabled={isDisabled}
+                  >
+                    {tab.name}
+                    {isDisabled && (
+                      <span className="ml-1 text-xs text-gray-400 hidden sm:inline">
+                        {language === 'en' ? '(Login required)' : '(ログインが必要)'}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </div>
       </div>
