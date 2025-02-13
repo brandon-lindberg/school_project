@@ -51,3 +51,5 @@ scripts/
 # prettier
 .prettier.cache
 **/node_modules/.cache/prettier/
+
+.cursor/
