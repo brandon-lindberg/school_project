@@ -31,6 +31,8 @@ model User {
   candidateNotes      CandidateNote[]
   interviews          Interview[]
   interviewFeedbacks  InterviewFeedback[]
+  availabilitySlots   AvailabilitySlot[]
+  journalEntries      JournalEntry[]
 }
 
 model School {
@@ -353,6 +355,8 @@ model Application {
   submittedAt       DateTime      @default(now())
   notes             CandidateNote[]
   interviews        Interview[]
+  availabilitySlots AvailabilitySlot[]
+  journalEntries    JournalEntry[]
   offer             Offer?
 }
 
@@ -406,4 +410,30 @@ model BlockedCountry {
   country    String
   reason     String?
   createdAt  DateTime @default(now())
+}
+
+// Availability slots for admin or candidate
+model AvailabilitySlot {
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  user           User        @relation(fields: [userId], references: [user_id])
+  applicationId  Int?        // null for admin-wide slots
+  application    Application? @relation(fields: [applicationId], references: [id])
+  dayOfWeek      String      // e.g. "Mon", "Tue"
+  startTime      String      // e.g. "09:00"
+  endTime        String      // e.g. "11:00"
+  createdAt      DateTime    @default(now())
+}
+
+// Journal entries for a candidate (notes, feedback, system events)
+model JournalEntry {
+  id            Int          @id @default(autoincrement())
+  applicationId Int
+  application   Application  @relation(fields: [applicationId], references: [id])
+  authorId      Int
+  author        User         @relation(fields: [authorId], references: [user_id])
+  type          String       // NOTE | FEEDBACK | SYSTEM | JOURNAL
+  content       String
+  rating        Int?         // optional rating for feedback
+  createdAt     DateTime     @default(now())
 }

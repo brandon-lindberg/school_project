@@ -12,9 +12,13 @@ interface Interview {
 interface InterviewSchedulerProps {
   applicationId: string;
   initialInterviews: Interview[];
+  /** Optional custom header text for the interview list */
+  title?: string;
+  /** Hide the default heading when true */
+  hideHeader?: boolean;
 }
 
-export default function InterviewScheduler({ applicationId, initialInterviews }: InterviewSchedulerProps) {
+export default function InterviewScheduler({ applicationId, initialInterviews, title = 'Interviews', hideHeader = false }: InterviewSchedulerProps) {
   const [interviews, setInterviews] = useState<Interview[]>(initialInterviews);
   const [scheduledAt, setScheduledAt] = useState('');
   const [location, setLocation] = useState('');
@@ -43,7 +47,7 @@ export default function InterviewScheduler({ applicationId, initialInterviews }:
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Interviews</h3>
+      {!hideHeader && <h3 className="text-lg font-semibold">{title}</h3>}
       {error && <p className="text-red-500">{error}</p>}
       <ul className="space-y-2">
         {interviews.map(intv => (

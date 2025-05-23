@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import CandidateNotes from '../components/CandidateNotes';
-import InterviewScheduler from './components/InterviewScheduler';
-import OfferLetterForm from './components/OfferLetterForm';
+import EmployerWorkflow from './components/EmployerWorkflow';
+import JournalTimeline from './components/JournalTimeline';
+import JournalEntryForm from './components/JournalEntryForm';
 import { useSession } from 'next-auth/react';
 
 export default function ApplicationDetailPage() {
@@ -16,6 +16,7 @@ export default function ApplicationDetailPage() {
     userRole === 'SUPER_ADMIN' ||
     (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
   const [application, setApplication] = useState<any>(null);
+  const [refreshFlag, setRefreshFlag] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +33,7 @@ export default function ApplicationDetailPage() {
       }
     }
     fetchApplication();
-  }, [applicationId]);
+  }, [applicationId, refreshFlag]);
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !application) return <div className="p-8 text-red-500">{error || 'Application not found'}</div>;
@@ -80,13 +81,16 @@ export default function ApplicationDetailPage() {
         <h2 className="text-xl font-semibold mb-2">Comment</h2>
         <p>{application.comment}</p>
       </div>
-      {isAdmin && <CandidateNotes applicationId={applicationId} notes={application.notes} />}
-      <div>
-        {isAdmin && <InterviewScheduler applicationId={applicationId} initialInterviews={application.interviews} />}
-      </div>
-      <div>
-        {isAdmin && <OfferLetterForm applicationId={applicationId} initialLetterUrl={application.offer?.letterUrl} />}
-      </div>
+      {/* Employer workflow for application review, interviews, and offers */}
+      {isAdmin && (
+        <EmployerWorkflow
+          application={application}
+          refresh={() => setRefreshFlag(f => f + 1)}
+        />
+      )}
+      {/* Candidate notes timeline for all roles */}
+      <JournalTimeline applicationId={applicationId} />
+      {isAdmin && <JournalEntryForm applicationId={applicationId} />}
     </div>
   );
 }
