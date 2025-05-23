@@ -304,6 +304,14 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                   {language === 'en' ? 'New Job Posting' : '新しい求人を作成'}
                 </Link>
               )}
+              {canEdit && (
+                <Link
+                  href={`/schools/${school.school_id}/employment/recruitment/applications`}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                >
+                  {language === 'en' ? 'View Applications' : '応募を確認'}
+                </Link>
+              )}
             </div>
           </>
         );

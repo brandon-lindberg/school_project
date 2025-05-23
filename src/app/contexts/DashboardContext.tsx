@@ -65,6 +65,14 @@ type ClaimedSchool = {
   };
 };
 
+type UserApplication = {
+  id: number;
+  jobPosting: { id: number; title: string; schoolId: number };
+  status: string;
+  currentStage: string;
+  submittedAt: string;
+};
+
 type DashboardContextType = {
   messages: Message[];
   notifications: Notification[];
@@ -72,6 +80,7 @@ type DashboardContextType = {
   managedSchools: ManagedSchool[];
   userRole: string | null;
   claims: ClaimedSchool[];
+  applications: UserApplication[];
   isLoading: boolean;
   refreshData: () => Promise<void>;
 };
@@ -84,6 +93,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [userLists, setUserLists] = useState<UserList[]>([]);
   const [managedSchools, setManagedSchools] = useState<ManagedSchool[]>([]);
   const [claims, setClaims] = useState<ClaimedSchool[]>([]);
+  const [applications, setApplications] = useState<UserApplication[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
@@ -112,13 +122,14 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         // Fetch all data in parallel
-        const [messagesRes, notificationsRes, userListsRes, roleRes, claimsRes] = await Promise.all(
+        const [messagesRes, notificationsRes, userListsRes, roleRes, claimsRes, applicationsRes] = await Promise.all(
           [
             fetch('/api/messages'),
             fetch('/api/notifications'),
             fetch(`/api/userLists?userId=${userData.userId}`),
             fetch('/api/user/role'),
             fetch('/api/schools/claims'),
+            fetch('/api/applications'),
           ]
         );
 
@@ -131,6 +142,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           { name: 'userLists', res: userListsRes },
           { name: 'role', res: roleRes },
           { name: 'claims', res: claimsRes },
+          { name: 'applications', res: applicationsRes },
         ].filter(req => !req.res.ok);
 
         if (failedRequests.length > 0) {
@@ -139,13 +151,14 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        const [messagesData, notificationsData, userListsData, roleData, claimsData] =
+        const [messagesData, notificationsData, userListsData, roleData, claimsData, applicationsData] =
           await Promise.all([
             messagesRes.json(),
             notificationsRes.json(),
             userListsRes.json(),
             roleRes.json(),
             claimsRes.json(),
+            applicationsRes.json(),
           ]);
 
         if (!mounted) return;
@@ -156,6 +169,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         setUserRole(roleData.role);
         setManagedSchools(roleData.managedSchools || []);
         setClaims(claimsData.claims || []);
+        setApplications(applicationsData || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         // Reset states on error
@@ -166,6 +180,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           setUserRole(null);
           setManagedSchools([]);
           setClaims([]);
+          setApplications([]);
         }
       } finally {
         if (mounted) {
@@ -197,6 +212,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         managedSchools,
         userRole,
         claims,
+        applications,
         isLoading,
         refreshData,
       }}

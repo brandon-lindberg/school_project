@@ -150,6 +150,7 @@ export const authOptions: AuthOptions = {
         console.log('[session] Setting session role from token:', token.role);
         session.user.role = token.role;
         session.user.managedSchools = token.managedSchools;
+        session.user.id = token.sub as string;
       }
 
       console.log('[session] Final session:', JSON.stringify(session, null, 2));

@@ -61,12 +61,21 @@ export default function JobPostingsPage() {
               <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
               <div className="mt-2 flex space-x-4">
                 {isAuthenticated ? (
-                  <Link
-                    href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
-                    className="text-green-500 hover:underline"
-                  >
-                    Apply
-                  </Link>
+                  (session?.user?.role === 'SUPER_ADMIN' || session?.user?.managedSchools?.some(s => s.school_id === parseInt(schoolId))) ? (
+                    <Link
+                      href={`/schools/${schoolId}/employment/recruitment/applications`}
+                      className="text-green-500 hover:underline"
+                    >
+                      Applications
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
+                      className="text-green-500 hover:underline"
+                    >
+                      Apply
+                    </Link>
+                  )
                 ) : (
                   <Link
                     href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}

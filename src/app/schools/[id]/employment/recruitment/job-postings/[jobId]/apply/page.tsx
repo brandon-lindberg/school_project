@@ -25,6 +25,7 @@ export default function JobApplicationPage() {
       const res = await fetch(`/api/job-postings/${jobId}/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           applicantName,
           email,

@@ -8,13 +8,14 @@ const noteSchema = z.object({
   content: z.string().min(1),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const applicationId = parseInt(params.id, 10);
+  const { id } = await params;
+  const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
   }

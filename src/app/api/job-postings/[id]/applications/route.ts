@@ -18,20 +18,21 @@ const applicationSchema = z.object({
   coverLetter: z.string().optional(),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // Require authenticated user
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const jobId = parseInt(params.id, 10);
+  const jobId = parseInt(id, 10);
   if (isNaN(jobId)) {
     return NextResponse.json({ error: 'Invalid job posting ID' }, { status: 400 });
   }
   try {
     const body = await request.json();
     const data = applicationSchema.parse(body);
-    const userId = parseInt((await getServerSession(authOptions))?.user?.id!);
+    const userId = parseInt(session.user.id as string);
     // create application with user association
     const application = await prisma.application.create({
       data: {
@@ -59,6 +60,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         message: `Your application for job #${jobId} has been received.`,
       },
     });
+    // Notify school admins and super admins
+    const job = await prisma.jobPosting.findUnique({ where: { id: jobId }, select: { title: true, schoolId: true } });
+    if (job) {
+      const admins = await prisma.user.findMany({
+        where: {
+          OR: [
+            { role: 'SUPER_ADMIN' },
+            { managedSchools: { some: { school_id: job.schoolId } } },
+          ],
+        },
+        select: { user_id: true },
+      });
+      if (admins.length > 0) {
+        await prisma.notification.createMany({
+          data: admins.map(admin => ({
+            user_id: admin.user_id,
+            type: 'MESSAGE_RECEIVED',
+            title: `New Application: ${job.title}`,
+            message: `${session.user.email} applied for "${job.title}".`,
+          })),
+        });
+      }
+    }
     // TODO: send confirmation email
     return NextResponse.json({ application }, { status: 201 });
   } catch (error) {
