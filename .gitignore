@@ -53,3 +53,6 @@ scripts/
 **/node_modules/.cache/prettier/
 
 .cursor/
+
+urls.json
+recruitment-portal.md
