@@ -77,10 +77,12 @@ export default function ApplicationDetailPage() {
       )}
       <p><strong>Status:</strong> {application.status}</p>
       <p><strong>Stage:</strong> {application.currentStage}</p>
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Comment</h2>
-        <p>{application.comment}</p>
-      </div>
+      {isAdmin && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Comment</h2>
+          <p>{application.comment}</p>
+        </div>
+      )}
       {/* Employer workflow for application review, interviews, and offers */}
       {isAdmin && (
         <EmployerWorkflow
@@ -88,8 +90,8 @@ export default function ApplicationDetailPage() {
           refresh={() => setRefreshFlag(f => f + 1)}
         />
       )}
-      {/* Candidate notes timeline for all roles */}
-      <JournalTimeline applicationId={applicationId} />
+      {/* Journal entries are admin-only to prevent applicants from seeing employer notes */}
+      {isAdmin && <JournalTimeline applicationId={applicationId} />}
       {isAdmin && <JournalEntryForm applicationId={applicationId} />}
     </div>
   );
