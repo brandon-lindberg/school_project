@@ -281,13 +281,31 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         );
       case 'employment':
         return (
-          <EmploymentTab
-            {...commonTabProps}
-            school={school}
-            openPositions={openPositions}
-            staffList={staffList}
-            boardMembers={boardMembers}
-          />
+          <>
+            <EmploymentTab
+              {...commonTabProps}
+              school={school}
+              openPositions={openPositions}
+              staffList={staffList}
+              boardMembers={boardMembers}
+            />
+            <div className="mt-6 flex space-x-4">
+              <Link
+                href={`/schools/${school.school_id}/employment/recruitment/job-postings`}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                {language === 'en' ? 'View Job Postings' : '求人情報を表示'}
+              </Link>
+              {canEdit && (
+                <Link
+                  href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  {language === 'en' ? 'New Job Posting' : '新しい求人を作成'}
+                </Link>
+              )}
+            </div>
+          </>
         );
       case 'policies':
         return <PoliciesTab {...commonTabProps} school={school} />;
@@ -328,10 +346,9 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                     key={tab.id}
                     onClick={() => handleTabClick(tab.id)}
                     className={`
-                      ${
-                        activeTab === tab.id
-                          ? 'border-green-500 text-green-600'
-                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ${activeTab === tab.id
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                       }
                       ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                       whitespace-nowrap border-b-2 py-3 px-3 sm:px-4 text-sm font-medium flex-shrink-0

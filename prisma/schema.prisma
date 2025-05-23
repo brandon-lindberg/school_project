@@ -27,6 +27,10 @@ model User {
   notifications       Notification[]
   sentMessages        Message[]          @relation("MessageSender")
   receivedMessages    MessageRecipient[]
+  applications        Application[]
+  candidateNotes      CandidateNote[]
+  interviews          Interview[]
+  interviewFeedbacks  InterviewFeedback[]
 }
 
 model School {
@@ -166,6 +170,8 @@ model School {
   admins                                                          SchoolAdmin[]
   claims                                                          SchoolClaim[]
   userListSchools                                                 UserListSchools[]
+  jobPostings                                                     JobPosting[]
+  blockedCountries                                                 BlockedCountry[]
 
   @@index([name_en, name_jp], map: "idx_school_name")
   @@index([location_en, location_jp], map: "idx_school_location")
@@ -262,6 +268,7 @@ enum NotificationType {
   CLAIM_REJECTED
   CLAIM_REVOKED
   MESSAGE_RECEIVED
+  APPLICATION_STATUS_UPDATED
 }
 
 model Notification {
@@ -306,4 +313,97 @@ model MessageRecipient {
   @@id([message_id, user_id])
   @@index([user_id])
   @@index([is_read])
+}
+
+// Recruitment portal models
+model JobPosting {
+  id               Int       @id @default(autoincrement())
+  schoolId         Int
+  school           School    @relation(fields: [schoolId], references: [school_id])
+  title            String
+  description      String
+  requirements     String[]
+  location         String
+  employmentType   String
+  status           String    @default("OPEN")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  applications     Application[]
+}
+
+model Application {
+  id                Int           @id @default(autoincrement())
+  userId            Int?
+  user              User?         @relation(fields: [userId], references: [user_id])
+  jobPostingId      Int
+  jobPosting        JobPosting    @relation(fields: [jobPostingId], references: [id])
+  applicantName     String
+  email             String
+  phone             String?
+  hasJapaneseVisa   Boolean       @default(false)
+  comment           String?
+  certifications    String[]
+  degrees           String[]
+  currentResidence  String?
+  nationality       String?
+  resumeUrl         String?
+  coverLetter       String?
+  status            String        @default("APPLIED")
+  currentStage      String        @default("SCREENING")
+  submittedAt       DateTime      @default(now())
+  notes             CandidateNote[]
+  interviews        Interview[]
+  offer             Offer?
+}
+
+model CandidateNote {
+  id            Int          @id @default(autoincrement())
+  applicationId Int
+  application   Application  @relation(fields: [applicationId], references: [id])
+  authorId      Int
+  author        User         @relation(fields: [authorId], references: [user_id])
+  content       String
+  createdAt     DateTime     @default(now())
+}
+
+model Interview {
+  id             Int                @id @default(autoincrement())
+  applicationId  Int
+  application    Application        @relation(fields: [applicationId], references: [id])
+  interviewerId  Int
+  interviewer    User               @relation(fields: [interviewerId], references: [user_id])
+  scheduledAt    DateTime
+  location       String
+  status         String             @default("SCHEDULED")
+  feedback       InterviewFeedback[]
+}
+
+model InterviewFeedback {
+  id           Int        @id @default(autoincrement())
+  interviewId  Int
+  interview    Interview  @relation(fields: [interviewId], references: [id])
+  authorId     Int
+  author       User       @relation(fields: [authorId], references: [user_id])
+  content      String
+  rating       Int?
+  createdAt    DateTime   @default(now())
+}
+
+model Offer {
+  id            Int          @id @default(autoincrement())
+  applicationId Int          @unique
+  application   Application  @relation(fields: [applicationId], references: [id])
+  letterUrl     String
+  sentAt        DateTime     @default(now())
+  status        String       @default("PENDING")
+  responseAt    DateTime?
+}
+
+model BlockedCountry {
+  id         Int      @id @default(autoincrement())
+  schoolId   Int
+  school     School   @relation(fields: [schoolId], references: [school_id])
+  country    String
+  reason     String?
+  createdAt  DateTime @default(now())
 }

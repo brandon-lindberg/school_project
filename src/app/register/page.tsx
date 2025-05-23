@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
 import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams?.get('next');
   const { language } = useLanguage();
   const [email, setEmail] = useState('');
   const [familyName, setFamilyName] = useState('');
@@ -55,7 +57,7 @@ export default function RegisterPage() {
         } else {
           // Wait for the session to be updated
           await new Promise(resolve => setTimeout(resolve, 1000));
-          router.push('/list');
+          router.push(nextPath ?? '/list');
           router.refresh();
         }
       }

@@ -1,0 +1,56 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { z } from 'zod';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+
+const offerSchema = z.object({
+  letterUrl: z.string().url(),
+});
+
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const applicationId = parseInt(params.id, 10);
+  if (isNaN(applicationId)) {
+    return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
+  }
+
+  // Only authorized admins
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { managedSchools: true } });
+  const app = await prisma.application.findUnique({ where: { id: applicationId }, include: { jobPosting: true } });
+  if (!user || !app) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+  const schoolId = app.jobPosting.schoolId;
+  const isAuthorized = user.role === 'SUPER_ADMIN' || user.managedSchools.some(s => s.school_id === schoolId);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  try {
+    const { letterUrl } = offerSchema.parse(await request.json());
+    const offer = await prisma.offer.create({
+      data: { applicationId, letterUrl },
+    });
+    // notify applicant
+    await prisma.notification.create({
+      data: {
+        user_id: app.userId || 0,
+        type: 'MESSAGE_RECEIVED',
+        title: 'Offer Letter Sent',
+        message: `An offer has been sent: ${letterUrl}`,
+      },
+    });
+    return NextResponse.json(offer, { status: 201 });
+  } catch (err: any) {
+    console.error('Error sending offer:', err);
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Failed to send offer' }, { status: 500 });
+  }
+}
