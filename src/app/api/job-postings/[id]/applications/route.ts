@@ -56,23 +56,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         coverLetter: data.coverLetter,
       },
     });
-    // create notification for applicant
-    await prisma.notification.create({
-      data: {
-        user_id: userId,
-        type: 'MESSAGE_RECEIVED',
-        title: 'Application Received',
-        message: `Your application for job #${jobId} has been received.`,
+    // Notify applicant and school admins with context
+    const jobInfo = await prisma.jobPosting.findUnique({
+      where: { id: jobId },
+      select: {
+        title: true,
+        schoolId: true,
+        school: { select: { name_en: true } },
       },
     });
-    // Notify school admins and super admins
-    const job = await prisma.jobPosting.findUnique({ where: { id: jobId }, select: { title: true, schoolId: true } });
-    if (job) {
+    if (jobInfo) {
+      const { title: jobTitle, schoolId: schId, school } = jobInfo;
+      const schoolName = school.name_en ?? '';
+      // Notify applicant
+      await prisma.notification.create({
+        data: {
+          user_id: userId,
+          type: 'MESSAGE_RECEIVED',
+          title: 'Application Received',
+          message: `Your application for "${jobTitle}" at "${schoolName}" has been received.`,
+        },
+      });
+      // Notify school admins and super admins
       const admins = await prisma.user.findMany({
         where: {
           OR: [
             { role: 'SUPER_ADMIN' },
-            { managedSchools: { some: { school_id: job.schoolId } } },
+            { managedSchools: { some: { school_id: schId } } },
           ],
         },
         select: { user_id: true },
@@ -82,8 +92,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           data: admins.map(admin => ({
             user_id: admin.user_id,
             type: 'MESSAGE_RECEIVED',
-            title: `New Application: ${job.title}`,
-            message: `${session.user.email} applied for "${job.title}".`,
+            title: `New Application: ${jobTitle}`,
+            message: `${session.user.email} applied for "${jobTitle}" at "${schoolName}".`,
           })),
         });
       }

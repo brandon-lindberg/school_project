@@ -54,13 +54,20 @@ export async function POST(request: NextRequest, context: { params: { id: string
       return NextResponse.json({ error: 'Location is required' }, { status: 400 });
     }
     await prisma.application.update({ where: { id: applicationId }, data: { currentStage: 'INTERVIEW_INVITATION_SENT', interviewLocation: location, interviewerNames } as any });
-    // Notify candidate
+    // Notify candidate with context
+    const jobPosting = app.jobPosting;
+    const jobTitle = jobPosting.title;
+    const schoolRecord = await prisma.school.findUnique({
+      where: { school_id: jobPosting.schoolId },
+      select: { name_en: true },
+    });
+    const schoolName = schoolRecord?.name_en ?? '';
     await prisma.notification.create({
       data: {
         user_id: app.userId || 0,
         type: 'MESSAGE_RECEIVED',
-        title: 'Interview Availability',
-        message: 'The employer has sent you interview availability. Please select a time slot in the portal.',
+        title: `Interview Availability for ${jobTitle}`,
+        message: `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`,
       },
     });
 

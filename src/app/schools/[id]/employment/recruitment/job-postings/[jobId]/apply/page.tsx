@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function JobApplicationPage() {
   const params = useParams() as { id: string; jobId: string };
@@ -9,6 +10,15 @@ export default function JobApplicationPage() {
   const [applicantName, setApplicantName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      setApplicantName(session.user.name || '');
+      setEmail(session.user.email ?? '');
+      setPhone(session.user.phoneNumber ?? '');
+    }
+  }, [status, session]);
   const [coverLetter, setCoverLetter] = useState('');
   const [hasJapaneseVisa, setHasJapaneseVisa] = useState(false);
   const [certifications, setCertifications] = useState<string[]>(['']);

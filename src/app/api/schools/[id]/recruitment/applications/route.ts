@@ -40,6 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
           orderBy: { createdAt: 'desc' },
           select: { rating: true, createdAt: true },
         },
+        interviews: { select: { id: true } },
       },
       orderBy: { submittedAt: 'desc' },
     });

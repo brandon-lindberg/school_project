@@ -12,6 +12,7 @@ declare module 'next-auth' {
       id: string;
       email?: string | null;
       name?: string | null;
+      phoneNumber?: string | null;
       image?: string | null;
       role: UserRole;
       managedSchools?: Array<{ school_id: number }>;
@@ -22,6 +23,7 @@ declare module 'next-auth' {
     id: string;
     email?: string | null;
     name?: string | null;
+    phoneNumber?: string | null;
     image?: string | null;
     role: UserRole;
     managedSchools?: Array<{ school_id: number }>;
@@ -32,6 +34,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role: UserRole;
     managedSchools?: Array<{ school_id: number }>;
+    phoneNumber?: string | null;
   }
 }
 
@@ -59,6 +62,7 @@ export const authOptions: AuthOptions = {
             password_hash: true,
             first_name: true,
             family_name: true,
+            phone_number: true,
             role: true,
             managedSchools: {
               select: {
@@ -87,6 +91,7 @@ export const authOptions: AuthOptions = {
           id: user.user_id.toString(),
           email: user.email,
           name: user.first_name ? `${user.first_name} ${user.family_name || ''}` : null,
+          phoneNumber: user.phone_number,
           role: user.role,
           managedSchools: user.managedSchools,
         };
@@ -115,6 +120,7 @@ export const authOptions: AuthOptions = {
         console.log('[jwt] Setting token role from user:', user.role);
         token.role = user.role;
         token.managedSchools = user.managedSchools;
+        token.phoneNumber = user.phoneNumber;
       }
 
       // Always refresh user data from database
@@ -128,6 +134,7 @@ export const authOptions: AuthOptions = {
               school_id: true,
             },
           },
+          phone_number: true,
         },
       });
 
@@ -137,6 +144,7 @@ export const authOptions: AuthOptions = {
         console.log('[jwt] Updating token role from database:', dbUser.role);
         token.role = dbUser.role;
         token.managedSchools = dbUser.managedSchools;
+        token.phoneNumber = dbUser.phone_number;
       }
 
       console.log('[jwt] Final token:', JSON.stringify(token, null, 2));
@@ -151,6 +159,7 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role;
         session.user.managedSchools = token.managedSchools;
         session.user.id = token.sub as string;
+        session.user.phoneNumber = token.phoneNumber;
       }
 
       console.log('[session] Final session:', JSON.stringify(session, null, 2));

@@ -12,6 +12,7 @@ interface Application {
   status: string;
   currentStage: string;
   journalEntries?: { rating?: number | null }[];
+  interviews?: { id: number }[];
 }
 
 interface ApplicationListProps {
@@ -24,14 +25,29 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
     <ul className="space-y-4">
       {applications.map(app => {
         const latestRating = app.journalEntries && app.journalEntries.length > 0 ? app.journalEntries[0].rating : undefined;
-        // Define progress milestones and compute percentage
-        const milestones = ['Applied', 'Screening Complete', 'Invited', 'Offered'];
+        // Define dynamic progress milestones and compute percentage
+        const interviewCount = app.interviews?.length || 0;
+        const milestones = [
+          'Applied',
+          'Screening Complete',
+          'Invited',
+          // Dynamically add interview rounds
+          ...Array.from({ length: interviewCount }, (_, i) => `Interview Round ${i + 1}`),
+          'Offered',
+        ];
         const totalSteps = milestones.length - 1;
         let step = 0;
+        // After screening
         if (app.currentStage !== 'SCREENING') step = 1;
+        // Invitation sent
         if (app.currentStage === 'INTERVIEW_INVITATION_SENT') step = 2;
-        if (app.status === 'OFFERED') step = 3;
+        // Advance for interview rounds scheduled
+        if (interviewCount > 0) step = 2 + interviewCount;
+        // If offered, mark final step
+        if (app.status === 'OFFERED') step = totalSteps;
         const percent = Math.round((step / totalSteps) * 100);
+        // Derive current status label from milestones
+        const currentStatusLabel = milestones[step] || milestones[0];
 
         return (
           <li key={app.id} className="bg-white p-4 rounded shadow flex flex-col space-y-2">
@@ -51,7 +67,7 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
                     </span>
                   )}
                 </p>
-                <p className="text-sm text-gray-600">{app.email} | {app.status}</p>
+                <p className="text-sm text-gray-600">{app.email} | {currentStatusLabel}</p>
               </div>
               <Link
                 href={`/schools/${schoolId}/employment/recruitment/applications/${app.id}`}
