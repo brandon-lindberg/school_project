@@ -3,13 +3,14 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: any }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const schoolId = parseInt(params.id, 10);
+  const schoolId = parseInt(id, 10);
   if (isNaN(schoolId)) {
     return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
   }
@@ -35,6 +36,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       include: {
         notes: { orderBy: { createdAt: 'desc' } },
         offer: true,
+        journalEntries: {
+          orderBy: { createdAt: 'desc' },
+          select: { rating: true, createdAt: true },
+        },
       },
       orderBy: { submittedAt: 'desc' },
     });

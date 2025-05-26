@@ -24,7 +24,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (!jobPosting) {
       return NextResponse.json({ error: 'Job posting not found' }, { status: 404 });
     }
-    return NextResponse.json(jobPosting);
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id ? parseInt(session.user.id as string, 10) : null;
+    let hasApplied = false;
+    if (userId) {
+      const existingApp = await prisma.application.findFirst({ where: { jobPostingId: jobId, userId } });
+      hasApplied = existingApp !== null;
+    }
+    return NextResponse.json({
+      ...jobPosting,
+      hasApplied,
+    });
   } catch (error) {
     console.error('Error fetching job posting:', error);
     return NextResponse.json({ error: 'Failed to fetch job posting' }, { status: 500 });
@@ -79,5 +89,40 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to update job posting' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: { managedSchools: true },
+  });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+  const jobId = parseInt(params.id, 10);
+  if (isNaN(jobId)) {
+    return NextResponse.json({ error: 'Invalid job posting ID' }, { status: 400 });
+  }
+  const existing = await prisma.jobPosting.findUnique({ where: { id: jobId } });
+  if (!existing) {
+    return NextResponse.json({ error: 'Job posting not found' }, { status: 404 });
+  }
+  const isAuthorized =
+    user.role === UserRole.SUPER_ADMIN ||
+    (user.managedSchools || []).some(admin => admin.school_id === existing.schoolId);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+  }
+  try {
+    await prisma.jobPosting.delete({ where: { id: jobId } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting job posting:', error);
+    return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
   }
 }

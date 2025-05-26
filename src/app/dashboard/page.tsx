@@ -14,6 +14,7 @@ import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 import { DashboardProvider, useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
 import ClaimedSchools from '../components/ClaimedSchools';
+import AddToCalendarButton from '../components/AddToCalendarButton';
 
 function DashboardContent() {
   const router = useRouter();
@@ -110,6 +111,14 @@ function DashboardContent() {
                       >
                         {app.jobPosting.title} — {app.status}
                       </Link>
+                      {app.interviews?.length > 0 && (
+                        <span className="block text-sm text-green-600">
+                          Interview scheduled on {new Date(app.interviews[0].scheduledAt).toLocaleString()} at {app.interviews[0].location}
+                        </span>
+                      )}
+                      {app.interviews?.length > 0 && (
+                        <AddToCalendarButton start={app.interviews[0].scheduledAt} location={app.interviews[0].location} />
+                      )}
                     </li>
                   ))}
                 </ul>

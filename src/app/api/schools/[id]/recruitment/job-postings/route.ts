@@ -20,11 +20,30 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
   }
   try {
+    // Fetch job postings for the school
     const jobPostings = await prisma.jobPosting.findMany({
       where: { schoolId },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(jobPostings);
+
+    // Determine if user has applied to each posting
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id ? parseInt(session.user.id as string, 10) : null;
+    let appliedSet = new Set<number>();
+    if (userId) {
+      const userApps = await prisma.application.findMany({
+        where: { userId, jobPosting: { schoolId } },
+        select: { jobPostingId: true },
+      });
+      appliedSet = new Set(userApps.map(a => a.jobPostingId));
+    }
+
+    // Map postings with hasApplied flag
+    const result = jobPostings.map(job => ({
+      ...job,
+      hasApplied: appliedSet.has(job.id),
+    }));
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching job postings:', error);
     return NextResponse.json({ error: 'Failed to fetch job postings' }, { status: 500 });

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 interface Entry {
   id: number;
@@ -51,9 +53,19 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
             <p className="text-sm text-gray-500">
               {new Date(e.createdAt).toLocaleString()} by {e.author.first_name}
             </p>
-            <p>
+            <p className="text-sm flex items-center space-x-2">
               <strong>{e.type}</strong>
-              {e.rating != null && <span> · Rating: {e.rating}</span>}
+              {e.rating != null && (
+                <span className="flex space-x-0.5">
+                  {[1, 2, 3, 4, 5].map(star =>
+                    star <= e.rating! ? (
+                      <StarSolidIcon key={star} className="h-4 w-4 text-yellow-400" />
+                    ) : (
+                      <StarOutlineIcon key={star} className="h-4 w-4 text-gray-300" />
+                    )
+                  )}
+                </span>
+              )}
             </p>
             <p>{e.content}</p>
           </li>

@@ -33,6 +33,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json();
     const data = applicationSchema.parse(body);
     const userId = parseInt(session.user.id as string);
+    // Prevent duplicate applications
+    const existing = await prisma.application.findFirst({ where: { jobPostingId: jobId, userId } });
+    if (existing) {
+      return NextResponse.json({ error: 'You have already applied to this position' }, { status: 400 });
+    }
     // create application with user association
     const application = await prisma.application.create({
       data: {

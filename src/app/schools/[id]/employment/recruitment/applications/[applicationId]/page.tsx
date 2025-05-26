@@ -5,16 +5,44 @@ import { useParams } from 'next/navigation';
 import EmployerWorkflow from './components/EmployerWorkflow';
 import JournalTimeline from './components/JournalTimeline';
 import JournalEntryForm from './components/JournalEntryForm';
+import CandidateSchedule from './components/CandidateSchedule';
+import OfferLetterForm from './components/OfferLetterForm';
+import AddToCalendarButton from '@/app/components/AddToCalendarButton';
 import { useSession } from 'next-auth/react';
 
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
   const { data: session } = useSession();
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const userRole = session?.user?.role;
   const managedFromSession = session?.user?.managedSchools ?? [];
   const isAdmin =
     userRole === 'SUPER_ADMIN' ||
     (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
+
+  const handleReject = async () => {
+    setActionError(null);
+    setRejecting(true);
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'REJECTED' }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to reject application');
+      }
+      setRefreshFlag(f => f + 1);
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setRejecting(false);
+    }
+  };
+
   const [application, setApplication] = useState<any>(null);
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,7 +68,30 @@ export default function ApplicationDetailPage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+        {isAdmin && application.currentStage !== 'SCREENING' && (
+          <div className="space-x-2">
+            <button
+              onClick={handleReject}
+              disabled={rejecting}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+            >
+              {rejecting ? 'Rejecting...' : 'Reject'}
+            </button>
+            <button
+              onClick={() => setShowOfferForm(v => !v)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+            >
+              Offer
+            </button>
+          </div>
+        )}
+      </div>
+      {actionError && <p className="text-red-500">{actionError}</p>}
+      {showOfferForm && isAdmin && (
+        <OfferLetterForm applicationId={applicationId} initialLetterUrl={application.offer?.letterUrl} />
+      )}
       <p><strong>Email:</strong> {application.email}</p>
       <p><strong>Phone:</strong> {application.phone ?? 'N/A'}</p>
       <p><strong>Japanese Visa:</strong> {application.hasJapaneseVisa ? 'Yes' : 'No'}</p>
@@ -77,11 +128,19 @@ export default function ApplicationDetailPage() {
       )}
       <p><strong>Status:</strong> {application.status}</p>
       <p><strong>Stage:</strong> {application.currentStage}</p>
-      {isAdmin && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Comment</h2>
-          <p>{application.comment}</p>
-        </div>
+      {!isAdmin && (
+        application.interviews?.length > 0 ? (
+          <div className="bg-white shadow-lg rounded-lg p-6 space-y-2">
+            <h2 className="text-xl font-semibold">Scheduled Interview</h2>
+            <p><strong>Date & Time:</strong> {new Date(application.interviews[0].scheduledAt).toLocaleString()}</p>
+            <p><strong>Location:</strong> {application.interviews[0].location}</p>
+            <AddToCalendarButton start={application.interviews[0].scheduledAt} location={application.interviews[0].location} />
+          </div>
+        ) : (
+          application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
+            <CandidateSchedule applicationId={applicationId} />
+          )
+        )
       )}
       {/* Employer workflow for application review, interviews, and offers */}
       {isAdmin && (

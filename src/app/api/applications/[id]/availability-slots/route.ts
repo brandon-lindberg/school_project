@@ -4,8 +4,9 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
+// Validate incoming slot data (date, startTime, endTime)
 const slotSchema = z.object({
-  dayOfWeek: z.string(),
+  date: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format'),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format'),
 });
@@ -44,10 +45,21 @@ export async function POST(request: NextRequest, context: { params: { id: string
 
   try {
     const body = await request.json();
-    const { dayOfWeek, startTime, endTime } = slotSchema.parse(body);
+    const { date, startTime, endTime } = slotSchema.parse(body);
+    // Derive dayOfWeek from the given date
+    const parsedDate = new Date(date);
+    const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][parsedDate.getDay()];
+
     const userId = typeof session.user.id === 'string' ? parseInt(session.user.id, 10) : session.user.id;
     const slot = await prisma.availabilitySlot.create({
-      data: { applicationId, userId, dayOfWeek, startTime, endTime },
+      data: {
+        applicationId,
+        userId,
+        date: parsedDate,
+        dayOfWeek,
+        startTime,
+        endTime,
+      } as any,
       include: {
         user: { select: { user_id: true, first_name: true, family_name: true } },
       },

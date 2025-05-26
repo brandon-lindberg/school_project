@@ -12,7 +12,9 @@ interface EmployerWorkflowProps {
 }
 
 export default function EmployerWorkflow({ application, refresh }: EmployerWorkflowProps) {
-  const [reviewDone, setReviewDone] = useState(false);
+  // Persist review state based on currentStage
+  const initialReviewDone = application.currentStage !== 'SCREENING';
+  const [reviewDone, setReviewDone] = useState(initialReviewDone);
   const app = application;
 
   return (
@@ -20,7 +22,10 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
       {!reviewDone && (
         <ApplicationReview
           applicationId={app.id.toString()}
-          onAccept={() => setReviewDone(true)}
+          onAccept={() => {
+            setReviewDone(true);
+            refresh();
+          }}
           onReject={refresh}
         />
       )}

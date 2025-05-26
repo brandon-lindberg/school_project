@@ -13,6 +13,7 @@ interface JobPosting {
   location: string;
   employmentType: string;
   createdAt: string;
+  hasApplied?: boolean;
 }
 
 export default function JobPostingDetailPage() {
@@ -22,6 +23,13 @@ export default function JobPostingDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
+
+  const userRole = session?.user?.role;
+  const managedFromSession = session?.user?.managedSchools ?? [];
+  const isAdmin = userRole === 'SUPER_ADMIN' || (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
+  const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     async function fetchJob() {
@@ -38,6 +46,41 @@ export default function JobPostingDetailPage() {
     fetchJob();
   }, [jobId]);
 
+  // Check if user already applied
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    async function checkApplied() {
+      try {
+        const res = await fetch('/api/applications', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const applied = data.some((app: any) => app.jobPosting?.id === parseInt(jobId, 10));
+        setHasApplied(applied);
+      } catch {
+        // ignore
+      }
+    }
+    checkApplied();
+  }, [isAuthenticated, jobId]);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this job posting?')) return;
+    setActionError(null);
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/job-postings/${jobId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete job posting');
+      }
+      window.location.href = `/schools/${schoolId}/employment/recruitment/job-postings`;
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !job) return <div className="p-8 text-red-500">{error || 'Job not found'}</div>;
 
@@ -53,21 +96,49 @@ export default function JobPostingDetailPage() {
         </ul>
       </div>
       <div className="mt-4">
-        {isAuthenticated ? (
-          <Link
-            href={`/schools/${schoolId}/employment/recruitment/job-postings/${jobId}/apply`}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Apply
-          </Link>
-        ) : (
-          <Link
-            href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${jobId}/apply`}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Sign up to Apply
-          </Link>
-        )}
+        <div className="flex space-x-2">
+          {isAdmin ? (
+            <>
+              <Link
+                href={`/schools/${schoolId}/employment/recruitment/job-postings/${jobId}/edit`}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </>
+          ) : isAuthenticated ? (
+            job.hasApplied ? (
+              <button
+                disabled
+                className="bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed disabled:opacity-50"
+              >
+                Applied
+              </button>
+            ) : (
+              <Link
+                href={`/schools/${schoolId}/employment/recruitment/job-postings/${jobId}/apply`}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                Apply
+              </Link>
+            )
+          ) : (
+            <Link
+              href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${jobId}/apply`}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              Sign up to Apply
+            </Link>
+          )}
+        </div>
+        {actionError && <p className="text-red-500 mt-2">{actionError}</p>}
       </div>
     </div>
   );

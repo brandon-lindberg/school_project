@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 export default function JournalEntryForm({ applicationId }: { applicationId: string }) {
   const [type, setType] = useState('NOTE');
@@ -54,14 +56,22 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
         <div>
           <label className="block">
             <span className="text-sm font-medium">Rating</span>
-            <input
-              type="number"
-              min={1}
-              max={5}
-              className="mt-1 block w-full border p-1 rounded"
-              value={rating ?? ''}
-              onChange={e => setRating(e.target.value ? parseInt(e.target.value, 10) : undefined)}
-            />
+            <div className="mt-1 flex space-x-1">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  className="p-2 focus:outline-none cursor-pointer"
+                >
+                  {rating != null && rating >= star ? (
+                    <StarSolidIcon className="h-6 w-6 text-yellow-400 pointer-events-none" />
+                  ) : (
+                    <StarOutlineIcon className="h-6 w-6 text-gray-300 pointer-events-none" />
+                  )}
+                </button>
+              ))}
+            </div>
           </label>
         </div>
       </div>

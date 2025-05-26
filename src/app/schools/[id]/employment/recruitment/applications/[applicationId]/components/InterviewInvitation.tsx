@@ -31,6 +31,8 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState('');
+  const [availabilitySent, setAvailabilitySent] = useState(false);
+  const [sendingAvailability, setSendingAvailability] = useState(false);
 
   useEffect(() => {
     async function fetchSuggestions() {
@@ -48,6 +50,33 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
     }
     fetchSuggestions();
   }, [applicationId]);
+
+  const sendAvailability = async () => {
+    // Ensure employer provided a location
+    if (!location.trim()) {
+      setError('Please specify a location');
+      return;
+    }
+    setError(null);
+    setSendingAvailability(true);
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/availability-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to send availability');
+      }
+      setAvailabilitySent(true);
+      refresh();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSendingAvailability(false);
+    }
+  };
 
   const invite = async (s: Suggestion) => {
     if (!location) {
@@ -80,6 +109,17 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
       <h2 className="text-xl font-semibold">Interview Invitation</h2>
       <p className="text-gray-600">Select availability, then pick a suggested slot to invite:</p>
       <AvailabilityGrid applicationId={applicationId} />
+      {!availabilitySent ? (
+        <button
+          onClick={sendAvailability}
+          disabled={sendingAvailability || !location.trim()}
+          className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {sendingAvailability ? 'Sending Availability...' : 'Confirm & Send Availability'}
+        </button>
+      ) : (
+        <p className="mt-4 text-green-600">Availability sent to candidate. Waiting for their selection.</p>
+      )}
       <div className="mt-4">
         <label className="block">
           <span className="text-sm font-medium text-gray-700">Location</span>

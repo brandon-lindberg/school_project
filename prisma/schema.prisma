@@ -358,6 +358,7 @@ model Application {
   availabilitySlots AvailabilitySlot[]
   journalEntries    JournalEntry[]
   offer             Offer?
+  interviewLocation String?
 }
 
 model CandidateNote {
@@ -419,6 +420,7 @@ model AvailabilitySlot {
   user           User        @relation(fields: [userId], references: [user_id])
   applicationId  Int?        // null for admin-wide slots
   application    Application? @relation(fields: [applicationId], references: [id])
+  date           DateTime    // specific date for this slot
   dayOfWeek      String      // e.g. "Mon", "Tue"
   startTime      String      // e.g. "09:00"
   endTime        String      // e.g. "11:00"

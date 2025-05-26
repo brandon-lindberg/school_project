@@ -33,8 +33,25 @@ export default function ApplicationReview({ applicationId, onAccept, onReject }:
     }
   };
 
-  const handleAccept = () => {
-    onAccept();
+  const handleAccept = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'SCREENING_COMPLETE' }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to accept application');
+      }
+      onAccept();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,7 +73,7 @@ export default function ApplicationReview({ applicationId, onAccept, onReject }:
           disabled={loading}
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
         >
-          Accept
+          {loading ? 'Accepting...' : 'Accept'}
         </button>
       </div>
     </div>

@@ -7,8 +7,8 @@ import { useSession } from 'next-auth/react';
 
 export default function JobPostingsPage() {
   const { id: schoolId } = useParams() as { id: string };
-  const { data: session } = useSession();
-  const isAuthenticated = !!session?.user;
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === 'authenticated';
   const [jobPostings, setJobPostings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,12 +69,21 @@ export default function JobPostingsPage() {
                       Applications
                     </Link>
                   ) : (
-                    <Link
-                      href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
-                      className="text-green-500 hover:underline"
-                    >
-                      Apply
-                    </Link>
+                    job.hasApplied ? (
+                      <button
+                        disabled
+                        className="text-gray-400 cursor-not-allowed"
+                      >
+                        Applied
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
+                        className="text-green-500 hover:underline"
+                      >
+                        Apply
+                      </Link>
+                    )
                   )
                 ) : (
                   <Link

@@ -71,6 +71,7 @@ type UserApplication = {
   status: string;
   currentStage: string;
   submittedAt: string;
+  interviews: { id: number; scheduledAt: string; location: string }[];
 };
 
 type DashboardContextType = {

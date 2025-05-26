@@ -31,6 +31,89 @@ interface ClientSchoolDetailProps {
   school: School;
 }
 
+// Insert an inline job postings list component
+function InlineJobPostings({ schoolId, canEdit, isAuthenticated }: { schoolId: string; canEdit: boolean; isAuthenticated: boolean; }) {
+  const [jobPostings, setJobPostings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingIds, setDeletingIds] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    async function fetchJobPostings() {
+      try {
+        const res = await fetch(`/api/schools/${schoolId}/recruitment/job-postings`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch job postings');
+        const data = await res.json();
+        setJobPostings(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchJobPostings();
+  }, [schoolId]);
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this job posting?')) return;
+    setError(null);
+    setDeletingIds(prev => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`/api/job-postings/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete job posting');
+      }
+      setJobPostings(prev => prev.filter(job => job.id !== id));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setDeletingIds(prev => ({ ...prev, [id]: false }));
+    }
+  };
+
+  if (loading) return <div>Loading job postings...</div>;
+  if (error) return <div className="text-red-500">Error loading job postings: {error}</div>;
+  if (jobPostings.length === 0) return <p>No job postings yet.</p>;
+
+  return (
+    <ul className="space-y-4">
+      {jobPostings.map((job: any) => (
+        <li key={job.id} className="bg-white p-4 rounded shadow">
+          <h3 className="text-xl font-semibold">{job.title}</h3>
+          <p className="text-gray-600">{job.location} — {job.employmentType}</p>
+          <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
+          <div className="mt-2 flex items-center space-x-4">
+            {isAuthenticated ? (
+              canEdit ? (
+                <Link href={`/schools/${schoolId}/employment/recruitment/applications`} className="text-green-500 hover:underline">Applications</Link>
+              ) : job.hasApplied ? (
+                <button disabled className="text-gray-400 cursor-not-allowed">Applied</button>
+              ) : (
+                <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Apply</Link>
+              )
+            ) : (
+              <Link href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Sign up to Apply</Link>
+            )}
+            {canEdit && (
+              <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`} className="text-blue-500 hover:underline">Manage</Link>
+            )}
+            {canEdit && (
+              <button
+                onClick={() => handleDelete(job.id)}
+                disabled={deletingIds[job.id]}
+                className="ml-auto bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+              >
+                {deletingIds[job.id] ? 'Deleting...' : 'Delete'}
+              </button>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function ClientSchoolDetail({ school: initialSchool }: ClientSchoolDetailProps) {
   const { language } = useLanguage() as { language: Language };
   const { status, data: session } = useSession();
@@ -45,10 +128,11 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   const translations = getSchoolDetailTranslations(language);
 
   // Check if user is a school admin for this school or a super admin
-  const canEdit =
+  const canEdit = !!(
     session?.user?.role === 'SUPER_ADMIN' ||
     (session?.user?.role === 'SCHOOL_ADMIN' &&
-      session?.user?.managedSchools?.some(s => s.school_id === parseInt(school.school_id)));
+      session?.user?.managedSchools?.some(s => s.school_id === parseInt(school.school_id)))
+  );
 
   const isAuthenticated = status === 'authenticated';
 
@@ -284,34 +368,15 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
           <>
             <EmploymentTab
               {...commonTabProps}
+              isSchoolAdmin={false}
               school={school}
               openPositions={openPositions}
               staffList={staffList}
               boardMembers={boardMembers}
             />
-            <div className="mt-6 flex space-x-4">
-              <Link
-                href={`/schools/${school.school_id}/employment/recruitment/job-postings`}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                {language === 'en' ? 'View Job Postings' : '求人情報を表示'}
-              </Link>
-              {canEdit && (
-                <Link
-                  href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                >
-                  {language === 'en' ? 'New Job Posting' : '新しい求人を作成'}
-                </Link>
-              )}
-              {canEdit && (
-                <Link
-                  href={`/schools/${school.school_id}/employment/recruitment/applications`}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                >
-                  {language === 'en' ? 'View Applications' : '応募を確認'}
-                </Link>
-              )}
+            <div className="mt-6">
+              <h2 className="text-2xl font-bold">{language === 'en' ? 'Job Postings' : '求人情報'}</h2>
+              <InlineJobPostings schoolId={school.school_id} canEdit={canEdit} isAuthenticated={isAuthenticated} />
             </div>
           </>
         );
