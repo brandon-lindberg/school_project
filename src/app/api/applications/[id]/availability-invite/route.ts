@@ -49,10 +49,11 @@ export async function POST(request: NextRequest, context: { params: { id: string
     // Parse employer-provided location and store on application
     const body = await request.json();
     const location = body?.location;
+    const interviewerNames = Array.isArray(body.interviewerNames) ? body.interviewerNames : [];
     if (typeof location !== 'string' || !location.trim()) {
       return NextResponse.json({ error: 'Location is required' }, { status: 400 });
     }
-    await prisma.application.update({ where: { id: applicationId }, data: { currentStage: 'INTERVIEW_INVITATION_SENT', interviewLocation: location } as any });
+    await prisma.application.update({ where: { id: applicationId }, data: { currentStage: 'INTERVIEW_INVITATION_SENT', interviewLocation: location, interviewerNames } as any });
     // Notify candidate
     await prisma.notification.create({
       data: {

@@ -12,14 +12,16 @@ interface Slot {
 
 interface CandidateScheduleProps {
   applicationId: string;
+  onScheduled?: () => void;
 }
 
-export default function CandidateSchedule({ applicationId }: CandidateScheduleProps) {
+export default function CandidateSchedule({ applicationId, onScheduled }: CandidateScheduleProps) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<number | null>(null);
   const [interviewLocation, setInterviewLocation] = useState<string>('');
+  const [interviewerNames, setInterviewerNames] = useState<string[]>([]);
   const [appLoading, setAppLoading] = useState(true);
   const [scheduling, setScheduling] = useState(false);
   const [scheduled, setScheduled] = useState(false);
@@ -48,6 +50,7 @@ export default function CandidateSchedule({ applicationId }: CandidateSchedulePr
         if (res.ok) {
           const app = await res.json();
           setInterviewLocation(app.interviewLocation ?? '');
+          setInterviewerNames(app.interviewerNames ?? []);
         }
       } catch { }
       setAppLoading(false);
@@ -69,7 +72,7 @@ export default function CandidateSchedule({ applicationId }: CandidateSchedulePr
       const res = await fetch(`/api/applications/${applicationId}/interviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduledAt, location: interviewLocation }),
+        body: JSON.stringify({ scheduledAt, location: interviewLocation, interviewerNames }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -77,6 +80,7 @@ export default function CandidateSchedule({ applicationId }: CandidateSchedulePr
       }
       setScheduledAtStr(scheduledAt);
       setScheduled(true);
+      if (onScheduled) onScheduled();
     } catch (err: any) {
       setError(err.message);
     } finally {

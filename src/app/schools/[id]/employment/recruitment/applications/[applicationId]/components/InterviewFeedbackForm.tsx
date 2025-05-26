@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 interface Feedback {
   id: number;
@@ -49,7 +51,16 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
         {feedbacks.map(fb => (
           <li key={fb.id} className="p-2 bg-gray-50 rounded">
             <p>{fb.content}</p>
-            <p className="text-sm text-gray-600">Rating: {fb.rating || 'N/A'} — {new Date(fb.createdAt).toLocaleString()}</p>
+            <p className="text-sm text-gray-600 flex items-center">
+              {fb.rating ? (
+                Array.from({ length: fb.rating }).map((_, i) => (
+                  <StarSolidIcon key={i} className="h-4 w-4 text-yellow-400" />
+                ))
+              ) : (
+                <span className="text-xs text-gray-500">No Rating</span>
+              )}
+              <span className="ml-2">— {new Date(fb.createdAt).toLocaleString()}</span>
+            </p>
           </li>
         ))}
       </ul>
@@ -62,10 +73,23 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
           placeholder="Add feedback..."
         />
         <div>
-          <label className="mr-2">Rating:</label>
-          <select value={rating} onChange={e => setRating(Number(e.target.value))} className="border rounded p-1">
-            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
+          <label className="text-sm font-medium">Rating</label>
+          <div className="mt-1 flex space-x-1">
+            {[1, 2, 3, 4, 5].map(n => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(n)}
+                className="focus:outline-none"
+              >
+                {rating >= n ? (
+                  <StarSolidIcon className="h-6 w-6 text-yellow-400" />
+                ) : (
+                  <StarOutlineIcon className="h-6 w-6 text-gray-300" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
         <button onClick={submitFeedback} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
           Submit Feedback

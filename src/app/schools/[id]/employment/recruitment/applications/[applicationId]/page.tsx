@@ -9,6 +9,7 @@ import CandidateSchedule from './components/CandidateSchedule';
 import OfferLetterForm from './components/OfferLetterForm';
 import AddToCalendarButton from '@/app/components/AddToCalendarButton';
 import { useSession } from 'next-auth/react';
+import InterviewFeedbackForm from './components/InterviewFeedbackForm';
 
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
@@ -129,18 +130,41 @@ export default function ApplicationDetailPage() {
       <p><strong>Status:</strong> {application.status}</p>
       <p><strong>Stage:</strong> {application.currentStage}</p>
       {!isAdmin && (
-        application.interviews?.length > 0 ? (
-          <div className="bg-white shadow-lg rounded-lg p-6 space-y-2">
-            <h2 className="text-xl font-semibold">Scheduled Interview</h2>
-            <p><strong>Date & Time:</strong> {new Date(application.interviews[0].scheduledAt).toLocaleString()}</p>
-            <p><strong>Location:</strong> {application.interviews[0].location}</p>
-            <AddToCalendarButton start={application.interviews[0].scheduledAt} location={application.interviews[0].location} />
-          </div>
-        ) : (
-          application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
-            <CandidateSchedule applicationId={applicationId} />
-          )
-        )
+        <div className="space-y-6">
+          {/* List all scheduled interviews */}
+          {application.interviews.map((intv: any, idx: number) => (
+            <div key={intv.id} className="bg-white shadow-lg rounded-lg p-6 space-y-2">
+              <h2 className="text-xl font-semibold">Round {idx + 1} Scheduled</h2>
+              <p><strong>Date & Time:</strong> {new Date(intv.scheduledAt).toLocaleString()}</p>
+              <p>
+                <strong>Location:</strong>{' '}
+                <a
+                  href={intv.location}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >{intv.location}</a>
+              </p>
+              <p><strong>Interviewer(s):</strong> {
+                intv.interviewerNames && intv.interviewerNames.length > 0
+                  ? intv.interviewerNames.join(', ')
+                  : ''
+              }</p>
+              <AddToCalendarButton start={intv.scheduledAt} location={intv.location} />
+              {/* Only allow feedback after scheduled time */}
+              {new Date(intv.scheduledAt).getTime() <= Date.now() && (
+                <InterviewFeedbackForm interviewId={intv.id.toString()} initialFeedbacks={intv.feedback || []} />
+              )}
+            </div>
+          ))}
+          {/* Show scheduling UI only when invited and no interviews exist */}
+          {application.currentStage === 'INTERVIEW_INVITATION_SENT' && application.interviews.length === 0 && (
+            <CandidateSchedule
+              applicationId={applicationId}
+              onScheduled={() => setRefreshFlag(f => f + 1)}
+            />
+          )}
+        </div>
       )}
       {/* Employer workflow for application review, interviews, and offers */}
       {isAdmin && (

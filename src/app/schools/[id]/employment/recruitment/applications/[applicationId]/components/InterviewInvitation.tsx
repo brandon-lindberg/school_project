@@ -6,6 +6,7 @@ import AvailabilityGrid from './AvailabilityGrid';
 interface InterviewInvitationProps {
   applicationId: string;
   refresh: () => void;
+  round?: number;
 }
 
 // Suggestion shape from match-suggestions API
@@ -26,7 +27,9 @@ function getNextDate(dayAbbrev: string): Date {
   return date;
 }
 
-export default function InterviewInvitation({ applicationId, refresh }: InterviewInvitationProps) {
+export default function InterviewInvitation({ applicationId, refresh, round = 1 }: InterviewInvitationProps) {
+  const [newInterviewer, setNewInterviewer] = useState<string>('');
+  const [interviewerNames, setInterviewerNames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +66,7 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
       const res = await fetch(`/api/applications/${applicationId}/availability-invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location }),
+        body: JSON.stringify({ location, interviewerNames }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -92,7 +95,7 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
       const res = await fetch(`/api/applications/${applicationId}/interviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduledAt, location }),
+        body: JSON.stringify({ scheduledAt, location, interviewerNames }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -106,7 +109,46 @@ export default function InterviewInvitation({ applicationId, refresh }: Intervie
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-      <h2 className="text-xl font-semibold">Interview Invitation</h2>
+      <h2 className="text-xl font-semibold">Interview Invitation{round ? ` (Round ${round})` : ''}</h2>
+      <div>
+        <label className="block">
+          <span className="text-sm font-medium text-gray-700">Interviewer Name(s)</span>
+          <div className="mt-1 flex space-x-2">
+            <input
+              type="text"
+              value={newInterviewer}
+              onChange={e => setNewInterviewer(e.target.value)}
+              className="border border-gray-300 rounded-md p-2 flex-grow"
+              placeholder="Enter interviewer name"
+            />
+            <button
+              type="button"
+              disabled={!newInterviewer.trim()}
+              onClick={() => {
+                setInterviewerNames(prev => [...prev, newInterviewer.trim()]);
+                setNewInterviewer('');
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+            >
+              Add
+            </button>
+          </div>
+        </label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {interviewerNames.map((name, i) => (
+            <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded flex items-center space-x-1">
+              <span>{name}</span>
+              <button
+                type="button"
+                onClick={() => setInterviewerNames(prev => prev.filter((_, idx) => idx !== i))}
+                className="text-red-500 hover:text-red-700"
+              >
+                &times;
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
       <p className="text-gray-600">Select availability, then pick a suggested slot to invite:</p>
       <AvailabilityGrid applicationId={applicationId} />
       {!availabilitySent ? (

@@ -13,7 +13,12 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
       where: { id: applicationId },
       include: {
         notes: { orderBy: { createdAt: 'desc' } },
-        interviews: true,
+        interviews: {
+          orderBy: { scheduledAt: 'asc' },
+          include: {
+            interviewer: { select: { user_id: true, first_name: true, family_name: true } }
+          }
+        },
         offer: true,
       },
     });

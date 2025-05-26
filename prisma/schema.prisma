@@ -359,6 +359,7 @@ model Application {
   journalEntries    JournalEntry[]
   offer             Offer?
   interviewLocation String?
+  interviewerNames  String[]    @default([])
 }
 
 model CandidateNote {
@@ -380,6 +381,7 @@ model Interview {
   scheduledAt    DateTime
   location       String
   status         String             @default("SCHEDULED")
+  interviewerNames String[]          @default([])
   feedback       InterviewFeedback[]
 }
 

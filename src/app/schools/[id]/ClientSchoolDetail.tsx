@@ -72,7 +72,23 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated }: { schoolId: s
     }
   };
 
-  if (loading) return <div>Loading job postings...</div>;
+  if (loading) {
+    return (
+      <ul className="space-y-4">
+        {[1, 2, 3].map(n => (
+          <li key={n} className="bg-white p-4 rounded shadow animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="flex space-x-2">
+              <div className="h-8 w-20 bg-gray-200 rounded"></div>
+              <div className="h-8 w-20 bg-gray-200 rounded"></div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
   if (error) return <div className="text-red-500">Error loading job postings: {error}</div>;
   if (jobPostings.length === 0) return <p>No job postings yet.</p>;
 
@@ -82,6 +98,17 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated }: { schoolId: s
         <li key={job.id} className="bg-white p-4 rounded shadow">
           <h3 className="text-xl font-semibold">{job.title}</h3>
           <p className="text-gray-600">{job.location} — {job.employmentType}</p>
+          <p className="text-gray-700 mt-2">{job.description}</p>
+          {job.requirements && job.requirements.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-lg font-semibold">Requirements</h4>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                {job.requirements.map((req: string, idx: number) => (
+                  <li key={idx}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
           <div className="mt-2 flex items-center space-x-4">
             {isAuthenticated ? (

@@ -15,6 +15,8 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
   // Persist review state based on currentStage
   const initialReviewDone = application.currentStage !== 'SCREENING';
   const [reviewDone, setReviewDone] = useState(initialReviewDone);
+  // Toggle invitation UI for next round
+  const [inviting, setInviting] = useState(false);
   const app = application;
 
   return (
@@ -29,13 +31,23 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
           onReject={refresh}
         />
       )}
-      {reviewDone && app.interviews.length === 0 && (
+      {/* Interview invitation for initial or next round */}
+      {reviewDone && (app.interviews.length === 0 || inviting) && (
         <InterviewInvitation
           applicationId={app.id.toString()}
-          refresh={refresh}
+          round={app.interviews.length === 0 ? 1 : app.interviews.length + 1}
+          refresh={() => { setInviting(false); refresh(); }}
         />
       )}
-      {app.interviews.length > 0 && <InterviewRoundsList interviews={app.interviews} />}
+      {/* Show rounds list when interviews exist and not inviting */}
+      {reviewDone && app.interviews.length > 0 && !inviting && (
+        <InterviewRoundsList
+          applicationId={app.id.toString()}
+          interviews={app.interviews}
+          onNextRound={() => setInviting(true)}
+          onRefresh={refresh}
+        />
+      )}
       {app.offer && (
         <div className="bg-white shadow-lg rounded-lg p-6 space-y-4">
           <h2 className="text-2xl font-bold text-gray-800">Offer</h2>

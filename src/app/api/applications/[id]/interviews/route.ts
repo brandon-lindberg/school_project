@@ -7,14 +7,17 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 const interviewSchema = z.object({
   scheduledAt: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date'),
   location: z.string(),
+  interviewerNames: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Await context to extract params
+  const { params } = await context;
   const applicationId = parseInt(params.id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -22,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   try {
     const body = await request.json();
-    const { scheduledAt, location } = interviewSchema.parse(body);
+    const { scheduledAt, location, interviewerNames } = interviewSchema.parse(body);
     const interviewerId = parseInt(session.user.id, 10);
 
     const interview = await prisma.interview.create({
@@ -31,7 +34,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         interviewerId,
         scheduledAt: new Date(scheduledAt),
         location,
-      },
+        interviewerNames: interviewerNames || [],
+      } as any,
+    });
+
+    // Update application stage to hide candidate scheduling until next invite
+    await prisma.application.update({
+      where: { id: applicationId },
+      data: { currentStage: 'INTERVIEW_SCHEDULED' as any },
     });
 
     // create notification for applicant
