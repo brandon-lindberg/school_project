@@ -18,6 +18,7 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
   // Toggle invitation UI for next round
   const [inviting, setInviting] = useState(false);
   const app = application;
+  const isInvitingStage = app.currentStage === 'INTERVIEW_INVITATION_SENT';
 
   return (
     <div className="space-y-8">
@@ -31,16 +32,16 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
           onReject={refresh}
         />
       )}
-      {/* Interview invitation for initial or next round */}
-      {reviewDone && (app.interviews.length === 0 || inviting) && (
+      {/* Interview invitation for initial or next round, including when awaiting candidate confirmation */}
+      {reviewDone && (app.interviews.length === 0 || inviting || isInvitingStage) && (
         <InterviewInvitation
           applicationId={app.id.toString()}
           round={app.interviews.length === 0 ? 1 : app.interviews.length + 1}
           refresh={() => { setInviting(false); refresh(); }}
         />
       )}
-      {/* Show rounds list when interviews exist and not inviting */}
-      {reviewDone && app.interviews.length > 0 && !inviting && (
+      {/* Show rounds list when interviews exist and not inviting or waiting on candidate */}
+      {reviewDone && app.interviews.length > 0 && !inviting && !isInvitingStage && (
         <InterviewRoundsList
           applicationId={app.id.toString()}
           interviews={app.interviews}

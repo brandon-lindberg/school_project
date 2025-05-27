@@ -10,14 +10,12 @@ const interviewSchema = z.object({
   interviewerNames: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest, context: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Await context to extract params
-  const { params } = await context;
   const applicationId = parseInt(params.id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -38,11 +36,13 @@ export async function POST(request: NextRequest, context: { params: { id: string
       } as any,
     });
 
-    // Update application stage to hide candidate scheduling until next invite
+    // Update application status to IN_PROCESS and move to INTERVIEW stage
     await prisma.application.update({
       where: { id: applicationId },
-      data: { currentStage: 'INTERVIEW_SCHEDULED' as any },
+      data: { status: 'IN_PROCESS' as any, currentStage: 'INTERVIEW' as any },
     });
+    // Clear out availability slots now that candidate has scheduled
+    await prisma.availabilitySlot.deleteMany({ where: { applicationId } });
 
     // create notification for applicant
     await prisma.notification.create({

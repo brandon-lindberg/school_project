@@ -4,10 +4,11 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import { z } from 'zod';
 
-const rescheduleSchema = z.object({
-  scheduledAt: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date'),
+const patchInterviewSchema = z.object({
+  scheduledAt: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date').optional(),
   location: z.string().optional(),
   interviewerNames: z.array(z.string()).optional(),
+  status: z.enum(['SCHEDULED', 'COMPLETED']).optional(),
 });
 
 export async function DELETE(request: NextRequest, { params }: { params: any }) {
@@ -73,11 +74,11 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
 
   let parsed;
   try {
-    parsed = rescheduleSchema.parse(body);
+    parsed = patchInterviewSchema.parse(body);
   } catch (err: any) {
     return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
   }
-  const { scheduledAt, location, interviewerNames } = parsed;
+  const { scheduledAt, location, interviewerNames, status } = parsed;
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -105,9 +106,10 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
   const updated = await prisma.interview.update({
     where: { id: interviewId },
     data: {
-      scheduledAt: new Date(scheduledAt),
+      ...(scheduledAt !== undefined ? { scheduledAt: new Date(scheduledAt) } : {}),
       ...(location !== undefined ? { location } : {}),
       ...(interviewerNames !== undefined ? { interviewerNames } : {}),
+      ...(status !== undefined ? { status } : {}),
     },
   });
 

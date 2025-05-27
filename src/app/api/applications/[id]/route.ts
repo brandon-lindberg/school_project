@@ -16,7 +16,10 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
         interviews: {
           orderBy: { scheduledAt: 'asc' },
           include: {
-            interviewer: { select: { user_id: true, first_name: true, family_name: true } }
+            interviewer: { select: { user_id: true, first_name: true, family_name: true } },
+            feedback: {
+              include: { author: { select: { user_id: true, first_name: true, family_name: true } } }
+            }
           }
         },
         offer: true,

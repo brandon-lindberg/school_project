@@ -1,20 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 export default function JournalEntryForm({ applicationId }: { applicationId: string }) {
   const [type, setType] = useState('NOTE');
   const [content, setContent] = useState('');
-  const [rating, setRating] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
     setError(null);
     try {
       const payload: any = { type, content };
-      if (rating) payload.rating = rating;
       const res = await fetch(`/api/applications/${applicationId}/journal-entries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,7 +21,6 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
         throw new Error(data.error || 'Failed to add journal entry');
       }
       setContent('');
-      setRating(undefined);
       // Notify timeline to refresh
       window.dispatchEvent(new Event('journalEntryCreated'));
     } catch (err: any) {
@@ -37,7 +32,7 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
     <div className="space-y-2">
       <h3 className="text-lg font-semibold">Add Journal Entry</h3>
       {error && <p className="text-red-500">{error}</p>}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <div>
           <label className="block">
             <span className="text-sm font-medium">Type</span>
@@ -51,27 +46,6 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
               <option value="SYSTEM">System</option>
               <option value="JOURNAL">Journal</option>
             </select>
-          </label>
-        </div>
-        <div>
-          <label className="block">
-            <span className="text-sm font-medium">Rating</span>
-            <div className="mt-1 flex space-x-1">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  className="p-2 focus:outline-none cursor-pointer"
-                >
-                  {rating != null && rating >= star ? (
-                    <StarSolidIcon className="h-6 w-6 text-yellow-400 pointer-events-none" />
-                  ) : (
-                    <StarOutlineIcon className="h-6 w-6 text-gray-300 pointer-events-none" />
-                  )}
-                </button>
-              ))}
-            </div>
           </label>
         </div>
       </div>

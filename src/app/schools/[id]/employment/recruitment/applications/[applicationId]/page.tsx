@@ -8,8 +8,10 @@ import JournalEntryForm from './components/JournalEntryForm';
 import CandidateSchedule from './components/CandidateSchedule';
 import OfferLetterForm from './components/OfferLetterForm';
 import AddToCalendarButton from '@/app/components/AddToCalendarButton';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
-import InterviewFeedbackForm from './components/InterviewFeedbackForm';
 
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
@@ -48,13 +50,18 @@ export default function ApplicationDetailPage() {
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [candidateRating, setCandidateRating] = useState<number>(0);
+  const [emailCopied, setEmailCopied] = useState<boolean>(false);
+  const [phoneCopied, setPhoneCopied] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchApplication() {
       try {
         const res = await fetch(`/api/applications/${applicationId}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to load application');
-        setApplication(await res.json());
+        const app = await res.json();
+        setApplication(app);
+        setCandidateRating(app.rating || 0);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -64,13 +71,47 @@ export default function ApplicationDetailPage() {
     fetchApplication();
   }, [applicationId, refreshFlag]);
 
+  // Open offer form when an interview-level Offer button is clicked
+  useEffect(() => {
+    const handleOfferRequest = () => setShowOfferForm(true);
+    window.addEventListener('offerRequested', handleOfferRequest);
+    return () => window.removeEventListener('offerRequested', handleOfferRequest);
+  }, []);
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !application) return <div className="p-8 text-red-500">{error || 'Application not found'}</div>;
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+          {isAdmin && (
+            <div className="flex space-x-1">
+              {[1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  onClick={async () => {
+                    setCandidateRating(n);
+                    const resRating = await fetch(`/api/applications/${applicationId}/rating`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ rating: n }),
+                    });
+                    if (!resRating.ok) alert('Failed to update rating');
+                  }}
+                  className="focus:outline-none"
+                >
+                  {candidateRating >= n ? (
+                    <StarSolidIcon className="h-6 w-6 text-yellow-400" />
+                  ) : (
+                    <StarOutlineIcon className="h-6 w-6 text-gray-300" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {isAdmin && application.currentStage !== 'SCREENING' && (
           <div className="space-x-2">
             <button
@@ -93,8 +134,30 @@ export default function ApplicationDetailPage() {
       {showOfferForm && isAdmin && (
         <OfferLetterForm applicationId={applicationId} initialLetterUrl={application.offer?.letterUrl} />
       )}
-      <p><strong>Email:</strong> {application.email}</p>
-      <p><strong>Phone:</strong> {application.phone ?? 'N/A'}</p>
+      <div className="flex items-center space-x-2">
+        <span><strong>Email:</strong> {application.email}</span>
+        <button
+          onClick={() => { navigator.clipboard.writeText(application.email); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); }}
+          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+          aria-label="Copy email"
+        >
+          <ClipboardDocumentIcon className="h-5 w-5" />
+        </button>
+        {emailCopied && <span className="text-green-600 text-sm">Copied!</span>}
+      </div>
+      <div className="flex items-center space-x-2">
+        <span><strong>Phone:</strong> {application.phone ?? 'N/A'}</span>
+        {application.phone && (
+          <button
+            onClick={() => { navigator.clipboard.writeText(application.phone!); setPhoneCopied(true); setTimeout(() => setPhoneCopied(false), 2000); }}
+            className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            aria-label="Copy phone number"
+          >
+            <ClipboardDocumentIcon className="h-5 w-5" />
+          </button>
+        )}
+        {phoneCopied && <span className="text-green-600 text-sm">Copied!</span>}
+      </div>
       <p><strong>Japanese Visa:</strong> {application.hasJapaneseVisa ? 'Yes' : 'No'}</p>
       {application.certifications?.length > 0 && (
         <div>
@@ -131,10 +194,13 @@ export default function ApplicationDetailPage() {
       <p><strong>Stage:</strong> {application.currentStage}</p>
       {!isAdmin && (
         <div className="space-y-6">
-          {/* List all scheduled interviews */}
+          {/* List all interviews with completion status */}
           {application.interviews.map((intv: any, idx: number) => (
             <div key={intv.id} className="bg-white shadow-lg rounded-lg p-6 space-y-2">
-              <h2 className="text-xl font-semibold">Round {idx + 1} Scheduled</h2>
+              <h2 className="text-xl font-semibold">
+                Round {idx + 1}{' '}
+                {new Date(intv.scheduledAt).getTime() <= Date.now() ? 'Complete' : 'Scheduled'}
+              </h2>
               <p><strong>Date & Time:</strong> {new Date(intv.scheduledAt).toLocaleString()}</p>
               <p>
                 <strong>Location:</strong>{' '}
@@ -145,20 +211,12 @@ export default function ApplicationDetailPage() {
                   className="text-blue-600 hover:underline"
                 >{intv.location}</a>
               </p>
-              <p><strong>Interviewer(s):</strong> {
-                intv.interviewerNames && intv.interviewerNames.length > 0
-                  ? intv.interviewerNames.join(', ')
-                  : ''
-              }</p>
+              <p><strong>Interviewer(s):</strong> {intv.interviewerNames?.length ? intv.interviewerNames.join(', ') : ''}</p>
               <AddToCalendarButton start={intv.scheduledAt} location={intv.location} />
-              {/* Only allow feedback after scheduled time */}
-              {new Date(intv.scheduledAt).getTime() <= Date.now() && (
-                <InterviewFeedbackForm interviewId={intv.id.toString()} initialFeedbacks={intv.feedback || []} />
-              )}
             </div>
           ))}
-          {/* Show scheduling UI only when invited and no interviews exist */}
-          {application.currentStage === 'INTERVIEW_INVITATION_SENT' && application.interviews.length === 0 && (
+          {/* Show scheduling UI when an interview invitation is pending */}
+          {application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
             <CandidateSchedule
               applicationId={applicationId}
               onScheduled={() => setRefreshFlag(f => f + 1)}

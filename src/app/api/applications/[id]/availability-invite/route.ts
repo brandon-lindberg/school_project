@@ -3,13 +3,12 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function POST(request: NextRequest, context: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { params } = await context;
   const applicationId = parseInt(params.id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -68,7 +67,8 @@ export async function POST(request: NextRequest, context: { params: { id: string
         type: 'MESSAGE_RECEIVED',
         title: `Interview Availability for ${jobTitle}`,
         message: `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`,
-      },
+        url: `/schools/${jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
+      } as any,
     });
 
     return NextResponse.json({ success: true });

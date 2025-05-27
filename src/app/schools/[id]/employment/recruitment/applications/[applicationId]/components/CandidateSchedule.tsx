@@ -32,10 +32,21 @@ export default function CandidateSchedule({ applicationId, onScheduled }: Candid
       try {
         const res = await fetch(`/api/applications/${applicationId}/availability-slots`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to load availability');
-        const data = await res.json();
-        setSlots(data);
-        if (data.length > 0) {
-          setSelectedSlotId(data[0].id);
+        const data: Slot[] = await res.json();
+        // Only include slots whose end time is in the future
+        const now = Date.now();
+        const upcoming = data.filter(s => {
+          // Build a Date object at the slot's end time
+          const dateObj = new Date(s.date);
+          const [h, m] = s.endTime.split(':').map(Number);
+          dateObj.setHours(h, m, 0, 0);
+          return dateObj.getTime() > now;
+        });
+        setSlots(upcoming);
+        if (upcoming.length > 0) {
+          setSelectedSlotId(upcoming[0].id);
+        } else {
+          setSelectedSlotId(null);
         }
       } catch (err: any) {
         setError(err.message);

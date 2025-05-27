@@ -8,7 +8,7 @@ import path from 'path';
 import { sendEmail } from '@/lib/email';
 
 const statusSchema = z.object({
-  status: z.enum(['REJECTED', 'OFFERED']),
+  status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'OFFER_ACCEPTED', 'OFFER_REJECTED']),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -48,7 +48,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         type: 'APPLICATION_STATUS_UPDATED',
         title: `Application ${status}`,
         message: `Your application for "${app.jobPosting.title}" has been ${status.toLowerCase()}.`,
-      },
+        url: `/schools/${app.jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
+      } as any,
     });
 
     // Send email for rejection

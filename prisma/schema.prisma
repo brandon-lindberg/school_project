@@ -279,6 +279,7 @@ model Notification {
   type           NotificationType
   title          String
   message        String
+  url            String?           // link to related page
   is_read        Boolean          @default(false)
   created_at     DateTime         @default(now())
   user           User             @relation(fields: [user_id], references: [user_id])
@@ -333,6 +334,24 @@ model JobPosting {
   applications     Application[]
 }
 
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  IN_PROCESS
+  REJECTED
+  OFFER
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+}
+
+enum ApplicationStage {
+  SCREENING
+  INTERVIEW_INVITATION_SENT
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
 model Application {
   id                Int           @id @default(autoincrement())
   userId            Int?
@@ -350,8 +369,8 @@ model Application {
   nationality       String?
   resumeUrl         String?
   coverLetter       String?
-  status            String        @default("APPLIED")
-  currentStage      String        @default("SCREENING")
+  status            ApplicationStatus @default(APPLIED)
+  currentStage      ApplicationStage  @default(SCREENING)
   submittedAt       DateTime      @default(now())
   notes             CandidateNote[]
   interviews        Interview[]
@@ -360,6 +379,7 @@ model Application {
   offer             Offer?
   interviewLocation String?
   interviewerNames  String[]    @default([])
+  rating            Int?        @default(0)  // Candidate overall rating 1-5
 }
 
 model CandidateNote {

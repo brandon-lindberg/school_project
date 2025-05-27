@@ -54,6 +54,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         nationality: data.nationality,
         resumeUrl: data.resumeUrl,
         coverLetter: data.coverLetter,
+        status: 'SCREENING',
+        currentStage: 'SCREENING',
       },
     });
     // Notify applicant and school admins with context

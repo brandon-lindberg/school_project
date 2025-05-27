@@ -1,25 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 interface Feedback {
   id: number;
   content: string;
-  rating?: number;
   createdAt: string;
 }
 
 interface InterviewFeedbackFormProps {
   interviewId: string;
   initialFeedbacks: Feedback[];
+  onNewFeedback?: (feedback: Feedback) => void;
 }
 
-export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }: InterviewFeedbackFormProps) {
+export default function InterviewFeedbackForm({ interviewId, initialFeedbacks, onNewFeedback }: InterviewFeedbackFormProps) {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedbacks);
   const [content, setContent] = useState('');
-  const [rating, setRating] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
 
   const submitFeedback = async () => {
@@ -28,7 +25,7 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
       const res = await fetch(`/api/interviews/${interviewId}/feedback`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, rating }),
+        body: JSON.stringify({ content }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -36,8 +33,10 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
       }
       const newFb = await res.json();
       setFeedbacks(prev => [newFb, ...prev]);
+      if (onNewFeedback) onNewFeedback(newFb);
       setContent('');
-      setRating(1);
+      // Notify timeline to refresh new feedback entries
+      window.dispatchEvent(new Event('journalEntryCreated'));
     } catch (err: any) {
       setError(err.message);
     }
@@ -51,16 +50,7 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
         {feedbacks.map(fb => (
           <li key={fb.id} className="p-2 bg-gray-50 rounded">
             <p>{fb.content}</p>
-            <p className="text-sm text-gray-600 flex items-center">
-              {fb.rating ? (
-                Array.from({ length: fb.rating }).map((_, i) => (
-                  <StarSolidIcon key={i} className="h-4 w-4 text-yellow-400" />
-                ))
-              ) : (
-                <span className="text-xs text-gray-500">No Rating</span>
-              )}
-              <span className="ml-2">— {new Date(fb.createdAt).toLocaleString()}</span>
-            </p>
+            <p className="text-sm text-gray-600">— {new Date(fb.createdAt).toLocaleString()}</p>
           </li>
         ))}
       </ul>
@@ -72,25 +62,6 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks }:
           rows={3}
           placeholder="Add feedback..."
         />
-        <div>
-          <label className="text-sm font-medium">Rating</label>
-          <div className="mt-1 flex space-x-1">
-            {[1, 2, 3, 4, 5].map(n => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n)}
-                className="focus:outline-none"
-              >
-                {rating >= n ? (
-                  <StarSolidIcon className="h-6 w-6 text-yellow-400" />
-                ) : (
-                  <StarOutlineIcon className="h-6 w-6 text-gray-300" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
         <button onClick={submitFeedback} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
           Submit Feedback
         </button>

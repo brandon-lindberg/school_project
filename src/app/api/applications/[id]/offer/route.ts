@@ -43,7 +43,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         type: 'MESSAGE_RECEIVED',
         title: 'Offer Letter Sent',
         message: `An offer has been sent: ${letterUrl}`,
-      },
+        url: `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`,
+      } as any,
     });
     return NextResponse.json(offer, { status: 201 });
   } catch (err: any) {

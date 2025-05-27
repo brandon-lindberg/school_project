@@ -11,7 +11,7 @@ interface Application {
   email: string;
   status: string;
   currentStage: string;
-  journalEntries?: { rating?: number | null }[];
+  rating?: number | null;
   interviews?: { id: number }[];
 }
 
@@ -24,7 +24,7 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
   return (
     <ul className="space-y-4">
       {applications.map(app => {
-        const latestRating = app.journalEntries && app.journalEntries.length > 0 ? app.journalEntries[0].rating : undefined;
+        const latestRating = app.rating != null ? app.rating : undefined;
         // Define dynamic progress milestones and compute percentage
         const interviewCount = app.interviews?.length || 0;
         const milestones = [

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 
 interface Entry {
   id: number;
@@ -22,7 +20,8 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
     try {
       const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to load journal entries');
-      setEntries(await res.json());
+      const data = await res.json();
+      setEntries(data.reverse());
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -55,17 +54,6 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
             </p>
             <p className="text-sm flex items-center space-x-2">
               <strong>{e.type}</strong>
-              {e.rating != null && (
-                <span className="flex space-x-0.5">
-                  {[1, 2, 3, 4, 5].map(star =>
-                    star <= e.rating! ? (
-                      <StarSolidIcon key={star} className="h-4 w-4 text-yellow-400" />
-                    ) : (
-                      <StarOutlineIcon key={star} className="h-4 w-4 text-gray-300" />
-                    )
-                  )}
-                </span>
-              )}
             </p>
             <p>{e.content}</p>
           </li>

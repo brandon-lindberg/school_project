@@ -7,6 +7,7 @@ import { ja } from 'date-fns/locale';
 import { BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import Link from 'next/link';
 
 type Notification = {
   notification_id: number;
@@ -14,6 +15,7 @@ type Notification = {
   title: string;
   message: string;
   is_read: boolean;
+  url?: string;
   created_at: string;
 };
 
@@ -110,17 +112,15 @@ export default function NotificationsDropdown() {
           >
             {/* Overlay */}
             <div
-              className={`fixed inset-0 bg-black transition-opacity duration-300 ${
-                isOpen ? 'opacity-50' : 'opacity-0'
-              }`}
+              className={`fixed inset-0 bg-black transition-opacity duration-300 ${isOpen ? 'opacity-50' : 'opacity-0'
+                }`}
               onClick={() => setIsOpen(false)}
             />
 
             {/* Sidebar */}
             <div
-              className={`fixed right-0 top-0 h-full w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-                isOpen ? 'translate-x-0' : 'translate-x-full'
-              }`}
+              className={`fixed right-0 top-0 h-full w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
             >
               <div className="flex items-center justify-between p-4 border-b">
                 <h3 className="text-lg font-semibold">
@@ -142,20 +142,24 @@ export default function NotificationsDropdown() {
                 ) : (
                   <div className="divide-y">
                     {notifications.map(notification => (
-                      <div
+                      <Link
                         key={notification.notification_id}
-                        className={`p-4 ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`}
+                        href={notification.url || '#'}
+                        onClick={() => setIsOpen(false)}
+                        className="block"
                       >
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                          <span className="text-xs text-gray-500">
-                            {language === 'en'
-                              ? formatDate(notification.created_at, 'MMM d, h:mm a')
-                              : formatDate(notification.created_at, 'M月d日 aa h:mm')}
-                          </span>
+                        <div className={`p-4 ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`}>
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                            <span className="text-xs text-gray-500">
+                              {language === 'en'
+                                ? formatDate(notification.created_at, 'MMM d, h:mm a')
+                                : formatDate(notification.created_at, 'M月d日 aa h:mm')}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}

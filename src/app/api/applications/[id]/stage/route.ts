@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 const stageSchema = z.object({
-  stage: z.string().min(1),
+  stage: z.enum(['SCREENING', 'INTERVIEW_INVITATION_SENT', 'INTERVIEW', 'OFFER', 'REJECTED']),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {

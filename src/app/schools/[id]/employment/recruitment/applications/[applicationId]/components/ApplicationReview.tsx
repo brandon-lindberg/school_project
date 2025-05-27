@@ -40,7 +40,7 @@ export default function ApplicationReview({ applicationId, onAccept, onReject }:
       const res = await fetch(`/api/applications/${applicationId}/stage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: 'SCREENING_COMPLETE' }),
+        body: JSON.stringify({ stage: 'INTERVIEW' }),
       });
       if (!res.ok) {
         const data = await res.json();

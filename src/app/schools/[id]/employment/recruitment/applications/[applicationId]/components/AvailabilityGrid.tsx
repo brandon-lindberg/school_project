@@ -64,7 +64,13 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
     try {
       const res = await fetch(`/api/applications/${applicationId}/availability-slots`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to load availability slots');
-      setSlots(await res.json());
+      const data: Slot[] = await res.json();
+      // Only include slots whose end time is in the future
+      const now = Date.now();
+      const upcoming = data.filter(
+        s => new Date(`${s.date}T${s.endTime}`).getTime() > now
+      );
+      setSlots(upcoming);
     } catch (err: any) {
       setError(err.message);
     }
