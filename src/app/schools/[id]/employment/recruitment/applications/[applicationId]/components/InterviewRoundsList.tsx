@@ -1,6 +1,7 @@
 'use client';
 
 import InterviewFeedbackForm from './InterviewFeedbackForm';
+import InterviewInvitation from './InterviewInvitation';
 import { useState, useEffect } from 'react';
 import AddToCalendarButton from '@/app/components/AddToCalendarButton';
 
@@ -30,6 +31,8 @@ interface InterviewRoundsListProps {
 }
 
 export default function InterviewRoundsList({ applicationId, interviews, onNextRound, onRefresh }: InterviewRoundsListProps) {
+  // Track which interview is being rescheduled
+  const [reschedulingId, setReschedulingId] = useState<number | null>(null);
   // Track feedbacks per interview
   const [feedbackMap, setFeedbackMap] = useState<Record<number, Feedback[]>>({});
 
@@ -107,117 +110,119 @@ export default function InterviewRoundsList({ applicationId, interviews, onNextR
           )}
           {idx === interviews.length - 1 && (
             <>
-              <InterviewFeedbackForm
-                interviewId={intv.id.toString()}
-                initialFeedbacks={feedbackMap[intv.id] || []}
-                onNewFeedback={handleNewFeedback(intv.id)}
-              />
-              <div className="flex justify-between">
-                <div className="flex space-x-3">
-                  <button
-                    onClick={async () => {
-                      if (!confirm(`Cancel interview round ${idx + 1}?`)) return;
-                      const res = await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, { method: 'DELETE' });
-                      if (res.ok) onRefresh(); else alert('Failed to cancel interview');
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const newDate = prompt('Enter new date and time (ISO format):', intv.scheduledAt);
-                      if (!newDate) return;
-                      const res = await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ scheduledAt: newDate }),
-                      });
-                      if (res.ok) onRefresh(); else alert('Failed to reschedule interview');
-                    }}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    onClick={async () => {
-                      await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'COMPLETED' }),
-                      });
-                      const fbs = feedbackMap[intv.id] || [];
-                      for (const fb of fbs) {
-                        await fetch(`/api/applications/${applicationId}/journal-entries`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            type: 'FEEDBACK',
-                            content: `Interview Notes (Round ${idx + 1}): ${fb.content}`,
-                            rating: fb.rating,
-                          }),
-                        });
-                      }
-                      window.dispatchEvent(new Event('journalEntryCreated'));
-                      onNextRound();
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-                  >
-                    Accept & Next
-                  </button>
-                </div>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={async () => {
-                      if (!confirm('Reject this application?')) return;
-                      await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'COMPLETED' }),
-                      });
-                      const res = await fetch(`/api/applications/${applicationId}/status`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'REJECTED' }),
-                      });
-                      if (res.ok) {
-                        await fetch(`/api/applications/${applicationId}/stage`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ stage: 'REJECTED' }),
-                        });
-                        onRefresh();
-                      } else alert('Failed to reject application');
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={async () => {
-                      await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'COMPLETED' }),
-                      });
-                      await fetch(`/api/applications/${applicationId}/status`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'OFFER' }),
-                      });
-                      await fetch(`/api/applications/${applicationId}/stage`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ stage: 'OFFER' }),
-                      });
-                      window.dispatchEvent(new Event('offerRequested'));
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-                  >
-                    Offer
-                  </button>
-                </div>
-              </div>
+              {reschedulingId === intv.id ? (
+                <InterviewInvitation
+                  applicationId={applicationId}
+                  round={idx + 1}
+                  isReschedule={true}
+                  refresh={() => { setReschedulingId(null); onRefresh(); }}
+                />
+              ) : (
+                <>
+                  <InterviewFeedbackForm
+                    interviewId={intv.id.toString()}
+                    initialFeedbacks={feedbackMap[intv.id] || []}
+                    onNewFeedback={handleNewFeedback(intv.id)}
+                  />
+                  <div className="flex justify-between">
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Cancel interview round ${idx + 1}?`)) return;
+                          const res = await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, { method: 'DELETE' });
+                          if (res.ok) onRefresh(); else alert('Failed to cancel interview');
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => setReschedulingId(intv.id)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'COMPLETED' }),
+                          });
+                          const fbs = feedbackMap[intv.id] || [];
+                          for (const fb of fbs) {
+                            await fetch(`/api/applications/${applicationId}/journal-entries`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                type: 'FEEDBACK',
+                                content: `Interview Notes (Round ${idx + 1}): ${fb.content}`,
+                                rating: fb.rating,
+                              }),
+                            });
+                          }
+                          window.dispatchEvent(new Event('journalEntryCreated'));
+                          onNextRound();
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+                      >
+                        Accept & Next
+                      </button>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Reject this application?')) return;
+                          await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'COMPLETED' }),
+                          });
+                          const res = await fetch(`/api/applications/${applicationId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'REJECTED' }),
+                          });
+                          if (res.ok) {
+                            await fetch(`/api/applications/${applicationId}/stage`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ stage: 'REJECTED' }),
+                            });
+                            onRefresh();
+                          } else alert('Failed to reject application');
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await fetch(`/api/applications/${applicationId}/interviews/${intv.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'COMPLETED' }),
+                          });
+                          await fetch(`/api/applications/${applicationId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'OFFER' }),
+                          });
+                          await fetch(`/api/applications/${applicationId}/stage`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ stage: 'OFFER' }),
+                          });
+                          window.dispatchEvent(new Event('offerRequested'));
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+                      >
+                        Offer
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
           {idx !== interviews.length - 1 && (

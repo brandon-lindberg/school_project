@@ -11,8 +11,7 @@ const slotSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format'),
 });
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await context;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const applicationId = parseInt(params.id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -31,8 +30,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
   }
 }
 
-export async function POST(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await context;
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

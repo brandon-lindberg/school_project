@@ -32,6 +32,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
+    // Determine if this is a reschedule (already in INTERVIEW stage)
+    const previousStage = app.currentStage;
+
     const isAuthorized =
       user.role === 'SUPER_ADMIN' ||
       user.managedSchools.some(s => s.school_id === app.jobPosting.schoolId);
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Location is required' }, { status: 400 });
     }
     await prisma.application.update({ where: { id: applicationId }, data: { currentStage: 'INTERVIEW_INVITATION_SENT', interviewLocation: location, interviewerNames } as any });
-    // Notify candidate with context
+    // Notify candidate: initial invite or reschedule
     const jobPosting = app.jobPosting;
     const jobTitle = jobPosting.title;
     const schoolRecord = await prisma.school.findUnique({
@@ -61,12 +64,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       select: { name_en: true },
     });
     const schoolName = schoolRecord?.name_en ?? '';
+    const title = previousStage === 'INTERVIEW'
+      ? `Interview Reschedule Request for ${jobTitle}`
+      : `Interview Availability for ${jobTitle}`;
+    const message = previousStage === 'INTERVIEW'
+      ? `The ${schoolName} school has requested to reschedule your interview for the "${jobTitle}" position. Please select a new time slot in the portal.`
+      : `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`;
     await prisma.notification.create({
       data: {
         user_id: app.userId || 0,
         type: 'MESSAGE_RECEIVED',
-        title: `Interview Availability for ${jobTitle}`,
-        message: `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`,
+        title,
+        message,
         url: `/schools/${jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
       } as any,
     });

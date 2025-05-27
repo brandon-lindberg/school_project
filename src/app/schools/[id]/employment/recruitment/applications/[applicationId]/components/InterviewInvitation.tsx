@@ -7,6 +7,8 @@ interface InterviewInvitationProps {
   applicationId: string;
   refresh: () => void;
   round?: number;
+  isReschedule?: boolean;
+  interviewId?: string;
 }
 
 // Suggestion shape from match-suggestions API
@@ -27,7 +29,7 @@ function getNextDate(dayAbbrev: string): Date {
   return date;
 }
 
-export default function InterviewInvitation({ applicationId, refresh, round = 1 }: InterviewInvitationProps) {
+export default function InterviewInvitation({ applicationId, refresh, round = 1, isReschedule = false, interviewId }: InterviewInvitationProps) {
   const [newInterviewer, setNewInterviewer] = useState<string>('');
   const [interviewerNames, setInterviewerNames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -101,6 +103,12 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1 
     } finally {
       setSendingAvailability(false);
     }
+  };
+
+  const handleReschedule = async () => {
+    // On reschedule, just re-send availability invitation
+    setError(null);
+    await sendAvailability();
   };
 
   const invite = async (s: Suggestion) => {
@@ -178,11 +186,15 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1 
           <p className="text-gray-600">Select availability, then pick a suggested slot to invite:</p>
           <AvailabilityGrid applicationId={applicationId} />
           <button
-            onClick={sendAvailability}
+            onClick={async () => {
+              if (isReschedule) await handleReschedule(); else await sendAvailability();
+            }}
             disabled={sendingAvailability || !location.trim()}
             className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {sendingAvailability ? 'Sending Availability...' : 'Confirm & Send Availability'}
+            {sendingAvailability
+              ? isReschedule ? 'Rescheduling...' : 'Sending Availability...'
+              : isReschedule ? 'Confirm & Reschedule' : 'Confirm & Send Availability'}
           </button>
           <div className="mt-4">
             <label className="block">
@@ -202,7 +214,7 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1 
       )}
       {loading && <p className="text-gray-500">Loading match suggestions...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      {!loading && suggestions.length > 0 && (
+      {!loading && suggestions.length > 0 && !isReschedule && (
         <ul className="divide-y divide-gray-200">
           {suggestions.map((s, i) => (
             <li key={i} className="py-3 flex justify-between items-center">

@@ -43,7 +43,9 @@ export async function DELETE(request: NextRequest, { params }: { params: any }) 
 
   const isAuthorized =
     user.role === 'SUPER_ADMIN' ||
-    user.managedSchools.some(s => s.school_id === interview.application.jobPosting.schoolId);
+    user.managedSchools.some(s => s.school_id === interview.application.jobPosting.schoolId) ||
+    // allow candidate to update their own interview
+    user.user_id === interview.application.userId;
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -98,7 +100,9 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
 
   const isAuthorized =
     user.role === 'SUPER_ADMIN' ||
-    user.managedSchools.some(s => s.school_id === interview.application.jobPosting.schoolId);
+    user.managedSchools.some(s => s.school_id === interview.application.jobPosting.schoolId) ||
+    // allow candidate to update their own interview
+    user.user_id === interview.application.userId;
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -111,6 +115,12 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
       ...(interviewerNames !== undefined ? { interviewerNames } : {}),
       ...(status !== undefined ? { status } : {}),
     },
+  });
+
+  // After scheduling/rescheduling by candidate, update application stage to INTERVIEW
+  await prisma.application.update({
+    where: { id: applicationId },
+    data: { status: 'IN_PROCESS', currentStage: 'INTERVIEW' } as any,
   });
 
   return NextResponse.json(updated);

@@ -136,27 +136,33 @@ export default function ApplicationDetailPage() {
       )}
       <div className="flex items-center space-x-2">
         <span><strong>Email:</strong> {application.email}</span>
-        <button
-          onClick={() => { navigator.clipboard.writeText(application.email); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); }}
-          className="text-gray-500 hover:text-gray-700 focus:outline-none"
-          aria-label="Copy email"
-        >
-          <ClipboardDocumentIcon className="h-5 w-5" />
-        </button>
-        {emailCopied && <span className="text-green-600 text-sm">Copied!</span>}
+        {isAdmin && (
+          <>
+            <button
+              onClick={() => { navigator.clipboard.writeText(application.email); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); }}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label="Copy email"
+            >
+              <ClipboardDocumentIcon className="h-5 w-5" />
+            </button>
+            {emailCopied && <span className="text-green-600 text-sm">Copied!</span>}
+          </>
+        )}
       </div>
       <div className="flex items-center space-x-2">
         <span><strong>Phone:</strong> {application.phone ?? 'N/A'}</span>
-        {application.phone && (
-          <button
-            onClick={() => { navigator.clipboard.writeText(application.phone!); setPhoneCopied(true); setTimeout(() => setPhoneCopied(false), 2000); }}
-            className="text-gray-500 hover:text-gray-700 focus:outline-none"
-            aria-label="Copy phone number"
-          >
-            <ClipboardDocumentIcon className="h-5 w-5" />
-          </button>
+        {isAdmin && application.phone && (
+          <>
+            <button
+              onClick={() => { navigator.clipboard.writeText(application.phone!); setPhoneCopied(true); setTimeout(() => setPhoneCopied(false), 2000); }}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label="Copy phone number"
+            >
+              <ClipboardDocumentIcon className="h-5 w-5" />
+            </button>
+            {phoneCopied && <span className="text-green-600 text-sm">Copied!</span>}
+          </>
         )}
-        {phoneCopied && <span className="text-green-600 text-sm">Copied!</span>}
       </div>
       <p><strong>Japanese Visa:</strong> {application.hasJapaneseVisa ? 'Yes' : 'No'}</p>
       {application.certifications?.length > 0 && (
@@ -219,6 +225,12 @@ export default function ApplicationDetailPage() {
           {application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
             <CandidateSchedule
               applicationId={applicationId}
+              interviewId={
+                application.interviews.length > 0
+                  ? application.interviews[application.interviews.length - 1].id.toString()
+                  : undefined
+              }
+              isReschedule={application.interviews.length > 0}
               onScheduled={() => setRefreshFlag(f => f + 1)}
             />
           )}

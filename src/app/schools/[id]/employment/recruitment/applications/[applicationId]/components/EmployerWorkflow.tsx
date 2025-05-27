@@ -18,7 +18,18 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
   // Toggle invitation UI for next round
   const [inviting, setInviting] = useState(false);
   const app = application;
+  // Determine if awaiting candidate confirmation (invite or reschedule)
   const isInvitingStage = app.currentStage === 'INTERVIEW_INVITATION_SENT';
+  // Determine if this is a reschedule (existing interview)
+  const isReschedule = isInvitingStage && app.interviews.length > 0;
+  // Determine round number: existing interviews=[], round1; reschedule uses last round; else next round
+  const roundNum = app.interviews.length === 0
+    ? 1
+    : isReschedule
+      ? app.interviews.length
+      : app.interviews.length + 1;
+  // Track last interview ID for reschedule
+  const lastInterviewId = app.interviews.length > 0 ? app.interviews[app.interviews.length - 1].id.toString() : undefined;
 
   return (
     <div className="space-y-8">
@@ -36,7 +47,9 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
       {reviewDone && (app.interviews.length === 0 || inviting || isInvitingStage) && (
         <InterviewInvitation
           applicationId={app.id.toString()}
-          round={app.interviews.length === 0 ? 1 : app.interviews.length + 1}
+          round={roundNum}
+          isReschedule={isReschedule}
+          interviewId={isReschedule ? lastInterviewId : undefined}
           refresh={() => { setInviting(false); refresh(); }}
         />
       )}

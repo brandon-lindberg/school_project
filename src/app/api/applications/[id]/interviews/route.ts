@@ -36,10 +36,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       } as any,
     });
 
-    // Update application status to IN_PROCESS and move to INTERVIEW stage
+    // Update application status and stage now that candidate has scheduled
     await prisma.application.update({
       where: { id: applicationId },
-      data: { status: 'IN_PROCESS' as any, currentStage: 'INTERVIEW' as any },
+      data: { status: 'IN_PROCESS', currentStage: 'INTERVIEW' } as any,
     });
     // Clear out availability slots now that candidate has scheduled
     await prisma.availabilitySlot.deleteMany({ where: { applicationId } });

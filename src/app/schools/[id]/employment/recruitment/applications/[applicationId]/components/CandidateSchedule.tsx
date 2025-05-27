@@ -13,9 +13,11 @@ interface Slot {
 interface CandidateScheduleProps {
   applicationId: string;
   onScheduled?: () => void;
+  interviewId?: string;
+  isReschedule?: boolean;
 }
 
-export default function CandidateSchedule({ applicationId, onScheduled }: CandidateScheduleProps) {
+export default function CandidateSchedule({ applicationId, onScheduled, interviewId, isReschedule = false }: CandidateScheduleProps) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,11 +82,20 @@ export default function CandidateSchedule({ applicationId, onScheduled }: Candid
       dateObj.setHours(h, m, 0, 0);
       const scheduledAt = dateObj.toISOString();
       if (!interviewLocation) throw new Error('No interview location set by employer');
-      const res = await fetch(`/api/applications/${applicationId}/interviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduledAt, location: interviewLocation, interviewerNames }),
-      });
+      let res;
+      if (isReschedule && interviewId) {
+        res = await fetch(`/api/applications/${applicationId}/interviews/${interviewId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scheduledAt, location: interviewLocation, interviewerNames }),
+        });
+      } else {
+        res = await fetch(`/api/applications/${applicationId}/interviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scheduledAt, location: interviewLocation, interviewerNames }),
+        });
+      }
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Failed to schedule interview');
@@ -104,7 +115,6 @@ export default function CandidateSchedule({ applicationId, onScheduled }: Candid
   if (scheduled) return (
     <div className="p-6 space-y-4">
       <div className="text-green-600">Interview scheduled successfully!</div>
-      <AddToCalendarButton start={scheduledAtStr!} location={interviewLocation} />
     </div>
   );
 
