@@ -11,13 +11,15 @@ const statusSchema = z.object({
   status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'OFFER_ACCEPTED', 'OFFER_REJECTED']),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: any }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const applicationId = parseInt(params.id, 10);
+  // Await params for NextJS 15 dynamic API handling
+  const { id } = await params;
+  const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
   }
@@ -59,11 +61,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       const emailText = template
         .replace('{{applicantName}}', app.applicantName)
         .replace('{{jobTitle}}', app.jobPosting.title);
-      await sendEmail({
-        to: app.email,
-        subject: `Application Update: ${app.jobPosting.title}`,
-        text: emailText,
-      });
+      try {
+        await sendEmail({
+          to: app.email,
+          subject: `Application Update: ${app.jobPosting.title}`,
+          text: emailText,
+        });
+      } catch (emailErr) {
+        console.error('Failed to send rejection email, continuing', emailErr);
+      }
     }
 
     return NextResponse.json(updated);

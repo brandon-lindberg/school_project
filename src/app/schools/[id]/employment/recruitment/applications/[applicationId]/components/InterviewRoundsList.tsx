@@ -95,7 +95,7 @@ export default function InterviewRoundsList({ applicationId, interviews, onNextR
             <strong>Status:</strong> {intv.status}
           </p>
           {/* Display all saved feedback for this round */}
-          {feedbackMap[intv.id] && feedbackMap[intv.id].length > 0 && (
+          {idx !== interviews.length - 1 && feedbackMap[intv.id] && feedbackMap[intv.id].length > 0 && (
             <div className="space-y-2">
               <h4 className="text-lg font-semibold">Feedback</h4>
               <ul className="space-y-2 max-h-40 overflow-y-auto">

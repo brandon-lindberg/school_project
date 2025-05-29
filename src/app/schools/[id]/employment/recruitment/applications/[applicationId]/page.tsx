@@ -226,11 +226,11 @@ export default function ApplicationDetailPage() {
             <CandidateSchedule
               applicationId={applicationId}
               interviewId={
-                application.interviews.length > 0
+                application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'
                   ? application.interviews[application.interviews.length - 1].id.toString()
                   : undefined
               }
-              isReschedule={application.interviews.length > 0}
+              isReschedule={application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'}
               onScheduled={() => setRefreshFlag(f => f + 1)}
             />
           )}

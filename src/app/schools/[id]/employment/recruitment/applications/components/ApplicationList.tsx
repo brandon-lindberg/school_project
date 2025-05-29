@@ -24,16 +24,20 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
   return (
     <ul className="space-y-4">
       {applications.map(app => {
+        // Highlight rejected candidates
+        const isRejected = app.status === 'REJECTED';
         const latestRating = app.rating != null ? app.rating : undefined;
         // Define dynamic progress milestones and compute percentage
         const interviewCount = app.interviews?.length || 0;
+        // Determine final milestone based on rejection
+        const lastStepLabel = isRejected ? 'Rejected' : 'Offered';
         const milestones = [
           'Applied',
           'Screening Complete',
           'Invited',
           // Dynamically add interview rounds
           ...Array.from({ length: interviewCount }, (_, i) => `Interview Round ${i + 1}`),
-          'Offered',
+          lastStepLabel,
         ];
         const totalSteps = milestones.length - 1;
         let step = 0;
@@ -45,9 +49,12 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
         if (interviewCount > 0) step = 2 + interviewCount;
         // If offered, mark final step
         if (app.status === 'OFFERED') step = totalSteps;
-        const percent = Math.round((step / totalSteps) * 100);
+        // Use full progress for rejected
+        const percent = isRejected ? 100 : Math.round((step / totalSteps) * 100);
         // Derive current status label from milestones
         const currentStatusLabel = milestones[step] || milestones[0];
+        // Override label for rejected
+        const displayStatusLabel = isRejected ? 'Rejected' : currentStatusLabel;
 
         return (
           <li key={app.id} className="bg-white p-4 rounded shadow flex flex-col space-y-2">
@@ -67,7 +74,12 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
                     </span>
                   )}
                 </p>
-                <p className="text-sm text-gray-600">{app.email} | {currentStatusLabel}</p>
+                <p className="text-sm text-gray-600">
+                  {app.email} |{' '}
+                  <span className={isRejected ? 'text-red-600 font-medium' : ''}>
+                    {displayStatusLabel}
+                  </span>
+                </p>
               </div>
               <Link
                 href={`/schools/${schoolId}/employment/recruitment/applications/${app.id}`}
@@ -80,16 +92,26 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
             <div className="w-full">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full"
+                  className={`${isRejected ? 'bg-red-600' : 'bg-blue-600'} h-2 rounded-full`}
                   style={{ width: `${percent}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-600 mt-1">
-                {milestones.map((m, i) => (
-                  <span key={i} className={i <= step ? 'font-medium text-blue-600' : ''}>
-                    {m}
-                  </span>
-                ))}
+                {milestones.map((m, i) => {
+                  // Determine classes: red for final 'Rejected', blue for completed
+                  const isFinal = i === totalSteps;
+                  let cls = '';
+                  if (isRejected && isFinal) {
+                    cls = 'font-medium text-red-600';
+                  } else if (i <= step) {
+                    cls = 'font-medium text-blue-600';
+                  }
+                  return (
+                    <span key={i} className={cls}>
+                      {m}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           </li>

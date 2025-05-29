@@ -32,8 +32,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Determine if this is a reschedule (already in INTERVIEW stage)
-    const previousStage = app.currentStage;
+    // Determine if this is a reschedule invite (last interview still pending)
+    const interviews = await prisma.interview.findMany({ where: { applicationId } });
+    const lastInterview = interviews[interviews.length - 1];
+    const isRescheduleInvite = lastInterview?.status === 'SCHEDULED';
 
     const isAuthorized =
       user.role === 'SUPER_ADMIN' ||
@@ -64,10 +66,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       select: { name_en: true },
     });
     const schoolName = schoolRecord?.name_en ?? '';
-    const title = previousStage === 'INTERVIEW'
+    const title = isRescheduleInvite
       ? `Interview Reschedule Request for ${jobTitle}`
       : `Interview Availability for ${jobTitle}`;
-    const message = previousStage === 'INTERVIEW'
+    const message = isRescheduleInvite
       ? `The ${schoolName} school has requested to reschedule your interview for the "${jobTitle}" position. Please select a new time slot in the portal.`
       : `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`;
     await prisma.notification.create({
