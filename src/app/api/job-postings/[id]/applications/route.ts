@@ -14,6 +14,7 @@ const applicationSchema = z.object({
   degrees: z.array(z.string()).optional(),
   currentResidence: z.string().optional(),
   nationality: z.string().optional(),
+  jlpt: z.enum(['None', 'N1', 'N2', 'N3', 'N4', 'N5']).optional(),
   resumeUrl: z.string().optional(),
   coverLetter: z.string().optional(),
 });
@@ -52,11 +53,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         degrees: data.degrees ?? [],
         currentResidence: data.currentResidence,
         nationality: data.nationality,
+        jlpt: data.jlpt ?? 'None',
         resumeUrl: data.resumeUrl,
         coverLetter: data.coverLetter,
         status: 'SCREENING',
         currentStage: 'SCREENING',
-      },
+      } as any,
     });
     // Notify applicant and school admins with context
     const jobInfo = await prisma.jobPosting.findUnique({

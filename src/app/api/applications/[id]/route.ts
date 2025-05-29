@@ -28,6 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
     if (!application) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
+    console.log(`GET /api/applications/${applicationId}`, application);
     return NextResponse.json(application);
   } catch (error) {
     console.error('Error fetching application:', error);

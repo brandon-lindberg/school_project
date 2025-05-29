@@ -12,6 +12,7 @@ import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
+import OfferStatus from '../../offers/components/OfferStatus';
 
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
@@ -78,8 +79,32 @@ export default function ApplicationDetailPage() {
     return () => window.removeEventListener('offerRequested', handleOfferRequest);
   }, []);
 
+  // Refetch application when candidate responds to offer
+  useEffect(() => {
+    const handleOfferResponded = () => setRefreshFlag(f => f + 1);
+    window.addEventListener('offerResponded', handleOfferResponded);
+    return () => window.removeEventListener('offerResponded', handleOfferResponded);
+  }, []);
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !application) return <div className="p-8 text-red-500">{error || 'Application not found'}</div>;
+  console.log('ApplicationDetailPage data:', application, 'session:', session);
+
+  // Determine if current user is the candidate for this application
+  const isCandidate = session?.user?.id === String(application.userId);
+  // Detail page override based on offer table state
+  const isDetailOfferAccepted = application.offer?.status === 'ACCEPTED';
+  const isDetailOfferRejected = application.offer?.status === 'REJECTED';
+  const detailStatusText = isDetailOfferAccepted
+    ? 'Accepted'
+    : isDetailOfferRejected
+      ? 'Rejected'
+      : application.status;
+  const detailStatusClass = isDetailOfferAccepted
+    ? 'text-green-600 font-medium'
+    : isDetailOfferRejected
+      ? 'text-red-600 font-medium'
+      : '';
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
@@ -112,23 +137,28 @@ export default function ApplicationDetailPage() {
             </div>
           )}
         </div>
-        {isAdmin && application.currentStage !== 'SCREENING' && (
-          <div className="space-x-2">
-            <button
-              onClick={handleReject}
-              disabled={rejecting}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
-            >
-              {rejecting ? 'Rejecting...' : 'Reject'}
-            </button>
-            <button
-              onClick={() => setShowOfferForm(v => !v)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-            >
-              Offer
-            </button>
-          </div>
-        )}
+        {isAdmin
+          && !application.offer?.id
+          && application.currentStage !== 'SCREENING'
+          && application.status !== 'REJECTED'
+          && application.status !== 'REJECTED_OFFER'
+          && (
+            <div className="space-x-2">
+              <button
+                onClick={handleReject}
+                disabled={rejecting}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+              >
+                {rejecting ? 'Rejecting...' : 'Reject'}
+              </button>
+              <button
+                onClick={() => setShowOfferForm(v => !v)}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+              >
+                Offer
+              </button>
+            </div>
+          )}
       </div>
       {actionError && <p className="text-red-500">{actionError}</p>}
       {showOfferForm && isAdmin && (
@@ -196,9 +226,13 @@ export default function ApplicationDetailPage() {
           <p>{application.coverLetter}</p>
         </div>
       )}
-      <p><strong>Status:</strong> {application.status}</p>
+      <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
       <p><strong>Stage:</strong> {application.currentStage}</p>
-      {!isAdmin && (
+      {/* Candidate offer response UI */}
+      {isCandidate && application.offer && (
+        <OfferStatus offerId={String(application.offer.id)} initialStatus={application.offer.status} />
+      )}
+      {!isAdmin && !application.offer && (
         <div className="space-y-6">
           {/* List all interviews with completion status */}
           {application.interviews.map((intv: any, idx: number) => (

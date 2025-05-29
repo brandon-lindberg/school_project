@@ -44,6 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
       },
       orderBy: { submittedAt: 'desc' },
     });
+    console.log(`GET /api/schools/${schoolId}/recruitment/applications`, applications);
     return NextResponse.json(applications);
   } catch (error) {
     console.error('Error fetching applications:', error);

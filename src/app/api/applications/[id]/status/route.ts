@@ -8,7 +8,7 @@ import path from 'path';
 import { sendEmail } from '@/lib/email';
 
 const statusSchema = z.object({
-  status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'OFFER_ACCEPTED', 'OFFER_REJECTED']),
+  status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'ACCEPTED_OFFER', 'REJECTED_OFFER']),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: any }) {
@@ -40,7 +40,7 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     const { status } = statusSchema.parse(await request.json());
     const updated = await prisma.application.update({
       where: { id: applicationId },
-      data: { status },
+      data: { status: status as any },
     });
 
     // Create in-app notification

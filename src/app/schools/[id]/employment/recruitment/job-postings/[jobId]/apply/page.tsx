@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { countries } from '@/lib/countries';
 
 export default function JobApplicationPage() {
   const params = useParams() as { id: string; jobId: string };
@@ -25,9 +26,16 @@ export default function JobApplicationPage() {
   const [degrees, setDegrees] = useState<string[]>(['']);
   const [currentResidence, setCurrentResidence] = useState('');
   const [nationality, setNationality] = useState('');
+  const [jlpt, setJlpt] = useState('None');
   const [resumeUrl, setResumeUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Derive full country options with placeholder
+  const countryOptions = useMemo(
+    () => ['Select nationality', ...countries],
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +54,7 @@ export default function JobApplicationPage() {
           degrees: degrees.filter(Boolean),
           currentResidence,
           nationality,
+          jlpt,
           resumeUrl,
         }),
       });
@@ -157,7 +166,30 @@ export default function JobApplicationPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Nationality</label>
-          <input type="text" value={nationality} onChange={e => setNationality(e.target.value)} className="w-full border rounded p-2" />
+          <select
+            value={nationality}
+            onChange={e => setNationality(e.target.value)}
+            required
+            className="w-full border rounded p-2"
+          >
+            {countryOptions.map(c => (
+              <option key={c} value={c === 'Select nationality' ? '' : c} disabled={c === 'Select nationality'}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">JLPT</label>
+          <select
+            value={jlpt}
+            onChange={e => setJlpt(e.target.value)}
+            className="w-full border rounded p-2"
+          >
+            {['None', 'N1', 'N2', 'N3', 'N4', 'N5'].map(level => (
+              <option key={level} value={level}>{level}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Resume URL</label>

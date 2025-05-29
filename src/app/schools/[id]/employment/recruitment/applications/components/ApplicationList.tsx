@@ -13,6 +13,7 @@ interface Application {
   currentStage: string;
   rating?: number | null;
   interviews?: { id: number }[];
+  offer?: { status: string };
 }
 
 interface ApplicationListProps {
@@ -24,13 +25,26 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
   return (
     <ul className="space-y-4">
       {applications.map(app => {
-        // Highlight rejected candidates
-        const isRejected = app.status === 'REJECTED';
+        console.log('ApplicationList item:', app);
+        // Determine rejection and offer response flags
+        const isAppRejected = app.status === 'REJECTED';
+        const isOfferAccepted = app.offer?.status === 'ACCEPTED' || app.status === 'ACCEPTED_OFFER';
+        const isOfferRejected = app.offer?.status === 'REJECTED' || app.status === 'REJECTED_OFFER';
+        // Style for status text
+        const statusTextClass = isOfferAccepted
+          ? 'text-green-600 font-medium'
+          : isAppRejected || isOfferRejected
+            ? 'text-red-600 font-medium'
+            : '';
         const latestRating = app.rating != null ? app.rating : undefined;
         // Define dynamic progress milestones and compute percentage
         const interviewCount = app.interviews?.length || 0;
-        // Determine final milestone based on rejection
-        const lastStepLabel = isRejected ? 'Rejected' : 'Offered';
+        // Determine final milestone label
+        const lastStepLabel = isAppRejected || isOfferRejected
+          ? 'Rejected'
+          : isOfferAccepted
+            ? 'Accepted'
+            : 'Offered';
         const milestones = [
           'Applied',
           'Screening Complete',
@@ -47,14 +61,18 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
         if (app.currentStage === 'INTERVIEW_INVITATION_SENT') step = 2;
         // Advance for interview rounds scheduled
         if (interviewCount > 0) step = 2 + interviewCount;
-        // If offered, mark final step
-        if (app.status === 'OFFERED') step = totalSteps;
-        // Use full progress for rejected
-        const percent = isRejected ? 100 : Math.round((step / totalSteps) * 100);
+        // Final if offer stage or response present
+        if (app.status === 'OFFER' || isOfferAccepted || isOfferRejected) step = totalSteps;
+        // Compute percent (always 100 if at final step)
+        const percent = step === totalSteps ? 100 : Math.round((step / totalSteps) * 100);
         // Derive current status label from milestones
         const currentStatusLabel = milestones[step] || milestones[0];
-        // Override label for rejected
-        const displayStatusLabel = isRejected ? 'Rejected' : currentStatusLabel;
+        // Determine display status label
+        const displayStatusLabel = isAppRejected || isOfferRejected
+          ? 'Rejected'
+          : isOfferAccepted
+            ? 'Accepted'
+            : currentStatusLabel;
 
         return (
           <li key={app.id} className="bg-white p-4 rounded shadow flex flex-col space-y-2">
@@ -76,7 +94,7 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
                 </p>
                 <p className="text-sm text-gray-600">
                   {app.email} |{' '}
-                  <span className={isRejected ? 'text-red-600 font-medium' : ''}>
+                  <span className={statusTextClass}>
                     {displayStatusLabel}
                   </span>
                 </p>
@@ -92,17 +110,19 @@ export default function ApplicationList({ applications, schoolId }: ApplicationL
             <div className="w-full">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className={`${isRejected ? 'bg-red-600' : 'bg-blue-600'} h-2 rounded-full`}
+                  className={`${isOfferAccepted ? 'bg-green-600' : isOfferRejected ? 'bg-red-600' : 'bg-blue-600'} h-2 rounded-full`}
                   style={{ width: `${percent}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-600 mt-1">
                 {milestones.map((m, i) => {
-                  // Determine classes: red for final 'Rejected', blue for completed
+                  // Determine classes per milestone
                   const isFinal = i === totalSteps;
                   let cls = '';
-                  if (isRejected && isFinal) {
-                    cls = 'font-medium text-red-600';
+                  if (isFinal) {
+                    if (isOfferAccepted) cls = 'font-medium text-green-600';
+                    else if (isAppRejected || isOfferRejected) cls = 'font-medium text-red-600';
+                    else if (i <= step) cls = 'font-medium text-blue-600';
                   } else if (i <= step) {
                     cls = 'font-medium text-blue-600';
                   }

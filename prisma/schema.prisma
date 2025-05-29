@@ -340,8 +340,8 @@ enum ApplicationStatus {
   IN_PROCESS
   REJECTED
   OFFER
-  OFFER_ACCEPTED
-  OFFER_REJECTED
+  ACCEPTED_OFFER
+  REJECTED_OFFER
 }
 
 enum ApplicationStage {
@@ -367,6 +367,7 @@ model Application {
   degrees           String[]
   currentResidence  String?
   nationality       String?
+  jlpt              String        @default("None")
   resumeUrl         String?
   coverLetter       String?
   status            ApplicationStatus @default(APPLIED)

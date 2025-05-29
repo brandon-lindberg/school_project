@@ -44,7 +44,7 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
         />
       )}
       {/* Interview invitation for initial or next round, including when awaiting candidate confirmation */}
-      {reviewDone && (app.interviews.length === 0 || inviting || isInvitingStage) && (
+      {reviewDone && (app.interviews.length === 0 || inviting || isInvitingStage) && !app.offer && app.status !== 'REJECTED' && (
         <InterviewInvitation
           applicationId={app.id.toString()}
           round={roundNum}
@@ -54,7 +54,7 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
         />
       )}
       {/* Show rounds list when interviews exist and not inviting or waiting on candidate */}
-      {reviewDone && app.interviews.length > 0 && !inviting && !isInvitingStage && (
+      {reviewDone && app.interviews.length > 0 && !inviting && !isInvitingStage && !app.offer && app.status !== 'REJECTED' && (
         <InterviewRoundsList
           applicationId={app.id.toString()}
           interviews={app.interviews}

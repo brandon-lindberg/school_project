@@ -72,6 +72,7 @@ type UserApplication = {
   currentStage: string;
   submittedAt: string;
   interviews: { id: number; scheduledAt: string; location: string }[];
+  offer?: { id: number; letterUrl: string; status: string };
 };
 
 type DashboardContextType = {

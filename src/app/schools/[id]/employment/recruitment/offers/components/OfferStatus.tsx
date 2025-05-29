@@ -26,6 +26,8 @@ export default function OfferStatus({ offerId, initialStatus }: OfferStatusProps
         throw new Error(data.error || 'Failed to respond to offer');
       }
       setStatus(response);
+      // Notify parent to refresh application data
+      window.dispatchEvent(new Event('offerResponded'));
     } catch (err: any) {
       setError(err.message);
     } finally {

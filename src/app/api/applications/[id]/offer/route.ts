@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { ApplicationStatus, ApplicationStage } from '@prisma/client';
 
 const offerSchema = z.object({
   letterUrl: z.string().url(),
@@ -35,6 +36,11 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { letterUrl } = offerSchema.parse(await request.json());
     const offer = await prisma.offer.create({
       data: { applicationId, letterUrl },
+    });
+    // Update application to OFFER status/stage
+    await prisma.application.update({
+      where: { id: applicationId },
+      data: { status: ApplicationStatus.OFFER, currentStage: ApplicationStage.OFFER },
     });
     // notify applicant
     await prisma.notification.create({

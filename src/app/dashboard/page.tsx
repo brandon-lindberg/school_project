@@ -109,7 +109,16 @@ function DashboardContent() {
                         href={`/schools/${app.jobPosting.schoolId}/employment/recruitment/applications/${app.id}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {app.jobPosting.title} — {app.status}
+                        {app.jobPosting.title} — {
+                          /* Show offer response status if present */
+                          app.offer?.status === 'ACCEPTED' ? (
+                            <span className="text-green-600 font-medium">Accepted</span>
+                          ) : app.offer?.status === 'REJECTED' ? (
+                            <span className="text-red-600 font-medium">Rejected</span>
+                          ) : (
+                            <span>{app.status}</span>
+                          )
+                        }
                       </Link>
                       {app.interviews?.length > 0 && (
                         <span className="block text-sm text-green-600">
