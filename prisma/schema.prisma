@@ -387,7 +387,7 @@ model Application {
 model CandidateNote {
   id            Int          @id @default(autoincrement())
   applicationId Int
-  application   Application  @relation(fields: [applicationId], references: [id])
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   authorId      Int
   author        User         @relation(fields: [authorId], references: [user_id])
   content       String
@@ -397,7 +397,7 @@ model CandidateNote {
 model Interview {
   id             Int                @id @default(autoincrement())
   applicationId  Int
-  application    Application        @relation(fields: [applicationId], references: [id])
+  application    Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   interviewerId  Int
   interviewer    User               @relation(fields: [interviewerId], references: [user_id])
   scheduledAt    DateTime
@@ -410,7 +410,7 @@ model Interview {
 model InterviewFeedback {
   id           Int        @id @default(autoincrement())
   interviewId  Int
-  interview    Interview  @relation(fields: [interviewId], references: [id])
+  interview    Interview  @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   authorId     Int
   author       User       @relation(fields: [authorId], references: [user_id])
   content      String
@@ -421,7 +421,7 @@ model InterviewFeedback {
 model Offer {
   id            Int          @id @default(autoincrement())
   applicationId Int          @unique
-  application   Application  @relation(fields: [applicationId], references: [id])
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   letterUrl     String
   sentAt        DateTime     @default(now())
   status        String       @default("PENDING")
@@ -443,7 +443,7 @@ model AvailabilitySlot {
   userId         Int
   user           User        @relation(fields: [userId], references: [user_id])
   applicationId  Int?        // null for admin-wide slots
-  application    Application? @relation(fields: [applicationId], references: [id])
+  application    Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   date           DateTime    // specific date for this slot
   dayOfWeek      String      // e.g. "Mon", "Tue"
   startTime      String      // e.g. "09:00"
@@ -455,7 +455,7 @@ model AvailabilitySlot {
 model JournalEntry {
   id            Int          @id @default(autoincrement())
   applicationId Int
-  application   Application  @relation(fields: [applicationId], references: [id])
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   authorId      Int
   author        User         @relation(fields: [authorId], references: [user_id])
   type          String       // NOTE | FEEDBACK | SYSTEM | JOURNAL
