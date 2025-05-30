@@ -318,7 +318,7 @@ export default function ApplicationDetailPage() {
         <div className="fixed inset-0 bg-black bg-opacity-30 z-30" onClick={() => setShowMessagesPanel(false)} />
       )}
       {/* Slide-out panel */}
-      <div className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 z-40 flex flex-col ${showMessagesPanel ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 w-1/3 bg-white shadow-lg transform transition-transform duration-300 z-40 flex flex-col ${showMessagesPanel ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 flex justify-between items-center border-b">
           <h2 className="text-lg font-medium">Messages</h2>
           <button onClick={() => setShowMessagesPanel(false)} className="text-gray-500 hover:text-gray-700 focus:outline-none">
