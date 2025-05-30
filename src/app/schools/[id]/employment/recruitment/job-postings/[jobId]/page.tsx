@@ -13,6 +13,7 @@ interface JobPosting {
   location: string;
   employmentType: string;
   createdAt: string;
+  isArchived: boolean;
   hasApplied?: boolean;
 }
 
@@ -29,6 +30,7 @@ export default function JobPostingDetailPage() {
   const isAdmin = userRole === 'SUPER_ADMIN' || (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [archiving, setArchiving] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
@@ -63,6 +65,13 @@ export default function JobPostingDetailPage() {
     checkApplied();
   }, [isAuthenticated, jobId]);
 
+  useEffect(() => {
+    console.log('Debug: job state changed:', job);
+    if (job) {
+      console.log('Debug: job.isArchived =', job.isArchived);
+    }
+  }, [job]);
+
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this job posting?')) return;
     setActionError(null);
@@ -81,12 +90,65 @@ export default function JobPostingDetailPage() {
     }
   };
 
+  const handleArchive = async () => {
+    if (!confirm('Are you sure you want to archive this job posting?')) return;
+    setActionError(null);
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/job-postings/${jobId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: true }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to archive job posting');
+      }
+      // Update local state to reflect archived status
+      const updatedJob: JobPosting = await res.json();
+      setJob(updatedJob);
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!confirm('Are you sure you want to unarchive this job posting?')) return;
+    setActionError(null);
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/job-postings/${jobId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: false }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to unarchive job posting');
+      }
+      // Update local state to reflect unarchived status
+      const updatedJob: JobPosting = await res.json();
+      setJob(updatedJob);
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !job) return <div className="p-8 text-red-500">{error || 'Job not found'}</div>;
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">{job.title}</h1>
+      <div className="flex items-center space-x-2">
+        <h1 className="text-3xl font-bold">{job.title}</h1>
+        {job.isArchived && (
+          <span className="bg-gray-200 text-gray-700 px-2 py-1 text-sm rounded">Archived</span>
+        )}
+      </div>
       <p className="text-gray-600">{job.location} — {job.employmentType}</p>
       <p>{job.description}</p>
       <div>
@@ -112,6 +174,23 @@ export default function JobPostingDetailPage() {
               >
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
+              {!job.isArchived ? (
+                <button
+                  onClick={handleArchive}
+                  disabled={archiving}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 disabled:opacity-50"
+                >
+                  {archiving ? 'Archiving...' : 'Archive'}
+                </button>
+              ) : (
+                <button
+                  onClick={handleUnarchive}
+                  disabled={archiving}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  {archiving ? 'Unarchiving...' : 'Unarchive'}
+                </button>
+              )}
             </>
           ) : isAuthenticated ? (
             job.hasApplied ? (

@@ -15,19 +15,40 @@ const jobPostingSchema = z.object({
 });
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const schoolId = parseInt(params.id, 10);
+  const { id } = params;
+  const schoolId = parseInt(id, 10);
   if (isNaN(schoolId)) {
     return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
   }
   try {
+    // Determine user session and permissions
+    const session = await getServerSession(authOptions);
+    const email = session?.user?.email;
+    let isAuthorized = false;
+    if (email) {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: { managedSchools: true },
+      });
+      isAuthorized =
+        user?.role === UserRole.SUPER_ADMIN ||
+        (user?.managedSchools || []).some(admin => admin.school_id === schoolId);
+    }
+    // Debug logging
+    console.log('Debug GET job-postings for schoolId:', schoolId, 'isAuthorized:', isAuthorized);
+    // Build filter for postings
+    const whereClause: any = { schoolId };
+    console.log('Initial whereClause:', whereClause);
+    if (!isAuthorized) {
+      whereClause.isArchived = false;
+    }
+    console.log('Final whereClause with archive filter:', whereClause);
     // Fetch job postings for the school
     const jobPostings = await prisma.jobPosting.findMany({
-      where: { schoolId },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
     });
-
     // Determine if user has applied to each posting
-    const session = await getServerSession(authOptions);
     const userId = session?.user?.id ? parseInt(session.user.id as string, 10) : null;
     let appliedSet = new Set<number>();
     if (userId) {
@@ -45,8 +66,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }));
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching job postings:', error);
-    return NextResponse.json({ error: 'Failed to fetch job postings' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching job postings:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

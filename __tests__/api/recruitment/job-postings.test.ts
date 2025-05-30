@@ -43,8 +43,8 @@ describe('Job Postings API', () => {
       const res = await GET(req as any, { params: { id: '1' } });
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body).toEqual(fakeJobs);
-      expect(prismaMock.jobPosting.findMany).toHaveBeenCalledWith({ where: { schoolId: 1 }, orderBy: { createdAt: 'desc' } });
+      expect(body).toEqual(fakeJobs.map(job => ({ ...job, hasApplied: false })));
+      expect(prismaMock.jobPosting.findMany).toHaveBeenCalledWith({ where: { schoolId: 1, isArchived: false }, orderBy: { createdAt: 'desc' } });
     });
   });
 

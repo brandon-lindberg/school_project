@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function GET(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,8 +31,14 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   }
 
   try {
+    // Support filtering by jobPostingId via query string
+    const url = new URL(request.url);
+    const jobPostingIdParam = url.searchParams.get('jobPostingId');
+    const whereClause: any = jobPostingIdParam
+      ? { jobPostingId: parseInt(jobPostingIdParam, 10), jobPosting: { schoolId } }
+      : { jobPosting: { schoolId } };
     const applications = await prisma.application.findMany({
-      where: { jobPosting: { schoolId } },
+      where: whereClause,
       include: {
         notes: { orderBy: { createdAt: 'desc' } },
         offer: true,

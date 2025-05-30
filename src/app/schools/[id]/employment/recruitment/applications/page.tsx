@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { countries } from '@/lib/countries';
 import ApplicationList from './components/ApplicationList';
 
@@ -23,10 +23,15 @@ export default function ApplicationsPage() {
   const [openJlpt, setOpenJlpt] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  const searchParams = useSearchParams();
+  const jobPostingId = searchParams?.get('jobPostingId');
+
   useEffect(() => {
     async function fetchApplications() {
       try {
-        const res = await fetch(`/api/schools/${schoolId}/recruitment/applications`, { cache: 'no-store' });
+        // Include jobPostingId filter if provided
+        const endpoint = `/api/schools/${schoolId}/recruitment/applications${jobPostingId ? `?jobPostingId=${jobPostingId}` : ''}`;
+        const res = await fetch(endpoint, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch applications');
         const data = await res.json();
         console.log('fetchApplications data:', data);
@@ -38,7 +43,7 @@ export default function ApplicationsPage() {
       }
     }
     fetchApplications();
-  }, [schoolId]);
+  }, [schoolId, jobPostingId]);
 
   // Derive filter options and filtered list before early returns
   const nationalityOptions = useMemo(
