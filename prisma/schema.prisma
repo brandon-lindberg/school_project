@@ -175,6 +175,7 @@ model School {
   userListSchools                                                 UserListSchools[]
   jobPostings                                                     JobPosting[]
   blockedCountries                                                 BlockedCountry[]
+  featuredSlots                                                    FeaturedSlot[]
 
   @@index([name_en, name_jp], map: "idx_school_name")
   @@index([location_en, location_jp], map: "idx_school_location")
@@ -476,4 +477,17 @@ model ApplicationMessage {
   sender        User        @relation("ApplicationMessageSender", fields: [senderId], references: [user_id])
   content       String
   createdAt     DateTime    @default(now())
+}
+
+model FeaturedSlot {
+  id         Int      @id @default(autoincrement())
+  slotNumber Int      // 1-4 indicating which featured slot
+  schoolId   Int      // Reference to the school
+  school     School   @relation(fields: [schoolId], references: [school_id])
+  startDate  DateTime // Inclusive start date for featuring
+  endDate    DateTime // Inclusive end date for featuring
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([slotNumber])
 }

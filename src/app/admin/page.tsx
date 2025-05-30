@@ -64,6 +64,18 @@ export default function AdminDashboard() {
             Manage Schools
           </button>
         </div>
+
+        {/* Featured Schools Card */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4">Featured Schools</h2>
+          <p className="text-gray-600 mb-4">Schedule and manage featured school slots</p>
+          <button
+            onClick={() => router.push('/admin/featured')}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
+            Manage Featured
+          </button>
+        </div>
       </div>
 
       {/* Message Management Section */}

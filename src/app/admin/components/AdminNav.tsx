@@ -10,6 +10,7 @@ export default function AdminNav() {
   const links = [
     { href: '/admin', label: 'Dashboard' },
     { href: '/admin/claims', label: 'School Claims' },
+    { href: '/admin/featured', label: 'Featured Schools' },
   ];
 
   return (
