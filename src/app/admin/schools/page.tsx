@@ -13,12 +13,12 @@ type ExtendedSession = Session & {
     email?: string | null;
     name?: string | null;
     role?: UserRole;
-    managedSchoolId?: number;
+    managedSchoolId?: string;
   };
 };
 
 interface School {
-  school_id: number;
+  school_id: string;
   name: string;
   address: string;
   city: string;
@@ -123,6 +123,16 @@ export default function SchoolsManagement() {
       <h1 className="text-2xl font-bold mb-4">
         {session?.user.role === 'SUPER_ADMIN' ? 'Schools Management' : 'Manage Your School'}
       </h1>
+      {session?.user.role === 'SUPER_ADMIN' && (
+        <div className="mb-4">
+          <button
+            onClick={() => router.push('/admin/schools/create')}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Add School
+          </button>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>

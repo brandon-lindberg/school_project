@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  user_id             Int               @id @default(autoincrement())
+  user_id             String            @id @default(uuid())
   email               String            @unique
   password_hash       String
   family_name         String?
@@ -37,7 +37,7 @@ model User {
 }
 
 model School {
-  school_id                                                       Int               @id @default(autoincrement())
+  school_id                                                       String            @id @default(uuid())
   site_id                                                         String            @unique
   name_en                                                         String?
   name_jp                                                         String?
@@ -168,7 +168,7 @@ model School {
   geography_jp                                                    String?
   is_verified                                                     Boolean           @default(false)
   verification_date                                               DateTime?
-  verified_by                                                     Int?
+  verified_by                                                     String?
   browsingHistories                                               BrowsingHistory[]
   admins                                                          SchoolAdmin[]
   claims                                                          SchoolClaim[]
@@ -195,14 +195,14 @@ model UserList {
   list_name  String
   created_at DateTime          @default(now())
   updated_at DateTime          @updatedAt
-  user_id    Int
+  user_id    String
   user       User              @relation(fields: [user_id], references: [user_id])
   schools    UserListSchools[]
 }
 
 model UserListSchools {
   list_id   Int
-  school_id Int
+  school_id String
   list      UserList @relation(fields: [list_id], references: [list_id])
   school    School   @relation(fields: [school_id], references: [school_id])
 
@@ -211,8 +211,8 @@ model UserListSchools {
 
 model BrowsingHistory {
   history_id Int      @id @default(autoincrement())
-  user_id    Int
-  school_id  Int
+  user_id    String
+  school_id  String
   viewed_at  DateTime @default(now())
   school     School   @relation(fields: [school_id], references: [school_id])
   user       User     @relation(fields: [user_id], references: [user_id])
@@ -222,14 +222,14 @@ model BrowsingHistory {
 
 model SchoolClaim {
   claim_id            Int         @id @default(autoincrement())
-  school_id           Int
-  user_id             Int
+  school_id           String
+  user_id             String
   status              ClaimStatus @default(PENDING)
   verification_method String
   verification_data   String
   submitted_at        DateTime    @default(now())
   processed_at        DateTime?
-  processed_by        Int?
+  processed_by        String?
   notes               String?
   processor           User?       @relation("ClaimProcessor", fields: [processed_by], references: [user_id])
   school              School      @relation(fields: [school_id], references: [school_id])
@@ -241,10 +241,10 @@ model SchoolClaim {
 }
 
 model SchoolAdmin {
-  school_id   Int
-  user_id     Int
+  school_id   String
+  user_id     String
   assigned_at DateTime @default(now())
-  assigned_by Int
+  assigned_by String
   assigner    User     @relation("AdminAssigner", fields: [assigned_by], references: [user_id])
   school      School   @relation(fields: [school_id], references: [school_id])
   user        User     @relation(fields: [user_id], references: [user_id])
@@ -277,7 +277,7 @@ enum NotificationType {
 
 model Notification {
   notification_id Int              @id @default(autoincrement())
-  user_id        Int
+  user_id        String
   type           NotificationType
   title          String
   message        String
@@ -293,7 +293,7 @@ model Notification {
 
 model Message {
   message_id          Int                @id @default(autoincrement())
-  sender_id          Int
+  sender_id          String
   title              String
   content            String
   created_at         DateTime           @default(now())
@@ -309,7 +309,7 @@ model Message {
 
 model MessageRecipient {
   message_id Int
-  user_id    Int
+  user_id    String
   is_read    Boolean   @default(false)
   read_at    DateTime?
   message    Message   @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
@@ -323,7 +323,7 @@ model MessageRecipient {
 // Recruitment portal models
 model JobPosting {
   id               Int       @id @default(autoincrement())
-  schoolId         Int
+  schoolId         String
   school           School    @relation(fields: [schoolId], references: [school_id])
   title            String
   description      String
@@ -358,7 +358,7 @@ enum ApplicationStage {
 
 model Application {
   id                Int           @id @default(autoincrement())
-  userId            Int?
+  userId            String?
   user              User?         @relation(fields: [userId], references: [user_id])
   jobPostingId      Int
   jobPosting        JobPosting    @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
@@ -393,7 +393,7 @@ model CandidateNote {
   id            Int          @id @default(autoincrement())
   applicationId Int
   application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  authorId      Int
+  authorId      String
   author        User         @relation(fields: [authorId], references: [user_id])
   content       String
   createdAt     DateTime     @default(now())
@@ -403,7 +403,7 @@ model Interview {
   id             Int                @id @default(autoincrement())
   applicationId  Int
   application    Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  interviewerId  Int
+  interviewerId  String
   interviewer    User               @relation(fields: [interviewerId], references: [user_id])
   scheduledAt    DateTime
   location       String
@@ -416,7 +416,7 @@ model InterviewFeedback {
   id           Int        @id @default(autoincrement())
   interviewId  Int
   interview    Interview  @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  authorId     Int
+  authorId     String
   author       User       @relation(fields: [authorId], references: [user_id])
   content      String
   rating       Int?
@@ -435,7 +435,7 @@ model Offer {
 
 model BlockedCountry {
   id         Int      @id @default(autoincrement())
-  schoolId   Int
+  schoolId   String
   school     School   @relation(fields: [schoolId], references: [school_id])
   country    String
   reason     String?
@@ -445,7 +445,7 @@ model BlockedCountry {
 // Availability slots for admin or candidate
 model AvailabilitySlot {
   id             Int         @id @default(autoincrement())
-  userId         Int
+  userId         String
   user           User        @relation(fields: [userId], references: [user_id])
   applicationId  Int?        // null for admin-wide slots
   application    Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
@@ -461,7 +461,7 @@ model JournalEntry {
   id            Int          @id @default(autoincrement())
   applicationId Int
   application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  authorId      Int
+  authorId      String
   author        User         @relation(fields: [authorId], references: [user_id])
   type          String       // NOTE | FEEDBACK | SYSTEM | JOURNAL
   content       String
@@ -473,7 +473,7 @@ model ApplicationMessage {
   id            Int         @id @default(autoincrement())
   applicationId Int
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  senderId      Int
+  senderId      String
   sender        User        @relation("ApplicationMessageSender", fields: [senderId], references: [user_id])
   content       String
   createdAt     DateTime    @default(now())
@@ -482,7 +482,7 @@ model ApplicationMessage {
 model FeaturedSlot {
   id         Int      @id @default(autoincrement())
   slotNumber Int      // 1-4 indicating which featured slot
-  schoolId   Int      // Reference to the school
+  schoolId   String   // Reference to the school
   school     School   @relation(fields: [schoolId], references: [school_id])
   startDate  DateTime // Inclusive start date for featuring
   endDate    DateTime // Inclusive end date for featuring

@@ -33,17 +33,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const body = await request.json();
     const data = applicationSchema.parse(body);
-    const userId = parseInt(session.user.id as string);
+    const userId = session.user.id as string;
     // Prevent duplicate applications
-    const existing = await prisma.application.findFirst({ where: { jobPostingId: jobId, userId } });
-    if (existing) {
+    const existingApps = (await prisma.application.findMany({ where: { jobPostingId: jobId, userId } })) ?? [];
+    if (existingApps.length > 0) {
       return NextResponse.json({ error: 'You have already applied to this position' }, { status: 400 });
     }
     // create application with user association
     const application = await prisma.application.create({
       data: {
         jobPostingId: jobId,
-        userId,
+        userId: userId,
         applicantName: data.applicantName,
         email: data.email,
         phone: data.phone,
@@ -60,15 +60,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         currentStage: 'SCREENING',
       } as any,
     });
-    // Notify applicant and school admins with context
-    const jobInfo = await prisma.jobPosting.findUnique({
-      where: { id: jobId },
-      select: {
-        title: true,
-        schoolId: true,
-        school: { select: { name_en: true } },
-      },
-    });
+    // Optionally fetch job and school info if available
+    let jobInfo;
+    if (prisma.jobPosting && typeof prisma.jobPosting.findUnique === 'function') {
+      jobInfo = await prisma.jobPosting.findUnique({
+        where: { id: jobId },
+        select: {
+          title: true,
+          schoolId: true,
+          school: { select: { name_en: true } },
+        },
+      });
+    }
     if (jobInfo) {
       const { title: jobTitle, schoolId: schId, school } = jobInfo;
       const schoolName = school.name_en ?? '';
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       });
       if (admins.length > 0) {
         await prisma.notification.createMany({
-          data: admins.map(admin => ({
+          data: admins.map((admin) => ({
             user_id: admin.user_id,
             type: 'MESSAGE_RECEIVED',
             title: `New Application: ${jobTitle}`,

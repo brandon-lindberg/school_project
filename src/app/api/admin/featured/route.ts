@@ -50,14 +50,15 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { slotNumber, schoolId, startDate, endDate } = body;
-    // Validate inputs
-    const slotNum = parseInt(slotNumber);
-    const schoolNum = parseInt(schoolId);
+    // Validate and parse inputs
+    const slotNum = Number(slotNumber);
+    const schoolIdStr = schoolId as string;
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (
       isNaN(slotNum) || slotNum < 1 || slotNum > 4 ||
-      isNaN(schoolNum) || isNaN(start.getTime()) || isNaN(end.getTime()) ||
+      typeof schoolIdStr !== 'string' || schoolIdStr.trim() === '' ||
+      isNaN(start.getTime()) || isNaN(end.getTime()) ||
       start > end
     ) {
       return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     const newSlot = await prisma.featuredSlot.create({
       data: {
         slotNumber: slotNum,
-        schoolId: schoolNum,
+        schoolId: schoolIdStr,
         startDate: start,
         endDate: end,
       },

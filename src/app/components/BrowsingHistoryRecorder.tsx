@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 
 interface BrowsingHistoryRecorderProps {
-  schoolId: number;
+  schoolId: string;
 }
 
 export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRecorderProps) {
@@ -35,7 +35,7 @@ export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRec
         });
 
         if (!response.ok) {
-          console.error('Failed to record browsing history');
+          console.warn('Failed to record browsing history');
           return;
         }
 
@@ -43,7 +43,7 @@ export default function BrowsingHistoryRecorder({ schoolId }: BrowsingHistoryRec
         await fetchBrowsingHistory();
         setHasRecorded(true);
       } catch (error) {
-        console.error('Error recording browsing history:', error);
+        console.warn('Error recording browsing history:', error);
       }
     };
 

@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
 import { POST } from './route';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 
 // Mock next-auth
-jest.mock('next-auth', () => ({
+jest.mock('next-auth/next', () => ({
   getServerSession: jest.fn(),
 }));
 

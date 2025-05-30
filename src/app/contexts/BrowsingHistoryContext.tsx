@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 
 export interface BrowsingHistoryItem {
   history_id: number;
-  school_id: number;
+  school_id: string;
   viewed_at: Date;
   school: {
     name_en: string | null;

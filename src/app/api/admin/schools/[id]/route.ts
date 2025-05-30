@@ -14,9 +14,8 @@ export async function GET(request: NextRequest) {
     // Get the school ID from the URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
-
-    if (isNaN(schoolId)) {
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
@@ -32,7 +31,9 @@ export async function GET(request: NextRequest) {
 
     // Check if user is authorized to access this school
     if (user.role !== 'SUPER_ADMIN') {
-      const isSchoolAdmin = user.managedSchools.some(admin => admin.school_id === schoolId);
+      const isSchoolAdmin = user.managedSchools.some(admin =>
+        admin.school_id.toString() === schoolId
+      );
 
       if (!isSchoolAdmin) {
         return NextResponse.json(
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch the school
     const school = await prisma.school.findUnique({
-      where: { school_id: schoolId },
+      where: { school_id: schoolId as any },
       select: {
         school_id: true,
         name_en: true,
@@ -98,9 +99,8 @@ export async function PUT(request: NextRequest) {
     // Get the school ID from the URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
-
-    if (isNaN(schoolId)) {
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
@@ -116,7 +116,9 @@ export async function PUT(request: NextRequest) {
 
     // Check if user is authorized to update this school
     if (user.role !== 'SUPER_ADMIN') {
-      const isSchoolAdmin = user.managedSchools.some(admin => admin.school_id === schoolId);
+      const isSchoolAdmin = user.managedSchools.some(admin =>
+        admin.school_id.toString() === schoolId
+      );
 
       if (!isSchoolAdmin) {
         return NextResponse.json(
@@ -131,7 +133,7 @@ export async function PUT(request: NextRequest) {
 
     // Update school with bilingual fields
     const updatedSchool = await prisma.school.update({
-      where: { school_id: schoolId },
+      where: { school_id: schoolId as any },
       data: {
         name_en: name,
         address_en: address,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
@@ -63,13 +63,10 @@ const basicSchema = z.object({
   staff_board_members_jp: z.array(z.string()).nullable().default([]),
 });
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[pathParts.length - 2]);
-
-    if (!schoolId || isNaN(schoolId)) {
+    const schoolId = params.id;
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
@@ -13,11 +13,11 @@ const claimRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Extract schoolId as UUID string from URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[pathParts.length - 2]);
-
-    if (isNaN(schoolId)) {
+    const schoolId = pathParts[pathParts.length - 2]; // /api/schools/[schoolId]/claim
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 

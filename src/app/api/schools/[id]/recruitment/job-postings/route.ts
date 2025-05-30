@@ -16,8 +16,8 @@ const jobPostingSchema = z.object({
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
-  const schoolId = parseInt(id, 10);
-  if (isNaN(schoolId)) {
+  const schoolId = id;
+  if (!schoolId) {
     return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
   }
   try {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       orderBy: { createdAt: 'desc' },
     });
     // Determine if user has applied to each posting
-    const userId = session?.user?.id ? parseInt(session.user.id as string, 10) : null;
+    const userId = session?.user?.id || null;
     let appliedSet = new Set<number>();
     if (userId) {
       const userApps = await prisma.application.findMany({
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
-  const schoolId = parseInt(params.id, 10);
-  if (isNaN(schoolId)) {
+  const schoolId = params.id;
+  if (!schoolId) {
     return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
   }
   const isAuthorized =

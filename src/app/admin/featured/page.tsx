@@ -5,14 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface SchoolOption {
-  school_id: number;
+  school_id: string;
   name: string;
 }
 
 interface SlotState {
   id?: number;
   slotNumber: number;
-  schoolId?: number;
+  schoolId?: string;
   startDate: string;
   endDate: string;
 }
@@ -28,7 +28,7 @@ export default function AdminFeaturedPage() {
   const [savingSlot, setSavingSlot] = useState<number | null>(null);
   const [allSlots, setAllSlots] = useState<SlotState[]>([]);
   const [newSchedules, setNewSchedules] = useState(
-    Array.from({ length: 4 }, () => ({ schoolId: undefined as number | undefined, startDate: '', endDate: '' }))
+    Array.from({ length: 4 }, () => ({ schoolId: undefined as string | undefined, startDate: '', endDate: '' }))
   );
 
   // Guard access
@@ -194,7 +194,7 @@ export default function AdminFeaturedPage() {
               <select
                 className="mt-1 block w-full border rounded p-2"
                 value={slot.schoolId || ''}
-                onChange={e => handleChange(idx, 'schoolId', parseInt(e.target.value) || undefined)}
+                onChange={e => handleChange(idx, 'schoolId', e.target.value || undefined)}
               >
                 <option value="">-- Select School --</option>
                 {schools.map(s => (
@@ -238,7 +238,7 @@ export default function AdminFeaturedPage() {
             </div>
             <div className="mt-4 pt-4 border-t">
               <h3 className="font-medium mb-2">Schedule Next</h3>
-              <select className="mb-2 block w-full border rounded p-2" value={newSchedules[idx].schoolId || ''} onChange={e => handleNewChange(idx, 'schoolId', parseInt(e.target.value) || undefined)}>
+              <select className="mb-2 block w-full border rounded p-2" value={newSchedules[idx].schoolId || ''} onChange={e => handleNewChange(idx, 'schoolId', e.target.value || undefined)}>
                 <option value="">-- Select School --</option>
                 {schools.map(s => <option key={s.school_id} value={s.school_id}>{s.name}</option>)}
               </select>

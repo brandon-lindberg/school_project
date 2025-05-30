@@ -13,7 +13,7 @@ type ExtendedSession = Session & {
     email?: string | null;
     name?: string | null;
     role?: UserRole;
-    managedSchoolId?: number;
+    managedSchoolId?: string;
   };
 };
 

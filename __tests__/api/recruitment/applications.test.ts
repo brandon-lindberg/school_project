@@ -76,7 +76,7 @@ describe('Application Submission API', () => {
     expect(body).toHaveProperty('application');
     expect(body.application.id).toBe(1);
     expect(prismaMock.application.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ jobPostingId: 1, userId: 1, applicantName: 'Jane', email: 'jane@e.com' }) })
+      expect.objectContaining({ data: expect.objectContaining({ jobPostingId: 1, userId: '1', applicantName: 'Jane', email: 'jane@e.com' }) })
     );
   });
 });

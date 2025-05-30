@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt(session.user.id as string, 10);
+  const userId = session.user.id as string;
   const applications = await prisma.application.findMany({
     where: { userId },
     include: { jobPosting: true, interviews: true, offer: true, notes: true },

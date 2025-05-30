@@ -24,12 +24,14 @@ export async function GET(request: NextRequest) {
     if (!user || user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
-    const id = getIdFromUrl(request.url);
-    if (!id) {
+    const url = new URL(request.url);
+    const idStr = url.pathname.split('/')[4]; // /api/admin/featured/[id]
+    const slotId = parseInt(idStr, 10);
+    if (isNaN(slotId)) {
       return NextResponse.json({ error: 'Invalid slot ID' }, { status: 400 });
     }
     const slot = await prisma.featuredSlot.findUnique({
-      where: { id },
+      where: { id: slotId },
       include: { school: true },
     });
     if (!slot) {
@@ -56,19 +58,21 @@ export async function PUT(request: NextRequest) {
     if (!user || user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
-    const id = getIdFromUrl(request.url);
-    if (!id) {
+    const url = new URL(request.url);
+    const idStr = url.pathname.split('/')[4]; // /api/admin/featured/[id]
+    const slotId = parseInt(idStr, 10);
+    if (isNaN(slotId)) {
       return NextResponse.json({ error: 'Invalid slot ID' }, { status: 400 });
     }
     const body = await request.json();
     const { slotNumber, schoolId, startDate, endDate } = body;
     const data: any = {};
-    if (slotNumber !== undefined) data.slotNumber = parseInt(slotNumber);
-    if (schoolId !== undefined) data.schoolId = parseInt(schoolId);
+    if (slotNumber !== undefined) data.slotNumber = Number(slotNumber);
+    if (schoolId !== undefined) data.schoolId = schoolId as string;
     if (startDate !== undefined) data.startDate = new Date(startDate);
     if (endDate !== undefined) data.endDate = new Date(endDate);
     const updated = await prisma.featuredSlot.update({
-      where: { id },
+      where: { id: slotId },
       data,
       include: { school: true },
     });
@@ -93,11 +97,13 @@ export async function DELETE(request: NextRequest) {
     if (!user || user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
-    const id = getIdFromUrl(request.url);
-    if (!id) {
+    const url = new URL(request.url);
+    const idStr = url.pathname.split('/')[4]; // /api/admin/featured/[id]
+    const slotId = parseInt(idStr, 10);
+    if (isNaN(slotId)) {
       return NextResponse.json({ error: 'Invalid slot ID' }, { status: 400 });
     }
-    await prisma.featuredSlot.delete({ where: { id } });
+    await prisma.featuredSlot.delete({ where: { id: slotId } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting featured slot:', error);

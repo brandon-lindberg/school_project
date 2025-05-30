@@ -23,7 +23,7 @@ interface ListStatusContextType {
 
 const ListStatusContext = createContext<ListStatusContextType>({
   listStatuses: {},
-  updateListStatus: () => {},
+  updateListStatus: () => { },
 });
 
 export const ListStatusProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,7 +42,11 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
         const data = await response.json();
 
         const statusMap: Record<string, ListStatus> = {};
-        data.lists.forEach((list: UserList) => {
+        const lists: UserList[] = Array.isArray(data.lists) ? data.lists : [];
+        if (!Array.isArray(data.lists)) {
+          console.error('Invalid list statuses response:', data);
+        }
+        lists.forEach((list: UserList) => {
           list.schools.forEach(school => {
             statusMap[school.school_id] = {
               isInList: true,

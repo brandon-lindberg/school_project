@@ -158,7 +158,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   const canEdit = !!(
     session?.user?.role === 'SUPER_ADMIN' ||
     (session?.user?.role === 'SCHOOL_ADMIN' &&
-      session?.user?.managedSchools?.some(s => s.school_id === parseInt(school.school_id)))
+      session?.user?.managedSchools?.some(s => s.school_id === school.school_id))
   );
 
   const isAuthenticated = status === 'authenticated';
@@ -402,7 +402,17 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
               boardMembers={boardMembers}
             />
             <div className="mt-6">
-              <h2 className="text-2xl font-bold">{language === 'en' ? 'Job Postings' : '求人情報'}</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">{language === 'en' ? 'Job Postings' : '求人情報'}</h2>
+                {canEdit && (
+                  <Link
+                    href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  >
+                    {language === 'en' ? 'Add Job Posting' : '求人を追加'}
+                  </Link>
+                )}
+              </div>
               <InlineJobPostings schoolId={school.school_id} canEdit={canEdit} isAuthenticated={isAuthenticated} />
             </div>
           </>
@@ -416,7 +426,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <BrowsingHistoryRecorder schoolId={parseInt(school.school_id)} />
+      <BrowsingHistoryRecorder schoolId={school.school_id} />
 
       {notification && (
         <div

@@ -15,7 +15,7 @@ declare module 'next-auth' {
       phoneNumber?: string | null;
       image?: string | null;
       role: UserRole;
-      managedSchools?: Array<{ school_id: number }>;
+      managedSchools?: Array<{ school_id: string }>;
     };
   }
 
@@ -26,14 +26,14 @@ declare module 'next-auth' {
     phoneNumber?: string | null;
     image?: string | null;
     role: UserRole;
-    managedSchools?: Array<{ school_id: number }>;
+    managedSchools?: Array<{ school_id: string }>;
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     role: UserRole;
-    managedSchools?: Array<{ school_id: number }>;
+    managedSchools?: Array<{ school_id: string }>;
     phoneNumber?: string | null;
   }
 }
