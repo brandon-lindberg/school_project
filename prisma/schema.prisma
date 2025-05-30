@@ -33,6 +33,7 @@ model User {
   interviewFeedbacks  InterviewFeedback[]
   availabilitySlots   AvailabilitySlot[]
   journalEntries      JournalEntry[]
+  applicationMessages ApplicationMessage[] @relation("ApplicationMessageSender")
 }
 
 model School {
@@ -383,6 +384,8 @@ model Application {
   interviewLocation String?
   interviewerNames  String[]    @default([])
   rating            Int?        @default(0)  // Candidate overall rating 1-5
+  allowCandidateMessages Boolean    @default(false)
+  messages          ApplicationMessage[]
 }
 
 model CandidateNote {
@@ -463,4 +466,14 @@ model JournalEntry {
   content       String
   rating        Int?         // optional rating for feedback
   createdAt     DateTime     @default(now())
+}
+
+model ApplicationMessage {
+  id            Int         @id @default(autoincrement())
+  applicationId Int
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  senderId      Int
+  sender        User        @relation("ApplicationMessageSender", fields: [senderId], references: [user_id])
+  content       String
+  createdAt     DateTime    @default(now())
 }
