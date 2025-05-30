@@ -343,6 +343,7 @@ enum ApplicationStatus {
   OFFER
   ACCEPTED_OFFER
   REJECTED_OFFER
+  WITHDRAWN
 }
 
 enum ApplicationStage {

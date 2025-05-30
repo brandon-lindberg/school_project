@@ -20,16 +20,18 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
   const app = application;
   // Determine if awaiting candidate confirmation (invite or reschedule)
   const isInvitingStage = app.currentStage === 'INTERVIEW_INVITATION_SENT';
-  // Determine if this is a reschedule (existing interview)
-  const isReschedule = isInvitingStage && app.interviews.length > 0;
-  // Determine round number: existing interviews=[], round1; reschedule uses last round; else next round
+  // Identify the last interview, if any
+  const lastInterview = app.interviews[app.interviews.length - 1];
+  // Determine if this invitation is rescheduling an existing scheduled interview
+  const isReschedule = isInvitingStage && lastInterview?.status === 'SCHEDULED';
+  // Determine round number: first round if no interviews; if rescheduling, use existing round; otherwise next round
   const roundNum = app.interviews.length === 0
     ? 1
     : isReschedule
       ? app.interviews.length
       : app.interviews.length + 1;
   // Track last interview ID for reschedule
-  const lastInterviewId = app.interviews.length > 0 ? app.interviews[app.interviews.length - 1].id.toString() : undefined;
+  const lastInterviewId = lastInterview ? lastInterview.id.toString() : undefined;
 
   return (
     <div className="space-y-8">

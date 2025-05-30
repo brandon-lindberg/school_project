@@ -20,6 +20,7 @@ export default function ApplicationDetailPage() {
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
   const userRole = session?.user?.role;
   const managedFromSession = session?.user?.managedSchools ?? [];
   const isAdmin =
@@ -44,6 +45,27 @@ export default function ApplicationDetailPage() {
       setActionError(err.message);
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    setActionError(null);
+    setWithdrawing(true);
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'WITHDRAWN' }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to withdraw application');
+      }
+      setRefreshFlag(f => f + 1);
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setWithdrawing(false);
     }
   };
 
@@ -142,6 +164,7 @@ export default function ApplicationDetailPage() {
           && application.currentStage !== 'SCREENING'
           && application.status !== 'REJECTED'
           && application.status !== 'REJECTED_OFFER'
+          && application.status !== 'WITHDRAWN'
           && (
             <div className="space-x-2">
               <button
@@ -217,6 +240,7 @@ export default function ApplicationDetailPage() {
       )}
       <p><strong>Current Residence:</strong> {application.currentResidence ?? 'N/A'}</p>
       <p><strong>Nationality:</strong> {application.nationality ?? 'N/A'}</p>
+      <p><strong>JLPT:</strong> {application.jlpt ?? 'None'}</p>
       {application.resumeUrl && (
         <p><strong>Resume:</strong> <a href={application.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{application.resumeUrl}</a></p>
       )}
@@ -228,6 +252,17 @@ export default function ApplicationDetailPage() {
       )}
       <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
       <p><strong>Stage:</strong> {application.currentStage}</p>
+      {isCandidate && !application.offer && application.status !== 'WITHDRAWN' && application.status !== 'REJECTED' && (
+        <div className="mb-4">
+          <button
+            onClick={handleWithdraw}
+            disabled={withdrawing}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+          >
+            {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
+          </button>
+        </div>
+      )}
       {/* Candidate offer response UI */}
       {isCandidate && application.offer && (
         <OfferStatus offerId={String(application.offer.id)} initialStatus={application.offer.status} />
@@ -270,16 +305,15 @@ export default function ApplicationDetailPage() {
           )}
         </div>
       )}
-      {/* Employer workflow for application review, interviews, and offers */}
-      {isAdmin && (
+      {/* Journal entries are admin-only to prevent applicants from seeing employer notes */}
+      {isAdmin && <JournalTimeline applicationId={applicationId} />}
+      {isAdmin && <JournalEntryForm applicationId={applicationId} />}
+      {isAdmin && application.status !== 'WITHDRAWN' && (
         <EmployerWorkflow
           application={application}
           refresh={() => setRefreshFlag(f => f + 1)}
         />
       )}
-      {/* Journal entries are admin-only to prevent applicants from seeing employer notes */}
-      {isAdmin && <JournalTimeline applicationId={applicationId} />}
-      {isAdmin && <JournalEntryForm applicationId={applicationId} />}
     </div>
   );
 }

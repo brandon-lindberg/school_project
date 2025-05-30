@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { countries } from '@/lib/countries';
 import ApplicationList from './components/ApplicationList';
 
 export default function ApplicationsPage() {
@@ -46,10 +45,14 @@ export default function ApplicationsPage() {
   }, [schoolId, jobPostingId]);
 
   // Derive filter options and filtered list before early returns
-  const nationalityOptions = useMemo(
-    () => ['All', ...countries],
-    []
-  );
+  const nationalityOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        applications.map(app => app.nationality || '').filter(n => n)
+      )
+    );
+    return ['All', ...unique];
+  }, [applications]);
   const statusOptions = useMemo(
     () => ['All', ...Array.from(new Set(applications.map(a => a.status)))],
     [applications]

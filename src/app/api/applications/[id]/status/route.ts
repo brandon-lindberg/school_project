@@ -8,7 +8,7 @@ import path from 'path';
 import { sendEmail } from '@/lib/email';
 
 const statusSchema = z.object({
-  status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'ACCEPTED_OFFER', 'REJECTED_OFFER']),
+  status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'ACCEPTED_OFFER', 'REJECTED_OFFER', 'WITHDRAWN']),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: any }) {
@@ -31,13 +31,17 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
   const schoolId = app.jobPosting.schoolId;
-  const isAuthorized = user.role === 'SUPER_ADMIN' || user.managedSchools.some(s => s.school_id === schoolId);
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  // Determine admin-level authorization (super or school admin)
+  const isAdmin = user.role === 'SUPER_ADMIN' || user.managedSchools.some(s => s.school_id === schoolId);
 
   try {
     const { status } = statusSchema.parse(await request.json());
+    // Allow candidate to withdraw their own application
+    const isCandidate = session.user.id && parseInt(session.user.id as string, 10) === app.userId;
+    // If not admin, only allow candidate withdrawal
+    if (!isAdmin && !(status === 'WITHDRAWN' && isCandidate)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const updated = await prisma.application.update({
       where: { id: applicationId },
       data: { status: status as any },
