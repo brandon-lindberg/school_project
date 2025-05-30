@@ -14,7 +14,7 @@ import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import OfferStatus from '../../offers/components/OfferStatus';
 import ApplicationMessages from './components/ApplicationMessages';
-import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
@@ -79,6 +79,7 @@ export default function ApplicationDetailPage() {
   const [emailCopied, setEmailCopied] = useState<boolean>(false);
   const [phoneCopied, setPhoneCopied] = useState<boolean>(false);
   const [showMessagesPanel, setShowMessagesPanel] = useState(false);
+  const [showJournalPanel, setShowJournalPanel] = useState(false);
 
   useEffect(() => {
     async function fetchApplication() {
@@ -132,186 +133,189 @@ export default function ApplicationDetailPage() {
       : '';
 
   return (
-    <div className="relative">
-      <div className="p-8 max-w-3xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold">{application.applicantName}</h1>
-            {isAdmin && (
-              <div className="flex space-x-1">
-                {[1, 2, 3, 4, 5].map(n => (
-                  <button
-                    key={n}
-                    onClick={async () => {
-                      setCandidateRating(n);
-                      const resRating = await fetch(`/api/applications/${applicationId}/rating`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ rating: n }),
-                      });
-                      if (!resRating.ok) alert('Failed to update rating');
-                    }}
-                    className="focus:outline-none"
-                  >
-                    {candidateRating >= n ? (
-                      <StarSolidIcon className="h-6 w-6 text-yellow-400" />
-                    ) : (
-                      <StarOutlineIcon className="h-6 w-6 text-gray-300" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {isAdmin && !application.offer?.id && application.currentStage !== 'SCREENING' &&
-              ['REJECTED', 'REJECTED_OFFER', 'WITHDRAWN'].indexOf(application.status) === -1 && (
-                <>
-                  <button onClick={handleReject} disabled={rejecting}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50">
-                    {rejecting ? 'Rejecting...' : 'Reject'}
-                  </button>
-                  <button onClick={() => setShowOfferForm(v => !v)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                    Offer
-                  </button>
-                </>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="bg-white shadow rounded-lg p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+              {isAdmin && (
+                <div className="flex space-x-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      onClick={async () => {
+                        setCandidateRating(n);
+                        const resRating = await fetch(`/api/applications/${applicationId}/rating`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ rating: n }),
+                        });
+                        if (!resRating.ok) alert('Failed to update rating');
+                      }}
+                      className="focus:outline-none"
+                    >
+                      {candidateRating >= n ? (
+                        <StarSolidIcon className="h-6 w-6 text-yellow-400" />
+                      ) : (
+                        <StarOutlineIcon className="h-6 w-6 text-gray-300" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               )}
-            {/* Message panel trigger */}
-            <button onClick={() => setShowMessagesPanel(true)}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none">
-              <ChatBubbleLeftRightIcon className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-        {actionError && <p className="text-red-500">{actionError}</p>}
-        {showOfferForm && isAdmin && (
-          <OfferLetterForm applicationId={applicationId} initialLetterUrl={application.offer?.letterUrl} />
-        )}
-        <div className="flex items-center space-x-2">
-          <span><strong>Email:</strong> {application.email}</span>
-          {isAdmin && (
-            <>
-              <button
-                onClick={() => { navigator.clipboard.writeText(application.email); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); }}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                aria-label="Copy email"
-              >
-                <ClipboardDocumentIcon className="h-5 w-5" />
+            </div>
+            <div className="flex items-center space-x-2">
+              {isAdmin && !application.offer?.id && application.currentStage !== 'SCREENING' &&
+                ['REJECTED', 'REJECTED_OFFER', 'WITHDRAWN'].indexOf(application.status) === -1 && (
+                  <>
+                    <button onClick={handleReject} disabled={rejecting}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50">
+                      {rejecting ? 'Rejecting...' : 'Reject'}
+                    </button>
+                    <button onClick={() => setShowOfferForm(v => !v)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                      Offer
+                    </button>
+                  </>
+                )}
+              {/* Message panel trigger */}
+              <button onClick={() => setShowMessagesPanel(true)}
+                className="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <ChatBubbleLeftRightIcon className="h-6 w-6" />
               </button>
-              {emailCopied && <span className="text-green-600 text-sm">Copied!</span>}
-            </>
+            </div>
+          </div>
+          {actionError && <p className="text-red-500">{actionError}</p>}
+          {showOfferForm && isAdmin && (
+            <OfferLetterForm applicationId={applicationId} initialLetterUrl={application.offer?.letterUrl} />
           )}
-        </div>
-        <div className="flex items-center space-x-2">
-          <span><strong>Phone:</strong> {application.phone ?? 'N/A'}</span>
-          {isAdmin && application.phone && (
-            <>
-              <button
-                onClick={() => { navigator.clipboard.writeText(application.phone!); setPhoneCopied(true); setTimeout(() => setPhoneCopied(false), 2000); }}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                aria-label="Copy phone number"
-              >
-                <ClipboardDocumentIcon className="h-5 w-5" />
-              </button>
-              {phoneCopied && <span className="text-green-600 text-sm">Copied!</span>}
-            </>
-          )}
-        </div>
-        <p><strong>Japanese Visa:</strong> {application.hasJapaneseVisa ? 'Yes' : 'No'}</p>
-        {application.certifications?.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-1">Certifications</h2>
-            <ul className="list-disc list-inside">
-              {application.certifications.map((c: string, i: number) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {application.degrees?.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-1">Degrees</h2>
-            <ul className="list-disc list-inside">
-              {application.degrees.map((d: string, i: number) => (
-                <li key={i}>{d}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <p><strong>Current Residence:</strong> {application.currentResidence ?? 'N/A'}</p>
-        <p><strong>Nationality:</strong> {application.nationality ?? 'N/A'}</p>
-        <p><strong>JLPT:</strong> {application.jlpt ?? 'None'}</p>
-        {application.resumeUrl && (
-          <p><strong>Resume:</strong> <a href={application.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{application.resumeUrl}</a></p>
-        )}
-        {application.coverLetter && (
-          <div>
-            <h2 className="text-xl font-semibold mb-1">Cover Letter</h2>
-            <p>{application.coverLetter}</p>
-          </div>
-        )}
-        <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
-        <p><strong>Stage:</strong> {application.currentStage}</p>
-        {isCandidate && !application.offer && application.status !== 'WITHDRAWN' && application.status !== 'REJECTED' && (
-          <div className="mb-4">
-            <button
-              onClick={handleWithdraw}
-              disabled={withdrawing}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
-            >
-              {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
-            </button>
-          </div>
-        )}
-        {/* Candidate offer response UI */}
-        {isCandidate && application.offer && (
-          <OfferStatus offerId={String(application.offer.id)} initialStatus={application.offer.status} />
-        )}
-        {!isAdmin && !application.offer && (
-          <div className="space-y-6">
-            {/* List all interviews with completion status */}
-            {application.interviews.map((intv: any, idx: number) => (
-              <div key={intv.id} className="bg-white shadow-lg rounded-lg p-6 space-y-2">
-                <h2 className="text-xl font-semibold">
-                  Round {idx + 1}{' '}
-                  {new Date(intv.scheduledAt).getTime() <= Date.now() ? 'Complete' : 'Scheduled'}
-                </h2>
-                <p><strong>Date & Time:</strong> {new Date(intv.scheduledAt).toLocaleString()}</p>
-                <p>
-                  <strong>Location:</strong>{' '}
-                  <a
-                    href={intv.location}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >{intv.location}</a>
-                </p>
-                <p><strong>Interviewer(s):</strong> {intv.interviewerNames?.length ? intv.interviewerNames.join(', ') : ''}</p>
-                <AddToCalendarButton start={intv.scheduledAt} location={intv.location} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <span className="font-medium w-28">Email:</span>
+              <span>{application.email}</span>
+            </div>
+            {isAdmin && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(application.email); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); }}
+                  className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label="Copy email"
+                >
+                  <ClipboardDocumentIcon className="h-5 w-5" />
+                </button>
+                {emailCopied && <span className="text-green-600 text-sm">Copied!</span>}
               </div>
-            ))}
-            {/* Show scheduling UI when an interview invitation is pending */}
-            {application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
-              <CandidateSchedule
-                applicationId={applicationId}
-                interviewId={
-                  application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'
-                    ? application.interviews[application.interviews.length - 1].id.toString()
-                    : undefined
-                }
-                isReschedule={application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'}
-                onScheduled={() => setRefreshFlag(f => f + 1)}
-              />
+            )}
+            <div className="flex items-center space-x-2">
+              <span className="font-medium w-28">Phone:</span>
+              <span>{application.phone ?? 'N/A'}</span>
+            </div>
+            {isAdmin && application.phone && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(application.phone!); setPhoneCopied(true); setTimeout(() => setPhoneCopied(false), 2000); }}
+                  className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label="Copy phone number"
+                >
+                  <ClipboardDocumentIcon className="h-5 w-5" />
+                </button>
+                {phoneCopied && <span className="text-green-600 text-sm">Copied!</span>}
+              </div>
             )}
           </div>
-        )}
-        {/* Journal entries are admin-only to prevent applicants from seeing employer notes */}
-        {isAdmin && <JournalTimeline applicationId={applicationId} />}
-        {isAdmin && <JournalEntryForm applicationId={applicationId} />}
-        {isAdmin && application.status !== 'WITHDRAWN' && (
-          <EmployerWorkflow application={application} refresh={() => setRefreshFlag(f => f + 1)} />
-        )}
+          <p><strong>Japanese Visa:</strong> {application.hasJapaneseVisa ? 'Yes' : 'No'}</p>
+          {application.certifications?.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Certifications</h2>
+              <ul className="list-disc list-inside">
+                {application.certifications.map((c: string, i: number) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {application.degrees?.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Degrees</h2>
+              <ul className="list-disc list-inside">
+                {application.degrees.map((d: string, i: number) => (
+                  <li key={i}>{d}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p><strong>Current Residence:</strong> {application.currentResidence ?? 'N/A'}</p>
+          <p><strong>Nationality:</strong> {application.nationality ?? 'N/A'}</p>
+          <p><strong>JLPT:</strong> {application.jlpt ?? 'None'}</p>
+          {application.resumeUrl && (
+            <p><strong>Resume:</strong> <a href={application.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{application.resumeUrl}</a></p>
+          )}
+          {application.coverLetter && (
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Cover Letter</h2>
+              <p>{application.coverLetter}</p>
+            </div>
+          )}
+          <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
+          <p><strong>Stage:</strong> {application.currentStage}</p>
+          {isCandidate && !application.offer && application.status !== 'WITHDRAWN' && application.status !== 'REJECTED' && (
+            <div className="mb-4">
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawing}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+              >
+                {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
+              </button>
+            </div>
+          )}
+          {/* Candidate offer response UI */}
+          {isCandidate && application.offer && (
+            <OfferStatus offerId={String(application.offer.id)} initialStatus={application.offer.status} />
+          )}
+          {!isAdmin && !application.offer && (
+            <div className="space-y-6">
+              {/* List all interviews with completion status */}
+              {application.interviews.map((intv: any, idx: number) => (
+                <div key={intv.id} className="bg-white shadow-lg rounded-lg p-6 space-y-2">
+                  <h2 className="text-xl font-semibold">
+                    Round {idx + 1}{' '}
+                    {new Date(intv.scheduledAt).getTime() <= Date.now() ? 'Complete' : 'Scheduled'}
+                  </h2>
+                  <p><strong>Date & Time:</strong> {new Date(intv.scheduledAt).toLocaleString()}</p>
+                  <p>
+                    <strong>Location:</strong>{' '}
+                    <a
+                      href={intv.location}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >{intv.location}</a>
+                  </p>
+                  <p><strong>Interviewer(s):</strong> {intv.interviewerNames?.length ? intv.interviewerNames.join(', ') : ''}</p>
+                  <AddToCalendarButton start={intv.scheduledAt} location={intv.location} />
+                </div>
+              ))}
+              {/* Show scheduling UI when an interview invitation is pending */}
+              {application.currentStage === 'INTERVIEW_INVITATION_SENT' && (
+                <CandidateSchedule
+                  applicationId={applicationId}
+                  interviewId={
+                    application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'
+                      ? application.interviews[application.interviews.length - 1].id.toString()
+                      : undefined
+                  }
+                  isReschedule={application.interviews[application.interviews.length - 1]?.status === 'SCHEDULED'}
+                  onScheduled={() => setRefreshFlag(f => f + 1)}
+                />
+              )}
+            </div>
+          )}
+          {isAdmin && application.status !== 'WITHDRAWN' && (
+            <EmployerWorkflow application={application} refresh={() => setRefreshFlag(f => f + 1)} />
+          )}
+        </div>
       </div>
       {/* Backdrop */}
       {showMessagesPanel && (
@@ -329,6 +333,25 @@ export default function ApplicationDetailPage() {
           <ApplicationMessages applicationId={applicationId} allowCandidateMessages={application.allowCandidateMessages} isAdmin={isAdmin} />
         </div>
       </div>
+      {isAdmin && (
+        <> {/* Journal slide-out and backdrop for admins only */}
+          {showJournalPanel && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 z-30" onClick={() => setShowJournalPanel(false)} />
+          )}
+          <div className={`fixed inset-y-0 right-0 w-1/3 bg-white shadow-lg transform transition-transform duration-300 z-40 flex flex-col ${showJournalPanel ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="p-4 flex justify-between items-center border-b">
+              <h2 className="text-lg font-medium">Journal Entries</h2>
+              <button onClick={() => setShowJournalPanel(false)} className="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <JournalTimeline applicationId={applicationId} />
+              <JournalEntryForm applicationId={applicationId} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
