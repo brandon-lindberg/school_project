@@ -10,10 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const schoolId = parseInt(id, 10);
-  if (isNaN(schoolId)) {
-    return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
-  }
+  const schoolId = id;
 
   // Only super admins or managed school admins can view
   const user = await prisma.user.findUnique({

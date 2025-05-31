@@ -95,13 +95,19 @@ export function StudentLifeTab({
       {(school.student_life_tour_en || school.student_life_tour_jp) && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.tour}</h2>
-          <p className="text-gray-700 whitespace-pre-wrap">
-            {getLocalizedContent(
+          <a
+            href={getLocalizedContent(
               school.student_life_tour_en,
               school.student_life_tour_jp,
               language
             )}
-          </p>
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-2 text-green-500 hover:underline"
+          >
+            <span>🎥</span>
+            <span>{translations.sections.tour}</span>
+          </a>
         </div>
       )}
     </div>

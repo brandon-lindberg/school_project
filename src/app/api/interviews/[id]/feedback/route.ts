@@ -23,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const body = await request.json();
     const { content, rating } = feedbackSchema.parse(body);
-    const authorId = parseInt(session.user.id, 10);
+    const authorId = session.user.id;
 
     const feedback = await prisma.interviewFeedback.create({
       data: { interviewId, authorId, content, rating },

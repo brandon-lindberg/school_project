@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
   try {
     const body = await request.json();
     const { type, content, rating } = entrySchema.parse(body);
-    const authorId = typeof session.user.id === 'string' ? parseInt(session.user.id, 10) : session.user.id;
+    const authorId = session.user.id;
     const entry = await prisma.journalEntry.create({ data: { applicationId, authorId, type, content, rating } });
     return NextResponse.json(entry, { status: 201 });
   } catch (err: any) {

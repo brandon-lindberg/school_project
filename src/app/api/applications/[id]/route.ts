@@ -4,12 +4,11 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 export async function GET(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
   }
-
   try {
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
@@ -43,8 +42,8 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt(session.user.id, 10);
-  const { id } = await params;
+  const userId = session.user.id;
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });

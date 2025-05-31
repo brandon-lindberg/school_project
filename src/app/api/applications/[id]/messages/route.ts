@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt(session.user.id, 10);
+  const userId = session.user.id;
 
   // Fetch application to verify access
   const application = await prisma.application.findUnique({
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt(session.user.id, 10);
+  const userId = session.user.id;
   const { id } = await params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {

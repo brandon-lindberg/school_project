@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (!slot) {
       return NextResponse.json({ error: 'Slot not found' }, { status: 404 });
     }
-    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id, 10) : session.user.id;
+    const userId = session.user.id;
     if (slot.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -66,7 +66,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     if (!slot) {
       return NextResponse.json({ error: 'Slot not found' }, { status: 404 });
     }
-    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id, 10) : session.user.id;
+    const userId = session.user.id;
     if (slot.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

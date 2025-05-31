@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // create notification for applicant
     await prisma.notification.create({
       data: {
-        user_id: (await prisma.application.findUnique({ where: { id: applicationId } }))?.userId || 0,
+        user_id: (await prisma.application.findUnique({ where: { id: applicationId } }))?.userId || '',
         type: 'MESSAGE_RECEIVED',
         title: 'Interview Scheduled',
         message: `Your interview has been scheduled for ${new Date(scheduledAt).toLocaleString()} at ${location}`,

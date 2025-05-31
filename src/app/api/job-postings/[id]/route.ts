@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
     if (jobPosting.isArchived && !isAuthorized) {
       return NextResponse.json({ error: 'Job posting not found' }, { status: 404 });
     }
-    const userId = session?.user?.id ? parseInt(session.user.id as string, 10) : null;
+    const userId = session?.user?.id ?? null;
     let hasApplied = false;
     if (userId) {
       const existingApp = await prisma.application.findFirst({ where: { jobPostingId: jobId, userId } });

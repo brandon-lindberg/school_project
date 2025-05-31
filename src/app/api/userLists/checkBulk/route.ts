@@ -17,10 +17,10 @@ export async function GET(request: Request) {
     const userListSchools = await prisma.userListSchools.findMany({
       where: {
         school_id: {
-          in: schoolIds.map(id => parseInt(id, 10)),
+          in: schoolIds,
         },
         list: {
-          user_id: parseInt(userId, 10),
+          user_id: userId,
         },
       },
       select: {

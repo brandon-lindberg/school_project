@@ -27,7 +27,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const note = await prisma.candidateNote.create({
       data: {
         applicationId,
-        authorId: parseInt(session.user.id, 10),
+        authorId: session.user.id,
         content,
       },
     });

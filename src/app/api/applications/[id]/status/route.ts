@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
   try {
     const { status } = statusSchema.parse(await request.json());
     // Allow candidate to withdraw their own application
-    const isCandidate = session.user.id && parseInt(session.user.id as string, 10) === app.userId;
+    const isCandidate = session.user.id === app.userId;
     // If not admin, only allow candidate withdrawal
     if (!isAdmin && !(status === 'WITHDRAWN' && isCandidate)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
