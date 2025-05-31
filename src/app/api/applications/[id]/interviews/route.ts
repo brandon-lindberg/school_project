@@ -10,13 +10,14 @@ const interviewSchema = z.object({
   interviewerNames: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const applicationId = parseInt(params.id, 10);
+  const { id } = await params;
+  const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
   }
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   try {
     const body = await request.json();
     const { scheduledAt, location, interviewerNames } = interviewSchema.parse(body);
-    const interviewerId = parseInt(session.user.id, 10);
+    const interviewerId = session.user.id;
 
     const interview = await prisma.interview.create({
       data: {

@@ -49,7 +49,7 @@ describe('Application Submission API', () => {
     const fakeApp = {
       id: 1,
       jobPostingId: 1,
-      userId: 1,
+      userId: '1',
       applicantName: 'Jane',
       email: 'jane@e.com',
       hasJapaneseVisa: false,
@@ -97,7 +97,7 @@ describe('Application Listing API', () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@e.com' } });
     prismaMock.user.findUnique.mockResolvedValue({ email: 'admin@e.com', role: 'SUPER_ADMIN', managedSchools: [] });
     const submittedAt = new Date().toISOString();
-    const fakeApps = [{ id: 1, jobPostingId: 1, userId: 1, applicantName: 'Jane', email: 'jane@e.com', notes: [], offer: null, interviews: [], submittedAt }];
+    const fakeApps = [{ id: 1, jobPostingId: 1, userId: '1', applicantName: 'Jane', email: 'jane@e.com', notes: [], offer: null, interviews: [], submittedAt }];
     prismaMock.application.findMany.mockResolvedValue(fakeApps);
     const req = new NextRequest('http://localhost/api/schools/1/recruitment/applications', { method: 'GET' });
     const res = await listApplications(req as any, { params: { id: '1' } });

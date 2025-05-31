@@ -36,7 +36,7 @@ describe('Job Postings API', () => {
       const createdAt = new Date().toISOString();
       const updatedAt = createdAt;
       const fakeJobs = [
-        { id: 1, title: 'Dev', description: 'desc', requirements: [], location: 'Tokyo', employmentType: 'FULL_TIME', status: 'OPEN', createdAt, updatedAt, schoolId: 1, applications: [] },
+        { id: 1, title: 'Dev', description: 'desc', requirements: [], location: 'Tokyo', employmentType: 'FULL_TIME', status: 'OPEN', createdAt, updatedAt, schoolId: '1', applications: [] },
       ];
       prismaMock.jobPosting.findMany.mockResolvedValue(fakeJobs);
       const req = new NextRequest('http://localhost/api/schools/1/recruitment/job-postings', { method: 'GET' });
@@ -44,7 +44,7 @@ describe('Job Postings API', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body).toEqual(fakeJobs.map(job => ({ ...job, hasApplied: false })));
-      expect(prismaMock.jobPosting.findMany).toHaveBeenCalledWith({ where: { schoolId: 1, isArchived: false }, orderBy: { createdAt: 'desc' } });
+      expect(prismaMock.jobPosting.findMany).toHaveBeenCalledWith({ where: { schoolId: '1', isArchived: false }, orderBy: { createdAt: 'desc' } });
     });
   });
 
@@ -59,14 +59,14 @@ describe('Job Postings API', () => {
     it('creates job posting on success', async () => {
       getSessionMock.mockResolvedValue({ user: { email: 'admin@example.com' } });
       prismaMock.user.findUnique.mockResolvedValue({ email: 'admin@example.com', role: 'SUPER_ADMIN', managedSchools: [] });
-      prismaMock.jobPosting.create.mockResolvedValue({ id: 2, title: 'Test', description: 'desc', requirements: [], location: 'Tokyo', employmentType: 'FULL_TIME', status: 'OPEN', createdAt: new Date(), updatedAt: new Date(), schoolId: 1 });
+      prismaMock.jobPosting.create.mockResolvedValue({ id: 2, title: 'Test', description: 'desc', requirements: [], location: 'Tokyo', employmentType: 'FULL_TIME', status: 'OPEN', createdAt: new Date(), updatedAt: new Date(), schoolId: '1' });
       const payload = { title: 'Test', description: 'desc', requirements: [], location: 'Tokyo', employmentType: 'FULL_TIME' };
       const req = new NextRequest('http://localhost/api/schools/1/recruitment/job-postings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const res = await POST(req as any, { params: { id: '1' } });
       expect(res.status).toBe(201);
       const body = await res.json();
       expect(body).toHaveProperty('id', 2);
-      expect(prismaMock.jobPosting.create).toHaveBeenCalledWith({ data: { schoolId: 1, ...payload, status: 'OPEN' } });
+      expect(prismaMock.jobPosting.create).toHaveBeenCalledWith({ data: { schoolId: '1', ...payload, status: 'OPEN' } });
     });
   });
 });

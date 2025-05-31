@@ -18,7 +18,7 @@ const studentLifeSchema = z.object({
   student_life_tour_jp: z.string().nullable().default(''),
 });
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -34,7 +34,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const schoolId = params.id;
+    // Extract schoolId from URL path
+    const url = new URL(request.url);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const schoolId = segments[2]; // ['api','schools','{id}','student-life']
 
     if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });

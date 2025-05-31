@@ -27,7 +27,7 @@ export default function JobPostingDetailPage() {
 
   const userRole = session?.user?.role;
   const managedFromSession = session?.user?.managedSchools ?? [];
-  const isAdmin = userRole === 'SUPER_ADMIN' || (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
+  const isAdmin = userRole === 'SUPER_ADMIN' || (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === schoolId));
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);

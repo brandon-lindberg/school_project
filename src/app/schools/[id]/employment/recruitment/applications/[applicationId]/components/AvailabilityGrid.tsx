@@ -4,11 +4,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface Slot {
-  id: number;
+  id: string;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
-  user: { user_id: number; first_name: string; family_name: string };
+  user: { user_id: string; first_name: string; family_name: string };
   date: string;
 }
 
@@ -38,11 +38,7 @@ const weekdayAbbrevs = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function AvailabilityGrid({ applicationId }: { applicationId: string }) {
   const { data: session } = useSession();
-  const currentUserId = session?.user?.id
-    ? typeof session.user.id === 'string'
-      ? parseInt(session.user.id, 10)
-      : session.user.id
-    : null;
+  const currentUserId: string | null = session?.user?.id ?? null;
   const [slots, setSlots] = useState<Slot[]>([]);
   // Add-slot form fields
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -107,7 +103,7 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
     }
   }
 
-  async function deleteSlot(slotId: number) {
+  async function deleteSlot(slotId: string) {
     setError(null);
     try {
       const res = await fetch(`/api/applications/${applicationId}/availability-slots/${slotId}`, {

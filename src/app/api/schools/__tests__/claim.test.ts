@@ -80,7 +80,7 @@ describe('POST /api/schools/[id]/claim', () => {
       user: { email: 'test@example.com' },
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      user_id: 1,
+      user_id: '1',
       email: 'test@example.com',
     });
     (prisma.school.findUnique as jest.Mock).mockResolvedValue(null);
@@ -101,13 +101,13 @@ describe('POST /api/schools/[id]/claim', () => {
       user: { email: 'test@example.com' },
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      user_id: 1,
+      user_id: '1',
       email: 'test@example.com',
       first_name: 'Test',
       family_name: 'User',
     });
     (prisma.school.findUnique as jest.Mock).mockResolvedValue({
-      school_id: 1,
+      school_id: '1',
       name_en: 'Test School',
       name_jp: null,
     });
@@ -115,7 +115,7 @@ describe('POST /api/schools/[id]/claim', () => {
       claim_id: 1,
       status: 'PENDING',
     });
-    (prisma.user.findMany as jest.Mock).mockResolvedValue([{ user_id: 2, role: 'SUPER_ADMIN' }]);
+    (prisma.user.findMany as jest.Mock).mockResolvedValue([{ user_id: '2', role: 'SUPER_ADMIN' }]);
     (prisma.$transaction as jest.Mock).mockResolvedValue([]);
 
     const request = new NextRequest('http://localhost:3000/api/schools/1/claim', {
@@ -139,13 +139,13 @@ describe('POST /api/schools/[id]/claim', () => {
       user: { email: 'test@example.com' },
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      user_id: 1,
+      user_id: '1',
       email: 'test@example.com',
       first_name: 'Test',
       family_name: 'User',
     });
     (prisma.school.findUnique as jest.Mock).mockResolvedValue({
-      school_id: 1,
+      school_id: '1',
       name_en: 'Test School',
       name_jp: null,
     });

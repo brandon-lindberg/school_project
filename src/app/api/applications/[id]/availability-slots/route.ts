@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const parsedDate = new Date(date);
     const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][parsedDate.getDay()];
 
-    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id, 10) : session.user.id;
+    const userId = session.user.id;
     const slot = await prisma.availabilitySlot.create({
       data: {
         applicationId,

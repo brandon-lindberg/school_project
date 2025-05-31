@@ -55,7 +55,7 @@ describe('PATCH /api/applications/[id] allowCandidateMessages', () => {
 
   it('returns 403 if user is not admin or assigner', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'a@b.com', id: '2' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, jobPosting: { schoolId: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, jobPosting: { schoolId: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'USER' });
     prismaMock.schoolAdmin.findFirst.mockResolvedValue(null);
     const req = new NextRequest('http://localhost/api/applications/1', {
@@ -67,7 +67,7 @@ describe('PATCH /api/applications/[id] allowCandidateMessages', () => {
 
   it('updates allowCandidateMessages on success', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@b.com', id: '2' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, jobPosting: { schoolId: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, jobPosting: { schoolId: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SCHOOL_ADMIN' });
     prismaMock.schoolAdmin.findFirst.mockResolvedValue({});
     const updatedApp = { id: 1, allowCandidateMessages: true };
@@ -103,7 +103,7 @@ describe('GET /api/applications/[id]/messages', () => {
 
   it('returns 403 if not admin or owner', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'u@e.com', id: '2' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: 1, jobPosting: { schoolId: 1 }, user: { user_id: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: '1', jobPosting: { schoolId: '1' }, user: { user_id: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'USER' });
     prismaMock.schoolAdmin.findFirst.mockResolvedValue(null);
     const req = new NextRequest('http://localhost/api/applications/1/messages', { method: 'GET' });
@@ -113,10 +113,10 @@ describe('GET /api/applications/[id]/messages', () => {
 
   it('lists messages for owner', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'u@e.com', id: '1' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: 1, jobPosting: { schoolId: 1 }, user: { user_id: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: '1', jobPosting: { schoolId: '1' }, user: { user_id: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'USER' });
     prismaMock.schoolAdmin.findFirst.mockResolvedValue(null);
-    const fakeMsgs = [{ id: 1, applicationId: 1, senderId: 1, content: 'hi', createdAt: new Date().toISOString(), sender: { user_id: 1, first_name: 'A', family_name: 'B' } }];
+    const fakeMsgs = [{ id: 1, applicationId: 1, senderId: '1', content: 'hi', createdAt: new Date().toISOString(), sender: { user_id: '1', first_name: 'A', family_name: 'B' } }];
     prismaMock.applicationMessage.findMany.mockResolvedValue(fakeMsgs);
     const req = new NextRequest('http://localhost/api/applications/1/messages', { method: 'GET' });
     const res = await getAppMessages(req as any, { params: Promise.resolve({ id: '1' }) });
@@ -157,7 +157,7 @@ describe('POST /api/applications/[id]/messages', () => {
 
   it('returns 403 if candidate messaging disabled', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'u@e.com', id: '2' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: 2, allowCandidateMessages: false, jobPosting: { schoolId: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: '2', allowCandidateMessages: false, jobPosting: { schoolId: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'USER' });
     const req = new NextRequest('http://localhost/api/applications/1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: 'hello' }) });
     const res = await postAppMessage(req as any, { params: Promise.resolve({ id: '1' }) });
@@ -168,11 +168,11 @@ describe('POST /api/applications/[id]/messages', () => {
 
   it('creates message and notifies admin for candidate', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'u@e.com', id: '2' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: 2, allowCandidateMessages: true, jobPosting: { schoolId: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: '2', allowCandidateMessages: true, jobPosting: { schoolId: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'USER' });
-    const fakeMsg = { id: 1, applicationId: 1, senderId: 2, content: 'hi', createdAt: new Date().toISOString(), sender: { user_id: 2, first_name: null, family_name: null } };
+    const fakeMsg = { id: 1, applicationId: 1, senderId: '2', content: 'hi', createdAt: new Date().toISOString(), sender: { user_id: '2', first_name: null, family_name: null } };
     prismaMock.applicationMessage.create.mockResolvedValue(fakeMsg);
-    prismaMock.schoolAdmin.findMany.mockResolvedValue([{ user_id: 3 }]);
+    prismaMock.schoolAdmin.findMany.mockResolvedValue([{ user_id: '3' }]);
     const req = new NextRequest('http://localhost/api/applications/1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: 'hi' }) });
     const res = await postAppMessage(req as any, { params: Promise.resolve({ id: '1' }) });
     expect(res.status).toBe(201);
@@ -184,9 +184,9 @@ describe('POST /api/applications/[id]/messages', () => {
 
   it('creates message and notifies candidate for admin', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@e.com', id: '1' } });
-    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: 2, allowCandidateMessages: false, jobPosting: { schoolId: 1 } });
+    prismaMock.application.findUnique.mockResolvedValue({ id: 1, userId: '2', allowCandidateMessages: false, jobPosting: { schoolId: '1' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SUPER_ADMIN' });
-    const fakeMsg = { id: 2, applicationId: 1, senderId: 1, content: 'hello', createdAt: new Date().toISOString(), sender: { user_id: 1, first_name: null, family_name: null } };
+    const fakeMsg = { id: 2, applicationId: 1, senderId: '1', content: 'hello', createdAt: new Date().toISOString(), sender: { user_id: '1', first_name: null, family_name: null } };
     prismaMock.applicationMessage.create.mockResolvedValue(fakeMsg);
     prismaMock.notification.create.mockResolvedValue({});
     const req = new NextRequest('http://localhost/api/applications/1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: 'hello' }) });

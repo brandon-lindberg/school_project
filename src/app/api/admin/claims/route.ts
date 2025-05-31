@@ -28,9 +28,7 @@ export async function PUT(request: Request) {
 
     const { claimId, newUserId } = await request.json();
     const claimIdNumber = typeof claimId === 'string' ? parseInt(claimId, 10) : claimId;
-    const newUserIdNumber = typeof newUserId === 'string' ? parseInt(newUserId, 10) : newUserId;
-
-    if (!claimIdNumber || !newUserIdNumber || isNaN(claimIdNumber) || isNaN(newUserIdNumber)) {
+    if (!claimIdNumber || isNaN(claimIdNumber) || typeof newUserId !== 'string' || !newUserId.trim()) {
       return NextResponse.json({ error: 'Invalid claim ID or user ID' }, { status: 400 });
     }
 
@@ -92,7 +90,7 @@ export async function PUT(request: Request) {
       // Create new claim for the new user
       const claim = await tx.schoolClaim.create({
         data: {
-          user_id: newUserIdNumber,
+          user_id: newUserId,
           school_id: currentClaim.school_id,
           status: 'APPROVED',
           processed_at: new Date(),
@@ -108,7 +106,7 @@ export async function PUT(request: Request) {
 
       // Update the new user's role to SCHOOL_ADMIN
       await tx.user.update({
-        where: { user_id: newUserIdNumber },
+        where: { user_id: newUserId },
         data: { role: 'SCHOOL_ADMIN' },
       });
 
@@ -116,7 +114,7 @@ export async function PUT(request: Request) {
       await tx.schoolAdmin.create({
         data: {
           school_id: currentClaim.school_id,
-          user_id: newUserIdNumber,
+          user_id: newUserId,
           assigned_by: adminUser.user_id,
         },
       });
@@ -134,7 +132,7 @@ export async function PUT(request: Request) {
       // Create notification for the new user
       await tx.notification.create({
         data: {
-          user_id: newUserIdNumber,
+          user_id: newUserId,
           type: NotificationType.CLAIM_APPROVED,
           title: `School Transferred to You: ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'}`,
           message: `A school claim has been transferred to you for ${currentClaim.school.name_en || currentClaim.school.name_jp || 'School'}. You now have admin access to manage this school.`,

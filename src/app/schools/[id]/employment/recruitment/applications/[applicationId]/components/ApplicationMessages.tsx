@@ -4,12 +4,12 @@ import { useSession } from 'next-auth/react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 type MessageType = {
-  id: number;
-  applicationId: number;
-  senderId: number;
+  id: string;
+  applicationId: string;
+  senderId: string;
   content: string;
   createdAt: string;
-  sender: { user_id: number; first_name: string | null; family_name: string | null };
+  sender: { user_id: string; first_name: string | null; family_name: string | null };
 };
 
 type Props = {
@@ -20,7 +20,7 @@ type Props = {
 
 export default function ApplicationMessages({ applicationId, allowCandidateMessages: initialAllow, isAdmin }: Props) {
   const { data: session } = useSession();
-  const userId = session?.user?.id ? parseInt(session.user.id, 10) : null;
+  const userId: string | null = session?.user?.id ?? null;
 
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(true);

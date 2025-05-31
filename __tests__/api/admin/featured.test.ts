@@ -39,7 +39,7 @@ describe('GET /api/admin/featured', () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@b.com' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SUPER_ADMIN' });
     const now = new Date().toISOString();
-    const slots = [{ id: 1, slotNumber: 1, school: { school_id: 2 }, startDate: now, endDate: now }];
+    const slots = [{ id: 1, slotNumber: 1, school: { school_id: '2' }, startDate: now, endDate: now }];
     prismaMock.featuredSlot.findMany.mockResolvedValue(slots);
     const res = await getSlots();
     expect(prismaMock.featuredSlot.findMany).toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe('POST /api/admin/featured', () => {
   it('creates slot on success', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@b.com' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SUPER_ADMIN' });
-    const fakeSlot = { id: 10, slotNumber: 2, school: { school_id: 3 }, startDate: '2025-01-01', endDate: '2025-01-02' };
+    const fakeSlot = { id: 10, slotNumber: 2, school: { school_id: '3' }, startDate: '2025-01-01', endDate: '2025-01-02' };
     prismaMock.featuredSlot.create.mockResolvedValue(fakeSlot);
     const req = new Request('http://localhost/api/admin/featured', {
       method: 'POST',

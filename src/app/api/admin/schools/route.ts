@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
+import { randomUUID } from 'crypto';
 
 export async function GET() {
   try {
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
     // Create a new school with English fields; translations can be added later
     const newSchool = await prisma.school.create({
       data: {
+        site_id: randomUUID(),
         name_en: name,
         address_en: address,
         location_en: city,

@@ -21,7 +21,7 @@ export default function EditJobPostingPage() {
   const managedFromSession = session?.user?.managedSchools ?? [];
   const isAdmin =
     userRole === 'SUPER_ADMIN' ||
-    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
+    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === schoolId));
 
   const [job, setJob] = useState<JobPosting | null>(null);
   const [loading, setLoading] = useState(true);

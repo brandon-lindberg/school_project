@@ -27,7 +27,7 @@ export default function ApplicationDetailPage() {
   const managedFromSession = session?.user?.managedSchools ?? [];
   const isAdmin =
     userRole === 'SUPER_ADMIN' ||
-    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === parseInt(schoolId)));
+    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === schoolId));
 
   const handleReject = async () => {
     setActionError(null);
@@ -80,6 +80,33 @@ export default function ApplicationDetailPage() {
   const [phoneCopied, setPhoneCopied] = useState<boolean>(false);
   const [showMessagesPanel, setShowMessagesPanel] = useState(false);
   const [showJournalPanel, setShowJournalPanel] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+
+  // Handler to mark message notifications as read and open messages panel
+  const handleOpenMessages = async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const notifs = (await res.json()) as any[];
+        const toMark = notifs.filter(n =>
+          n.type === 'MESSAGE_RECEIVED' &&
+          !n.is_read &&
+          n.url === `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`
+        ).map(n => n.notification_id);
+        if (toMark.length > 0) {
+          await fetch('/api/notifications', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notificationIds: toMark }),
+          });
+        }
+        setUnreadMessagesCount(0);
+      }
+    } catch (err) {
+      console.error('Error marking messages read:', err);
+    }
+    setShowMessagesPanel(true);
+  };
 
   useEffect(() => {
     async function fetchApplication() {
@@ -111,6 +138,26 @@ export default function ApplicationDetailPage() {
     window.addEventListener('offerResponded', handleOfferResponded);
     return () => window.removeEventListener('offerResponded', handleOfferResponded);
   }, []);
+
+  // Fetch unread message notifications for this application
+  useEffect(() => {
+    async function fetchUnreadMessages() {
+      try {
+        const res = await fetch('/api/notifications');
+        if (!res.ok) return;
+        const notifs = await res.json();
+        const count = (notifs as any[]).filter(n =>
+          n.type === 'MESSAGE_RECEIVED' &&
+          !n.is_read &&
+          n.url === `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`
+        ).length;
+        setUnreadMessagesCount(count);
+      } catch (err) {
+        console.error('Error fetching unread notifications:', err);
+      }
+    }
+    fetchUnreadMessages();
+  }, [schoolId, applicationId, showMessagesPanel]);
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !application) return <div className="p-8 text-red-500">{error || 'Application not found'}</div>;
@@ -180,9 +227,14 @@ export default function ApplicationDetailPage() {
                   </>
                 )}
               {/* Message panel trigger */}
-              <button onClick={() => setShowMessagesPanel(true)}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none">
+              <button onClick={handleOpenMessages}
+                className="relative text-gray-500 hover:text-gray-700 focus:outline-none">
                 <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                    {unreadMessagesCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>

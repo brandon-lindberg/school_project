@@ -34,6 +34,15 @@ export default function NotificationsDropdown() {
 
   useEffect(() => {
     fetchNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    // Refresh notifications when window gains focus
+    const handleFocus = () => fetchNotifications();
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchNotifications = async () => {

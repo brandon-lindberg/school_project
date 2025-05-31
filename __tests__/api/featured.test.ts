@@ -16,7 +16,7 @@ describe('GET /api/featured', () => {
 
   it('returns slots on success', async () => {
     const testSlots = [
-      { id: 1, slotNumber: 2, school: { school_id: 5, name_en: 'Test School' }, startDate: new Date().toISOString(), endDate: new Date().toISOString() },
+      { id: 1, slotNumber: 2, school: { school_id: '5', name_en: 'Test School' }, startDate: new Date().toISOString(), endDate: new Date().toISOString() },
     ];
     prismaMock.featuredSlot.findMany.mockResolvedValue(testSlots);
     const req = new Request('http://localhost/api/featured');

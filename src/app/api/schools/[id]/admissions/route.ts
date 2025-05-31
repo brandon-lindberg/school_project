@@ -103,9 +103,12 @@ const admissionsSchema = z
   })
   .partial();
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest) {
   try {
-    const schoolId = params.id;
+    // Extract schoolId from URL path
+    const url = new URL(request.url);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const schoolId = segments[2]; // ['api', 'schools', '{id}', 'admissions']
 
     if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });

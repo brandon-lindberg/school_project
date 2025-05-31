@@ -62,7 +62,7 @@ describe('GET /api/admin/featured/[id]', () => {
   it('returns slot on success', async () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@b.com' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SUPER_ADMIN' });
-    const testSlot = { id: 1, slotNumber: 1, school: { school_id: 2 }, startDate: '2025-01-01', endDate: '2025-01-02' };
+    const testSlot = { id: 1, slotNumber: 1, school: { school_id: '2' }, startDate: '2025-01-01', endDate: '2025-01-02' };
     prismaMock.featuredSlot.findUnique.mockResolvedValue(testSlot);
     const req = new NextRequest('http://localhost/api/admin/featured/1', { method: 'GET' });
     const res = await getSlot(req as any);
@@ -102,7 +102,7 @@ describe('PUT /api/admin/featured/[id]', () => {
     getSessionMock.mockResolvedValue({ user: { email: 'admin@b.com' } });
     prismaMock.user.findUnique.mockResolvedValue({ role: 'SUPER_ADMIN' });
     const body = { slotNumber: '3', schoolId: '4', startDate: '2025-02-01', endDate: '2025-02-05' };
-    const updatedSlot = { id: 1, slotNumber: 3, school: { school_id: 4 }, startDate: '2025-02-01', endDate: '2025-02-05' };
+    const updatedSlot = { id: 1, slotNumber: 3, school: { school_id: '4' }, startDate: '2025-02-01', endDate: '2025-02-05' };
     prismaMock.featuredSlot.update.mockResolvedValue(updatedSlot);
     const req = new NextRequest('http://localhost/api/admin/featured/1', {
       method: 'PUT',
