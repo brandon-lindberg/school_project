@@ -6508,6 +6508,11 @@ styled-jsx@5.1.6:
   dependencies:
     client-only "0.0.1"
 
+stylelint-config-tailwindcss@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/stylelint-config-tailwindcss/-/stylelint-config-tailwindcss-1.0.0.tgz#de28230686abab80c457c571de4f64c7bb398af2"
+  integrity sha512-e6WUBJeLdOZ0sy8FZ1jk5Zy9iNGqqJbrMwnnV0Hpaw/yin6QO3gVv/zvyqSty8Yg6nEB5gqcyJbN387TPhEa7Q==
+
 sucrase@^3.35.0:
   version "3.35.0"
   resolved "https://registry.npmjs.org/sucrase/-/sucrase-3.35.0.tgz#57f17a3d7e19b36d8995f06679d121be914ae263"
