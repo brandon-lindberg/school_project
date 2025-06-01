@@ -32,7 +32,7 @@ interface ClientSchoolDetailProps {
 }
 
 // Insert an inline job postings list component
-function InlineJobPostings({ schoolId, canEdit, isAuthenticated }: { schoolId: string; canEdit: boolean; isAuthenticated: boolean; }) {
+function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { schoolId: string; canEdit: boolean; isAuthenticated: boolean; filter: 'ACTIVE' | 'ARCHIVED'; }) {
   const [jobPostings, setJobPostings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,54 +90,76 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated }: { schoolId: s
     );
   }
   if (error) return <div className="text-red-500">Error loading job postings: {error}</div>;
-  if (jobPostings.length === 0) return <p>No job postings yet.</p>;
+
+  // Filter job postings based on Active/Archived filter prop
+  const filteredJobs = jobPostings.filter(job => filter === 'ACTIVE' ? !job.isArchived : job.isArchived);
+  if (filteredJobs.length === 0) return (
+    <p>
+      {canEdit
+        ? filter === 'ACTIVE'
+          ? 'No active job postings.'
+          : 'No archived job postings.'
+        : 'No job postings yet.'}
+    </p>
+  );
 
   return (
-    <ul className="space-y-4">
-      {jobPostings.map((job: any) => (
-        <li key={job.id} className="bg-white p-4 rounded shadow">
-          <h3 className="text-xl font-semibold">{job.title}</h3>
-          <p className="text-gray-600">{job.location} — {job.employmentType}</p>
-          <p className="text-gray-700 mt-2">{job.description}</p>
-          {job.requirements && job.requirements.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-lg font-semibold">Requirements</h4>
-              <ul className="list-disc pl-5 mt-1 space-y-1">
-                {job.requirements.map((req: string, idx: number) => (
-                  <li key={idx}>{req}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
-          <div className="mt-2 flex items-center space-x-4">
-            {isAuthenticated ? (
-              canEdit ? (
-                <Link href={`/schools/${schoolId}/employment/recruitment/applications`} className="text-green-500 hover:underline">Applications</Link>
-              ) : job.hasApplied ? (
-                <button disabled className="text-gray-400 cursor-not-allowed">Applied</button>
+    <>
+      <ul className="space-y-4">
+        {filteredJobs.map((job: any) => (
+          <li key={job.id} className="bg-white p-4 rounded shadow">
+            <h3 className="text-xl font-semibold flex items-center">
+              {job.title}
+              {job.isArchived && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-gray-200 text-gray-700 rounded">
+                  Archived
+                </span>
+              )}
+            </h3>
+            <p className="text-gray-600">{job.location} — {job.employmentType}</p>
+            {job.description && (
+              <div className="mt-2 prose prose-sm" dangerouslySetInnerHTML={{ __html: job.description }} />
+            )}
+            {job.requirements && job.requirements.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-lg font-semibold">Requirements</h4>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  {job.requirements.map((req: string, idx: number) => (
+                    <li key={idx}>{req}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
+            <div className="mt-2 flex items-center space-x-4">
+              {isAuthenticated ? (
+                canEdit ? (
+                  <Link href={`/schools/${schoolId}/employment/recruitment/applications`} className="text-green-500 hover:underline">Applications</Link>
+                ) : job.hasApplied ? (
+                  <button disabled className="text-gray-400 cursor-not-allowed">Applied</button>
+                ) : (
+                  <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Apply</Link>
+                )
               ) : (
-                <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Apply</Link>
-              )
-            ) : (
-              <Link href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Sign up to Apply</Link>
-            )}
-            {canEdit && (
-              <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`} className="text-blue-500 hover:underline">Manage</Link>
-            )}
-            {canEdit && (
-              <button
-                onClick={() => handleDelete(job.id)}
-                disabled={deletingIds[job.id]}
-                className="ml-auto bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
-              >
-                {deletingIds[job.id] ? 'Deleting...' : 'Delete'}
-              </button>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
+                <Link href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Sign up to Apply</Link>
+              )}
+              {canEdit && (
+                <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`} className="text-blue-500 hover:underline">Manage</Link>
+              )}
+              {canEdit && (
+                <button
+                  onClick={() => handleDelete(job.id)}
+                  disabled={deletingIds[job.id]}
+                  className="ml-auto bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+                >
+                  {deletingIds[job.id] ? 'Deleting...' : 'Delete'}
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -151,6 +173,8 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  // State for active/archived filter in job postings list
+  const [activeFilter, setActiveFilter] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
 
   const translations = getSchoolDetailTranslations(language);
 
@@ -169,7 +193,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
       window.location.href = '/login';
       return;
     }
-    setActiveTab(tab);
+    setActiveTab(tab as 'ACTIVE' | 'ARCHIVED');
     setIsEditing(false); // Reset edit mode when changing tabs
   };
 
@@ -394,8 +418,8 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         return (
           <>
             <EmploymentTab
-              {...commonTabProps}
-              isSchoolAdmin={false}
+              translations={translations}
+              language={language}
               school={school}
               openPositions={openPositions}
               staffList={staffList}
@@ -404,16 +428,39 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
             <div className="mt-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">{language === 'en' ? 'Job Postings' : '求人情報'}</h2>
-                {canEdit && (
-                  <Link
-                    href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  >
-                    {language === 'en' ? 'Add Job Posting' : '求人を追加'}
-                  </Link>
-                )}
+                <div className="flex items-center space-x-4">
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => setActiveFilter('ACTIVE')}
+                        className={`pb-2 font-medium ${activeFilter === 'ACTIVE' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+                      >
+                        Active
+                      </button>
+                      <button
+                        onClick={() => setActiveFilter('ARCHIVED')}
+                        className={`pb-2 font-medium ${activeFilter === 'ARCHIVED' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+                      >
+                        Archived
+                      </button>
+                    </>
+                  )}
+                  {canEdit && (
+                    <Link
+                      href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                    >
+                      {language === 'en' ? 'Add Job Posting' : '求人を追加'}
+                    </Link>
+                  )}
+                </div>
               </div>
-              <InlineJobPostings schoolId={school.school_id} canEdit={canEdit} isAuthenticated={isAuthenticated} />
+              <InlineJobPostings
+                schoolId={school.school_id}
+                canEdit={canEdit}
+                isAuthenticated={isAuthenticated}
+                filter={activeFilter}
+              />
             </div>
           </>
         );

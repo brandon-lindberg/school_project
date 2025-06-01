@@ -5,6 +5,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 });
 
 const nextConfig = {
+  reactStrictMode: false,
   eslint: {
     // Allow production builds to complete even if there are ESLint errors
     // ignoreDuringBuilds: true,

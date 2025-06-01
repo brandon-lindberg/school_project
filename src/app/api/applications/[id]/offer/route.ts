@@ -46,7 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     await prisma.notification.create({
       data: {
         user_id: app.userId || 0,
-        type: 'MESSAGE_RECEIVED',
+        type: 'APPLICATION_STATUS_UPDATED',
         title: 'Offer Letter Sent',
         message: `An offer has been sent: ${letterUrl}`,
         url: `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`,

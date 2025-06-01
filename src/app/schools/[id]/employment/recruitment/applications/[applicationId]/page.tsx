@@ -23,6 +23,7 @@ export default function ApplicationDetailPage() {
   const [rejecting, setRejecting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const userRole = session?.user?.role;
   const managedFromSession = session?.user?.managedSchools ?? [];
   const isAdmin =
@@ -64,6 +65,7 @@ export default function ApplicationDetailPage() {
         throw new Error(data.error || 'Failed to withdraw application');
       }
       setRefreshFlag(f => f + 1);
+      setWithdrawSuccess(true);
     } catch (err: any) {
       setActionError(err.message);
     } finally {
@@ -227,8 +229,7 @@ export default function ApplicationDetailPage() {
                   </>
                 )}
               {/* Message panel trigger */}
-              <button onClick={handleOpenMessages}
-                className="relative text-gray-500 hover:text-gray-700 focus:outline-none">
+              <button onClick={handleOpenMessages} className="relative text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer">
                 <ChatBubbleLeftRightIcon className="h-6 w-6" />
                 {unreadMessagesCount > 0 && (
                   <span className="absolute top-0 right-0 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
@@ -236,6 +237,11 @@ export default function ApplicationDetailPage() {
                   </span>
                 )}
               </button>
+              {isAdmin && (
+                <button onClick={() => setShowJournalPanel(true)} className="text-gray-500 hover:text-gray-700 focus:outline-none">
+                  <DocumentTextIcon className="h-6 w-6" />
+                </button>
+              )}
             </div>
           </div>
           {actionError && <p className="text-red-500">{actionError}</p>}
@@ -311,6 +317,11 @@ export default function ApplicationDetailPage() {
           )}
           <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
           <p><strong>Stage:</strong> {application.currentStage}</p>
+          {withdrawSuccess && (
+            <div className="p-4 bg-green-100 text-green-800 rounded mb-4">
+              Application withdrawn successfully
+            </div>
+          )}
           {isCandidate && !application.offer && application.status !== 'WITHDRAWN' && application.status !== 'REJECTED' && (
             <div className="mb-4">
               <button
@@ -324,9 +335,13 @@ export default function ApplicationDetailPage() {
           )}
           {/* Candidate offer response UI */}
           {isCandidate && application.offer && (
-            <OfferStatus offerId={String(application.offer.id)} initialStatus={application.offer.status} />
+            <OfferStatus
+              offerId={String(application.offer.id)}
+              initialStatus={application.offer.status}
+              letterUrl={application.offer.letterUrl!}
+            />
           )}
-          {!isAdmin && !application.offer && (
+          {!isAdmin && !application.offer && application.status !== 'WITHDRAWN' && (
             <div className="space-y-6">
               {/* List all interviews with completion status */}
               {application.interviews.map((intv: any, idx: number) => (

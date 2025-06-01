@@ -12,9 +12,10 @@ interface EmployerWorkflowProps {
 }
 
 export default function EmployerWorkflow({ application, refresh }: EmployerWorkflowProps) {
-  // Persist review state based on currentStage
-  const initialReviewDone = application.currentStage !== 'SCREENING';
+  // Persist review state based on currentStage or if already rejected
+  const initialReviewDone = application.currentStage !== 'SCREENING' || application.status === 'REJECTED';
   const [reviewDone, setReviewDone] = useState(initialReviewDone);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // Toggle invitation UI for next round
   const [inviting, setInviting] = useState(false);
   const app = application;
@@ -35,14 +36,24 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
 
   return (
     <div className="space-y-8">
+      {successMessage && (
+        <div className="p-4 bg-green-100 text-green-800 rounded mb-4">
+          {successMessage}
+        </div>
+      )}
       {!reviewDone && (
         <ApplicationReview
           applicationId={app.id.toString()}
           onAccept={() => {
             setReviewDone(true);
             refresh();
+            setSuccessMessage('Application accepted successfully');
           }}
-          onReject={refresh}
+          onReject={() => {
+            setReviewDone(true);
+            refresh();
+            setSuccessMessage('Application rejected successfully');
+          }}
         />
       )}
       {/* Interview invitation for initial or next round, including when awaiting candidate confirmation */}

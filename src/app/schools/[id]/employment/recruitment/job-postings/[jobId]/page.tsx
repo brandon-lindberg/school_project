@@ -150,7 +150,9 @@ export default function JobPostingDetailPage() {
         )}
       </div>
       <p className="text-gray-600">{job.location} — {job.employmentType}</p>
-      <p>{job.description}</p>
+      {job.description && (
+        <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: job.description }} />
+      )}
       <div>
         <h2 className="text-xl font-semibold mb-2">Requirements</h2>
         <ul className="list-disc pl-5">

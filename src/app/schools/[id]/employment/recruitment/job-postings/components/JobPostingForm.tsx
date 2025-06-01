@@ -1,6 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+
+// Dynamically import react-quill-new to avoid SSR
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 interface JobPostingFormProps {
   schoolId: string;
@@ -14,6 +19,21 @@ export default function JobPostingForm({ schoolId, onSuccess }: JobPostingFormPr
   const [location, setLocation] = useState('');
   const [employmentType, setEmploymentType] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Quill modules and formats
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['clean'],
+    ],
+  };
+  const formats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'color', 'background', 'list',
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +77,16 @@ export default function JobPostingForm({ schoolId, onSuccess }: JobPostingFormPr
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Description</label>
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          required
-          className="w-full border rounded p-2"
-        />
+        <div className="border rounded h-[300px] overflow-hidden">
+          <ReactQuill
+            value={description}
+            onChange={setDescription}
+            modules={modules}
+            formats={formats}
+            theme="snow"
+            className="h-full"
+          />
+        </div>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Requirements</label>

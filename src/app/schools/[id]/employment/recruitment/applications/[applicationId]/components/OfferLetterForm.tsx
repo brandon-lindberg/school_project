@@ -28,6 +28,7 @@ export default function OfferLetterForm({ applicationId, initialLetterUrl }: Off
         throw new Error(data.error || 'Failed to send offer');
       }
       setSuccess(true);
+      window.dispatchEvent(new Event('offerResponded'));
     } catch (err: any) {
       setError(err.message);
     } finally {

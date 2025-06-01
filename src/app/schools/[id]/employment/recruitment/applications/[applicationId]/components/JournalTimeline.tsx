@@ -16,6 +16,13 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const typeStyles: Record<string, string> = {
+    NOTE: 'border-blue-200 bg-blue-50',
+    FEEDBACK: 'border-green-200 bg-green-50',
+    SYSTEM: 'border-gray-300 bg-gray-100',
+    JOURNAL: 'border-yellow-200 bg-yellow-50',
+  };
+
   async function fetchEntries() {
     try {
       const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
@@ -48,7 +55,7 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
       <h3 className="text-lg font-semibold">Journal Entries</h3>
       <ul className="space-y-2">
         {entries.map(e => (
-          <li key={e.id} className="border p-2 rounded">
+          <li key={e.id} className={`p-2 rounded border ${typeStyles[e.type] || 'border-gray-200 bg-white'}`}>
             <p className="text-sm text-gray-500">
               {new Date(e.createdAt).toLocaleString()} by {e.author.first_name}
             </p>
