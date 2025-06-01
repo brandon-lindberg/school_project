@@ -20,6 +20,7 @@ import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 import ContactBanner from '../components/ContactBanner';
+import { usePathname } from 'next/navigation';
 
 const BrowsingHistorySkeleton = () => (
   <div className="mb-8 animate-pulse">
@@ -135,6 +136,7 @@ const ListPage: React.FC = () => {
   });
   const { language } = useLanguage();
   const { data: session } = useSession();
+  const pathname = usePathname();
   const {
     browsingHistory,
     deleteHistoryEntry: handleDeleteHistoryEntry,
@@ -379,6 +381,8 @@ const ListPage: React.FC = () => {
 
   // Load featured slots and fall back to random for unassigned slots
   useEffect(() => {
+    // Only reload featured and fallback when on the /list page
+    if (pathname !== '/list') return;
     let mounted = true;
     const loadFeaturedSlots = async () => {
       setIsFeaturedLoading(true);
@@ -389,11 +393,26 @@ const ListPage: React.FC = () => {
         const slots = data.slots as { slotNumber: number; school: School }[];
         setFeaturedSlots(slots);
         const assignedCount = slots.length;
-        if (assignedCount < 4) {
-          const randRes = await fetch(`/api/schools/random?limit=${4 - assignedCount}`);
+        // Count unique slot numbers (to handle overlapping schedules)
+        const uniqueSlotCount = new Set(slots.map(slot => slot.slotNumber)).size;
+        if (uniqueSlotCount < 4) {
+          // Fetch full list of URL-enabled schools for fallback
+          const randRes = await fetch('/api/schools/random?limit=1000');
           const randData = await randRes.json();
           if (!mounted) return;
-          setRandomSchools(randData.schools);
+          // Exclude any schools already scheduled
+          const scheduledIds = new Set(slots.map(slot => slot.school.school_id));
+          let candidates = (randData.schools as School[]).filter(
+            s => !scheduledIds.has(s.school_id)
+          );
+          // Shuffle candidates
+          for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+          }
+          // Take only the needed number of fallback slots
+          const finalFallback = candidates.slice(0, 4 - uniqueSlotCount);
+          setRandomSchools(finalFallback);
         } else {
           setRandomSchools([]);
         }
@@ -409,7 +428,7 @@ const ListPage: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [pathname]);
 
   // Combine scheduled slots with random fallbacks for display
   const displaySchools = useMemo(() => {
