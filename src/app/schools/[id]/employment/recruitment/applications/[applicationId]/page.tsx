@@ -83,6 +83,9 @@ export default function ApplicationDetailPage() {
   const [showMessagesPanel, setShowMessagesPanel] = useState(false);
   const [showJournalPanel, setShowJournalPanel] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+  const [journalEntries, setJournalEntries] = useState<any[]>([]);
+  const [journalLoading, setJournalLoading] = useState(true);
+  const [journalError, setJournalError] = useState<string | null>(null);
 
   // Handler to mark message notifications as read and open messages panel
   const handleOpenMessages = async () => {
@@ -160,6 +163,26 @@ export default function ApplicationDetailPage() {
     }
     fetchUnreadMessages();
   }, [schoolId, applicationId, showMessagesPanel]);
+
+  // Fetch journal entries for latest entry display
+  useEffect(() => {
+    async function fetchJournal() {
+      try {
+        const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch journal entries');
+        const data = await res.json();
+        setJournalEntries(data);
+      } catch (err: any) {
+        setJournalError(err.message);
+      } finally {
+        setJournalLoading(false);
+      }
+    }
+    fetchJournal();
+  }, [applicationId, refreshFlag]);
+
+  // Determine the most recent journal entry
+  const latestJournalEntry = journalEntries.length > 0 ? journalEntries[journalEntries.length - 1] : null;
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error || !application) return <div className="p-8 text-red-500">{error || 'Application not found'}</div>;
@@ -381,6 +404,17 @@ export default function ApplicationDetailPage() {
           )}
           {isAdmin && application.status !== 'WITHDRAWN' && (
             <EmployerWorkflow application={application} refresh={() => setRefreshFlag(f => f + 1)} />
+          )}
+          {isAdmin && latestJournalEntry && (
+            <div className="bg-gray-100 rounded-lg p-4 space-y-2">
+              <h2 className="text-xl font-semibold">Most Recent Note</h2>
+              <p className="text-sm text-gray-600">
+                {new Date(latestJournalEntry.createdAt).toLocaleString()} by {latestJournalEntry.author.first_name} {latestJournalEntry.author.family_name}
+              </p>
+              <div className="text-gray-800">
+                {latestJournalEntry.content}
+              </div>
+            </div>
           )}
         </div>
       </div>
