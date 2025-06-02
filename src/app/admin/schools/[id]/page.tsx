@@ -47,8 +47,10 @@ export default function EditSchoolPage() {
     fetchedRef.current = true;
     // only SUPER_ADMIN or owning SCHOOL_ADMIN
     const role = session?.user.role;
-    const managedId = (session as any)?.user.managedSchoolId;
-    if (role !== 'SUPER_ADMIN' && (role !== 'SCHOOL_ADMIN' || managedId !== id)) {
+    const isManaged = (session as any)?.user.managedSchools?.some(
+      (ms: any) => String(ms.school_id) === id
+    );
+    if (role !== 'SUPER_ADMIN' && (role !== 'SCHOOL_ADMIN' || !isManaged)) {
       router.replace('/');
       return;
     }
@@ -77,7 +79,12 @@ export default function EditSchoolPage() {
       if (!res.ok) throw new Error('Save failed');
       const updated = await res.json();
       toast.success('School updated');
-      router.push('/admin/schools');
+      // Redirect based on user role
+      if (session?.user.role === 'SCHOOL_ADMIN') {
+        router.push('/list');
+      } else {
+        router.push('/admin/schools');
+      }
     } catch (e) {
       console.error(e);
       toast.error('Failed to save');
@@ -208,9 +215,18 @@ export default function EditSchoolPage() {
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
           >Save</button>
           <button
-            onClick={() => router.push('/admin/schools')}
+            onClick={() => {
+              // Redirect based on user role
+              if (session?.user.role === 'SCHOOL_ADMIN') {
+                router.push('/list');
+              } else {
+                router.push('/admin/schools');
+              }
+            }}
             className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-          >Cancel</button>
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>

@@ -458,8 +458,8 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       )}
                     </div>
                   </Link>
-                  {/* List Button Column */}
-                  <div className="flex items-center justify-center">
+                  {/* List & Edit Actions Column */}
+                  <div className="flex items-center justify-center gap-2">
                     {session && (
                       <Tooltip
                         content={
@@ -485,6 +485,30 @@ const SchoolList: React.FC<SchoolListProps> = ({
                         </button>
                       </Tooltip>
                     )}
+                    {(session?.user?.role === 'SUPER_ADMIN' ||
+                      (session?.user?.role === 'SCHOOL_ADMIN' &&
+                        (session.user as any).managedSchools?.some(
+                          (ms: any) => String(ms.school_id) === school.school_id
+                        )
+                      )
+                    ) && (
+                        <Tooltip
+                          content={
+                            session.user.role === 'SUPER_ADMIN'
+                              ? 'Edit School'
+                              : language === 'en'
+                                ? 'Edit Your School'
+                                : '学校を編集'
+                          }
+                        >
+                          <Link
+                            href={`/admin/schools/${school.school_id}`}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors"
+                          >
+                            <span className="text-xs">✎</span>
+                          </Link>
+                        </Tooltip>
+                      )}
                   </div>
                 </div>
               ))}
