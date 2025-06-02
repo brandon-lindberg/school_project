@@ -70,7 +70,7 @@ export async function PUT(request: Request) {
 
     // Update user role
     const updatedUser = await prisma.user.update({
-      where: { user_id: parseInt(userId) },
+      where: { user_id: userId },
       data: { role },
       select: {
         user_id: true,

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 const QUERY_MODE: Prisma.QueryMode = 'insensitive';
 
@@ -35,18 +34,24 @@ export async function GET(request: Request) {
     // If ID is provided, return single school
     if (id) {
       const school = await prisma.school.findUnique({
-        where: { school_id: parseInt(id) },
+        where: { school_id: id },
         select: {
           school_id: true,
           name_en: true,
           name_jp: true,
           description_en: true,
           description_jp: true,
+          short_description_en: true,
+          short_description_jp: true,
           location_en: true,
           location_jp: true,
           logo_id: true,
+          image_url: true,
+          logo_url: true,
           email_en: true,
+          email_jp: true,
           phone_en: true,
+          phone_jp: true,
           url_en: true,
           url_jp: true,
           address_en: true,
@@ -55,6 +60,8 @@ export async function GET(request: Request) {
           region_jp: true,
           country_en: true,
           country_jp: true,
+          geography_en: true,
+          geography_jp: true,
           affiliations_en: true,
           affiliations_jp: true,
           accreditation_en: true,
@@ -151,6 +158,9 @@ export async function GET(request: Request) {
           policies_privacy_policy_jp: true,
           policies_terms_of_use_en: true,
           policies_terms_of_use_jp: true,
+          job_postings_enabled: true,
+          job_postings_start: true,
+          job_postings_end: true,
         },
       });
 
@@ -233,10 +243,14 @@ export async function GET(request: Request) {
         name_en: true,
         name_jp: true,
         description_en: true,
+        short_description_en: true,
         description_jp: true,
+        short_description_jp: true,
         location_en: true,
         location_jp: true,
         logo_id: true,
+        image_url: true,
+        logo_url: true,
         email_en: true,
         phone_en: true,
         url_en: true,
@@ -343,6 +357,9 @@ export async function GET(request: Request) {
         policies_privacy_policy_jp: true,
         policies_terms_of_use_en: true,
         policies_terms_of_use_jp: true,
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 

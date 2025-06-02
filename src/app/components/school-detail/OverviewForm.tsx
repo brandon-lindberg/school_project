@@ -45,6 +45,8 @@ export function OverviewForm({
     geography_jp: school.geography_jp ?? '',
     logo_id: school.logo_id ?? '',
     image_id: school.image_id ?? '',
+    image_url: (school as any).image_url ?? '',
+    logo_url: (school as any).logo_url ?? '',
     affiliations_en: school.affiliations_en ?? [],
     affiliations_jp: school.affiliations_jp ?? [],
     accreditation_en: school.accreditation_en ?? [],
@@ -65,9 +67,9 @@ export function OverviewForm({
   // Add validation state
   const isFormValid = Boolean(
     formData.name_en?.trim() &&
-      formData.location_en?.trim() &&
-      (!formData.url_en || /^https?:\/\//i.test(formData.url_en)) &&
-      (!formData.url_jp || /^https?:\/\//i.test(formData.url_jp))
+    formData.location_en?.trim() &&
+    (!formData.url_en || /^https?:\/\//i.test(formData.url_en)) &&
+    (!formData.url_jp || /^https?:\/\//i.test(formData.url_jp))
   );
 
   const handleChange = (field: keyof typeof formData, value: string | string[]) => {
@@ -162,6 +164,8 @@ export function OverviewForm({
         ...formData,
         url_en: formatUrl(formData.url_en),
         url_jp: formatUrl(formData.url_jp),
+        image_url: formData.image_url,
+        logo_url: formData.logo_url,
       };
 
       await onSave(dataToSubmit);
@@ -193,9 +197,8 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, name_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${
-                errors.name_en ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full rounded-md border p-2 ${errors.name_en ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.name_en && <p className="mt-1 text-sm text-red-500">{errors.name_en}</p>}
           </div>
@@ -292,9 +295,8 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, location_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${
-                errors.location_en ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full rounded-md border p-2 ${errors.location_en ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.location_en && (
               <p className="mt-1 text-sm text-red-500">{errors.location_en}</p>
@@ -398,9 +400,8 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, url_en: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${
-                errors.url_en ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full rounded-md border p-2 ${errors.url_en ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="https://example.com"
             />
             {errors.url_en && <p className="mt-1 text-sm text-red-500">{errors.url_en}</p>}
@@ -418,9 +419,8 @@ export function OverviewForm({
                   setErrors(prev => ({ ...prev, url_jp: undefined }));
                 }
               }}
-              className={`w-full rounded-md border p-2 ${
-                errors.url_jp ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full rounded-md border p-2 ${errors.url_jp ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="https://example.com"
             />
             {errors.url_jp && <p className="mt-1 text-sm text-red-500">{errors.url_jp}</p>}
@@ -504,6 +504,30 @@ export function OverviewForm({
             />
           </div>
         </div>
+      </div>
+
+      {/* External Banner Image URL */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">{language === 'en' ? 'External Banner Image URL' : '外部バナー画像URL'}</h3>
+        <input
+          type="url"
+          value={formData.image_url}
+          onChange={e => handleChange('image_url', e.target.value)}
+          className="w-full rounded-md border border-gray-300 p-2"
+          placeholder="https://example.com/banner.jpg"
+        />
+      </div>
+
+      {/* External Logo Image URL */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">{language === 'en' ? 'External Logo URL' : '外部ロゴURL'}</h3>
+        <input
+          type="url"
+          value={formData.logo_url}
+          onChange={e => handleChange('logo_url', e.target.value)}
+          className="w-full rounded-md border border-gray-300 p-2"
+          placeholder="https://example.com/logo.png"
+        />
       </div>
 
       {/* Affiliations */}
@@ -659,11 +683,10 @@ export function OverviewForm({
           <button
             type="submit"
             disabled={!isFormValid}
-            className={`px-4 py-2 rounded transition-colors ${
-              isFormValid
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className={`px-4 py-2 rounded transition-colors ${isFormValid
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
           >
             {language === 'en' ? 'Save Changes' : '変更を保存'}
           </button>

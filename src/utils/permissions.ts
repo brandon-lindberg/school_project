@@ -1,10 +1,10 @@
 import prisma from '@/lib/prisma';
 
-export async function canEditSchool(userId: string, schoolId: number): Promise<boolean> {
+export async function canEditSchool(userId: string, schoolId: string): Promise<boolean> {
   if (!userId) return false;
 
   const user = await prisma.user.findUnique({
-    where: { user_id: parseInt(userId) },
+    where: { user_id: userId },
     include: {
       managedSchools: {
         where: { school_id: schoolId },
@@ -23,27 +23,27 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
   if (!userId) return false;
 
   const user = await prisma.user.findUnique({
-    where: { user_id: parseInt(userId) },
+    where: { user_id: userId },
     select: { role: true },
   });
 
   return user?.role === 'SUPER_ADMIN';
 }
 
-export async function isSchoolAdmin(userId: string, schoolId?: number): Promise<boolean> {
+export async function isSchoolAdmin(userId: string, schoolId?: string): Promise<boolean> {
   if (!userId) return false;
 
   const user = await prisma.user.findUnique({
-    where: { user_id: parseInt(userId) },
+    where: { user_id: userId },
     include: schoolId
       ? {
-          managedSchools: {
-            where: { school_id: schoolId },
-          },
-        }
-      : {
-          managedSchools: true,
+        managedSchools: {
+          where: { school_id: schoolId },
         },
+      }
+      : {
+        managedSchools: true,
+      },
   });
 
   return user?.role === 'SCHOOL_ADMIN' && (!schoolId || user.managedSchools.length > 0);

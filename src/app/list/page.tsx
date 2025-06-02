@@ -20,6 +20,7 @@ import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
 import { useBrowsingHistory } from '../contexts/BrowsingHistoryContext';
 import ContactBanner from '../components/ContactBanner';
+import { usePathname } from 'next/navigation';
 
 const BrowsingHistorySkeleton = () => (
   <div className="mb-8 animate-pulse">
@@ -135,6 +136,7 @@ const ListPage: React.FC = () => {
   });
   const { language } = useLanguage();
   const { data: session } = useSession();
+  const pathname = usePathname();
   const {
     browsingHistory,
     deleteHistoryEntry: handleDeleteHistoryEntry,
@@ -365,6 +367,7 @@ const ListPage: React.FC = () => {
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(true);
 
+  // Loading state for browsing history
   useEffect(() => {
     // Set history loading to false after a short delay to simulate loading
     const timer = setTimeout(() => {
@@ -372,6 +375,77 @@ const ListPage: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [browsingHistory]);
+
+  // State for admin-scheduled featured slots
+  const [featuredSlots, setFeaturedSlots] = useState<{ slotNumber: number; school: School }[]>([]);
+
+  // Load featured slots and fall back to random for unassigned slots
+  useEffect(() => {
+    // Only reload featured and fallback when on the /list page
+    if (pathname !== '/list') return;
+    let mounted = true;
+    const loadFeaturedSlots = async () => {
+      setIsFeaturedLoading(true);
+      try {
+        const res = await fetch('/api/featured');
+        const data = await res.json();
+        if (!mounted) return;
+        const slots = data.slots as { slotNumber: number; school: School }[];
+        setFeaturedSlots(slots);
+        const assignedCount = slots.length;
+        // Count unique slot numbers (to handle overlapping schedules)
+        const uniqueSlotCount = new Set(slots.map(slot => slot.slotNumber)).size;
+        if (uniqueSlotCount < 4) {
+          // Fetch full list of URL-enabled schools for fallback
+          const randRes = await fetch('/api/schools/random?limit=1000');
+          const randData = await randRes.json();
+          if (!mounted) return;
+          // Exclude any schools already scheduled
+          const scheduledIds = new Set(slots.map(slot => slot.school.school_id));
+          let candidates = (randData.schools as School[]).filter(
+            s => !scheduledIds.has(s.school_id)
+          );
+          // Shuffle candidates
+          for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+          }
+          // Take only the needed number of fallback slots
+          const finalFallback = candidates.slice(0, 4 - uniqueSlotCount);
+          setRandomSchools(finalFallback);
+        } else {
+          setRandomSchools([]);
+        }
+      } catch (error) {
+        console.error('Error loading featured slots:', error);
+        setFeaturedSlots([]);
+        setRandomSchools([]);
+      } finally {
+        if (mounted) setIsFeaturedLoading(false);
+      }
+    };
+    loadFeaturedSlots();
+    return () => {
+      mounted = false;
+    };
+  }, [pathname]);
+
+  // Combine scheduled slots with random fallbacks for display
+  const displaySchools = useMemo(() => {
+    const arr: (School | undefined)[] = [undefined, undefined, undefined, undefined];
+    featuredSlots.forEach(slot => {
+      const idx = slot.slotNumber - 1;
+      if (idx >= 0 && idx < 4) arr[idx] = slot.school;
+    });
+    let randIndex = 0;
+    return arr
+      .map(s => {
+        if (s) return s;
+        if (randIndex < randomSchools.length) return randomSchools[randIndex++];
+        return undefined;
+      })
+      .filter((s): s is School => !!s);
+  }, [featuredSlots, randomSchools]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -454,11 +528,10 @@ const ListPage: React.FC = () => {
 
             {/* Collapsible Search Box */}
             <div
-              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-30 ${
-                isSearchOpen
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 -translate-y-4 pointer-events-none'
-              }`}
+              className={`fixed top-32 sm:top-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 transition-all duration-300 z-30 ${isSearchOpen
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-4 pointer-events-none'
+                }`}
             >
               <SearchBox
                 onSearch={handleSearchInput}
@@ -499,7 +572,7 @@ const ListPage: React.FC = () => {
               <h2 className="text-lg font-medium mb-3 text-gray-600">
                 {translations.recentlyViewed}
               </h2>
-              <div className="relative">
+              <div>
                 <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
                   {browsingHistory.map(entry => (
                     <div
@@ -541,7 +614,7 @@ const ListPage: React.FC = () => {
                 {browsingHistory.length > 0 && (
                   <button
                     onClick={handleClearHistory}
-                    className="absolute -top-8 right-0 text-sm text-gray-500 hover:text-gray-700"
+                    className="block text-sm text-gray-500 hover:text-gray-700 mt-2"
                   >
                     {translations.clearHistory}
                   </button>
@@ -555,15 +628,15 @@ const ListPage: React.FC = () => {
         {isFeaturedLoading ? (
           <FeaturedSchoolsSkeleton />
         ) : (
-          randomSchools.length > 0 && (
+          displaySchools.length > 0 && (
             <div className="mb-12 max-w-7xl mx-auto">
               <h2 className="text-2xl font-semibold mb-6 text-center">
                 {language === 'en' ? 'Featured Schools' : '注目の学校'}
               </h2>
               <div className="flex flex-nowrap gap-4 overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 pb-4">
-                {randomSchools.map(school => (
+                {displaySchools.map((school, idx) => (
                   <div
-                    key={school.school_id}
+                    key={`${school.school_id}-${idx}`}
                     className="transform transition-transform hover:scale-105 w-[300px] sm:w-auto flex-shrink-0"
                   >
                     <SchoolCard
@@ -628,11 +701,10 @@ const ListPage: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`transition-all duration-300 ease-in-out ${
-                          collapsedSections[location]
-                            ? 'h-0 opacity-0 invisible overflow-hidden'
-                            : 'opacity-100 visible'
-                        }`}
+                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
+                          ? 'h-0 opacity-0 invisible overflow-hidden'
+                          : 'opacity-100 visible'
+                          }`}
                       >
                         <SchoolList
                           schools={schools}

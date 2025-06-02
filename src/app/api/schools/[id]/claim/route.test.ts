@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
 import { POST } from './route';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 
 // Mock next-auth
-jest.mock('next-auth', () => ({
+jest.mock('next-auth/next', () => ({
   getServerSession: jest.fn(),
 }));
 
@@ -25,6 +25,7 @@ jest.mock('@/lib/prisma', () => ({
     },
     notification: {
       create: jest.fn(),
+      createMany: jest.fn(),
     },
     $transaction: jest.fn(),
   },
@@ -170,6 +171,6 @@ describe('POST /api/schools/[id]/claim', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe('You already have a pending claim for this school');
+    expect(data.error).toBe('You already have a pending claim. You can only have one pending claim at a time.');
   });
 });

@@ -325,7 +325,7 @@ export default function MessageManagement() {
             </h2>
 
             {/* Filters and Search */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               {/* Message Type Filter */}
               <select
                 value={messageFilter}
@@ -333,7 +333,7 @@ export default function MessageManagement() {
                   setMessageFilter(e.target.value as 'all' | 'broadcast' | 'direct');
                   setCurrentPage(1);
                 }}
-                className="rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full sm:w-auto rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">
                   {language === 'en' ? 'All Messages' : 'すべてのメッセージ'}
@@ -353,14 +353,14 @@ export default function MessageManagement() {
                   setSortOrder(e.target.value as 'desc' | 'asc');
                   setCurrentPage(1);
                 }}
-                className="rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full sm:w-auto rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="desc">{language === 'en' ? 'Newest First' : '新しい順'}</option>
                 <option value="asc">{language === 'en' ? 'Oldest First' : '古い順'}</option>
               </select>
 
               {/* Search */}
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <input
                   type="text"
                   value={messageSearch}
@@ -369,7 +369,7 @@ export default function MessageManagement() {
                     setCurrentPage(1);
                   }}
                   placeholder={language === 'en' ? 'Search messages...' : 'メッセージを検索...'}
-                  className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full sm:w-auto pl-9 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
                 <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
               </div>
@@ -416,13 +416,13 @@ export default function MessageManagement() {
                   <div className="text-sm text-gray-700">
                     {language === 'en'
                       ? `Showing ${(currentPage - 1) * MESSAGES_PER_PAGE + 1} to ${Math.min(
-                          currentPage * MESSAGES_PER_PAGE,
-                          totalMessages
-                        )} of ${totalMessages} messages`
+                        currentPage * MESSAGES_PER_PAGE,
+                        totalMessages
+                      )} of ${totalMessages} messages`
                       : `${totalMessages}件中${(currentPage - 1) * MESSAGES_PER_PAGE + 1}～${Math.min(
-                          currentPage * MESSAGES_PER_PAGE,
-                          totalMessages
-                        )}件を表示`}
+                        currentPage * MESSAGES_PER_PAGE,
+                        totalMessages
+                      )}件を表示`}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -436,11 +436,10 @@ export default function MessageManagement() {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 rounded-lg ${
-                          currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'hover:bg-gray-200 text-gray-700'
-                        }`}
+                        className={`px-3 py-1 rounded-lg ${currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'hover:bg-gray-200 text-gray-700'
+                          }`}
                       >
                         {page}
                       </button>

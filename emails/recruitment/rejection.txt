@@ -1,0 +1,6 @@
+Hello {{applicantName}},
+
+We regret to inform you that your application for "{{jobTitle}}" has been rejected.
+
+Best regards,
+My International Schools Recruitment Team

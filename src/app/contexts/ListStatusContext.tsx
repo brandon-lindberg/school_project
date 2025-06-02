@@ -11,19 +11,19 @@ interface ListStatus {
 interface UserList {
   list_id: number;
   schools: {
-    school_id: number;
+    school_id: string;
     list_id: number;
   }[];
 }
 
 interface ListStatusContextType {
   listStatuses: Record<string, ListStatus>;
-  updateListStatus: (schoolId: number, status: ListStatus) => void;
+  updateListStatus: (schoolId: string, status: ListStatus) => void;
 }
 
 const ListStatusContext = createContext<ListStatusContextType>({
   listStatuses: {},
-  updateListStatus: () => {},
+  updateListStatus: () => { },
 });
 
 export const ListStatusProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,7 +42,11 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
         const data = await response.json();
 
         const statusMap: Record<string, ListStatus> = {};
-        data.lists.forEach((list: UserList) => {
+        const lists: UserList[] = Array.isArray(data.lists) ? data.lists : [];
+        if (!Array.isArray(data.lists)) {
+          console.error('Invalid list statuses response:', data);
+        }
+        lists.forEach((list: UserList) => {
           list.schools.forEach(school => {
             statusMap[school.school_id] = {
               isInList: true,
@@ -60,7 +64,7 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
     fetchListStatuses();
   }, [userId]);
 
-  const updateListStatus = (schoolId: number, status: ListStatus) => {
+  const updateListStatus = (schoolId: string, status: ListStatus) => {
     setListStatuses(prev => ({
       ...prev,
       [schoolId]: status,

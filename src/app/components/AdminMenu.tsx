@@ -62,6 +62,13 @@ export default function AdminMenu({ userRole }: Props) {
             >
               Manage Users
             </Link>
+            <Link
+              href="/admin/featured"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              Featured Schools
+            </Link>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
@@ -105,11 +105,12 @@ const admissionsSchema = z
 
 export async function PUT(request: NextRequest) {
   try {
+    // Extract schoolId from URL path
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[pathParts.length - 2]);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const schoolId = segments[2]; // ['api', 'schools', '{id}', 'admissions']
 
-    if (!schoolId || isNaN(schoolId)) {
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 

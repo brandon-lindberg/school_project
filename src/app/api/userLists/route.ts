@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     }
 
     const lists = await prisma.userList.findMany({
-      where: { user_id: parseInt(userId, 10) },
+      where: { user_id: userId },
       include: {
         schools: {
           include: {
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       // First, try to find an existing "My Schools" list for the user
       userList = await prisma.userList.findFirst({
         where: {
-          user_id: parseInt(userId, 10),
+          user_id: userId,
           list_name: 'My Schools',
         },
       });
@@ -72,14 +72,14 @@ export async function POST(request: Request) {
         userList = await prisma.userList.create({
           data: {
             list_name: 'My Schools',
-            user_id: parseInt(userId, 10),
+            user_id: userId,
           },
         });
       }
     }
 
     // Add school to the list (either existing or newly created)
-    const listToUse = listId ? parseInt(listId, 10) : userList?.list_id;
+    const listToUse = listId ? Number(listId) : userList?.list_id;
 
     if (!listToUse) {
       return NextResponse.json({ error: 'Could not determine list ID.' }, { status: 500 });
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     const userListSchool = await prisma.userListSchools.create({
       data: {
         list_id: listToUse,
-        school_id: parseInt(schoolId, 10),
+        school_id: schoolId,
       },
     });
 
@@ -117,8 +117,8 @@ export async function DELETE(request: Request) {
     await prisma.userListSchools.delete({
       where: {
         list_id_school_id: {
-          list_id: parseInt(listId, 10),
-          school_id: parseInt(schoolId, 10),
+          list_id: Number(listId),
+          school_id: schoolId,
         },
       },
     });

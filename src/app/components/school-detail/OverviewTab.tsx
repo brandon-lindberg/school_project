@@ -48,6 +48,13 @@ export function OverviewTab({
   const { data: session } = useSession();
   const isAuthenticated = !!session;
 
+  // NEW: compute banner image source, prioritizing external URL
+  const bannerSrc = school.image_url
+    ? school.image_url
+    : school.image_id
+      ? `/images/${school.image_id}.png`
+      : '/school_placeholder.jpg';
+
   // Only fetch claim status if user is authenticated
   const [claimStatus, setClaimStatus] = useState<{
     isSchoolAdmin: boolean;
@@ -80,9 +87,9 @@ export function OverviewTab({
     setClaimStatus(prevStatus =>
       prevStatus
         ? {
-            ...prevStatus,
-            hasPendingClaim: true,
-          }
+          ...prevStatus,
+          hasPendingClaim: true,
+        }
         : null
     );
   };
@@ -168,12 +175,24 @@ export function OverviewTab({
 
       {/* Hero Section */}
       <div className="relative h-64 rounded-xl overflow-hidden">
-        <FallbackImage
-          src={school.image_id ? `/images/${school.image_id}.png` : '/school_placeholder.jpg'}
-          alt={name || ''}
-          className="w-full h-full object-cover"
-          fallbackSrc="/school_placeholder.jpg"
-        />
+        {bannerSrc.startsWith('http') ? (
+          <img
+            src={bannerSrc}
+            alt={name || ''}
+            className="object-cover w-full h-full"
+            onError={e => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/school_placeholder.jpg';
+            }}
+          />
+        ) : (
+          <FallbackImage
+            src={bannerSrc}
+            alt={name || ''}
+            className="w-full h-full object-cover"
+            fallbackSrc="/school_placeholder.jpg"
+          />
+        )}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
           <div className="p-6 text-white">
             <h1 className="text-4xl font-bold mb-2">{name}</h1>
@@ -255,15 +274,14 @@ export function OverviewTab({
               </p>
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${
-                  claimStatus?.hasPendingClaim
-                    ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
-                    : claimStatus?.isClaimed
+                className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center ${claimStatus?.hasPendingClaim
+                  ? 'bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed'
+                  : claimStatus?.isClaimed
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : claimStatus?.hasExistingSchool
                       ? 'bg-gray-500 cursor-not-allowed'
-                      : claimStatus?.hasExistingSchool
-                        ? 'bg-gray-500 cursor-not-allowed'
-                        : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white`}
                 disabled={
                   claimStatus?.hasPendingClaim ||
                   claimStatus?.isClaimed ||

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface ClaimSchoolModalProps {
-  schoolId: number;
+  schoolId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;

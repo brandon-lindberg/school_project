@@ -14,9 +14,8 @@ export async function GET(request: NextRequest) {
     // Get the school ID from the URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
-
-    if (isNaN(schoolId)) {
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
@@ -32,7 +31,9 @@ export async function GET(request: NextRequest) {
 
     // Check if user is authorized to access this school
     if (user.role !== 'SUPER_ADMIN') {
-      const isSchoolAdmin = user.managedSchools.some(admin => admin.school_id === schoolId);
+      const isSchoolAdmin = user.managedSchools.some(admin =>
+        admin.school_id.toString() === schoolId
+      );
 
       if (!isSchoolAdmin) {
         return NextResponse.json(
@@ -44,11 +45,23 @@ export async function GET(request: NextRequest) {
 
     // Fetch the school
     const school = await prisma.school.findUnique({
-      where: { school_id: schoolId },
+      where: { school_id: schoolId as any },
       select: {
         school_id: true,
+        image_id: true,
+        logo_id: true,
+        image_url: true,
+        logo_url: true,
         name_en: true,
         name_jp: true,
+        description_en: true,
+        description_jp: true,
+        admissions_language_requirements_students_en: true,
+        admissions_language_requirements_students_jp: true,
+        admissions_language_requirements_parents_en: true,
+        admissions_language_requirements_parents_jp: true,
+        admissions_age_requirements_en: true,
+        admissions_age_requirements_jp: true,
         address_en: true,
         address_jp: true,
         location_en: true,
@@ -61,6 +74,10 @@ export async function GET(request: NextRequest) {
         phone_jp: true,
         email_en: true,
         email_jp: true,
+        // Job postings feature gating fields
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 
@@ -68,19 +85,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Transform the data to match the frontend expectations
-    const transformedSchool = {
-      school_id: school.school_id,
-      name: school.name_en || school.name_jp,
-      address: school.address_en || school.address_jp,
-      city: school.location_en || school.location_jp,
-      country: school.country_en || school.country_jp,
-      website: school.url_en || school.url_jp,
-      phone_number: school.phone_en || school.phone_jp,
-      email: school.email_en || school.email_jp,
-    };
-
-    return NextResponse.json(transformedSchool);
+    // Return the bilingual school data directly
+    return NextResponse.json(school);
   } catch (error) {
     console.error('Error in school route:', error);
     return NextResponse.json({ error: 'Failed to fetch school' }, { status: 500 });
@@ -98,9 +104,8 @@ export async function PUT(request: NextRequest) {
     // Get the school ID from the URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const schoolId = parseInt(pathParts[4]); // /api/admin/schools/[id]
-
-    if (isNaN(schoolId)) {
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
       return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
     }
 
@@ -116,7 +121,9 @@ export async function PUT(request: NextRequest) {
 
     // Check if user is authorized to update this school
     if (user.role !== 'SUPER_ADMIN') {
-      const isSchoolAdmin = user.managedSchools.some(admin => admin.school_id === schoolId);
+      const isSchoolAdmin = user.managedSchools.some(admin =>
+        admin.school_id.toString() === schoolId
+      );
 
       if (!isSchoolAdmin) {
         return NextResponse.json(
@@ -127,24 +134,87 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, address, city, country, website, phone_number, email } = body;
+    const {
+      image_url,
+      logo_url,
+      name_en,
+      name_jp,
+      description_en,
+      description_jp,
+      admissions_language_requirements_students_en,
+      admissions_language_requirements_students_jp,
+      admissions_language_requirements_parents_en,
+      admissions_language_requirements_parents_jp,
+      admissions_age_requirements_en,
+      admissions_age_requirements_jp,
+      address_en,
+      address_jp,
+      location_en,
+      location_jp,
+      country_en,
+      country_jp,
+      url_en,
+      url_jp,
+      phone_en,
+      phone_jp,
+      email_en,
+      email_jp,
+      job_postings_enabled,
+      job_postings_start,
+      job_postings_end,
+    } = body;
 
-    // Update school with bilingual fields
+    // Build update data, only SUPER_ADMIN can modify feature flags
+    const updateData: any = {
+      image_url,
+      logo_url,
+      name_en,
+      name_jp,
+      description_en,
+      description_jp,
+      admissions_language_requirements_students_en,
+      admissions_language_requirements_students_jp,
+      admissions_language_requirements_parents_en,
+      admissions_language_requirements_parents_jp,
+      admissions_age_requirements_en,
+      admissions_age_requirements_jp,
+      address_en,
+      address_jp,
+      location_en,
+      location_jp,
+      country_en,
+      country_jp,
+      url_en,
+      url_jp,
+      phone_en,
+      phone_jp,
+      email_en,
+      email_jp,
+    };
+    if (user.role === 'SUPER_ADMIN') {
+      updateData.job_postings_enabled = job_postings_enabled;
+      updateData.job_postings_start = job_postings_start ? new Date(job_postings_start) : null;
+      updateData.job_postings_end = job_postings_end ? new Date(job_postings_end) : null;
+    }
     const updatedSchool = await prisma.school.update({
-      where: { school_id: schoolId },
-      data: {
-        name_en: name,
-        address_en: address,
-        location_en: city,
-        country_en: country,
-        url_en: website,
-        phone_en: phone_number,
-        email_en: email,
-      },
+      where: { school_id: schoolId as any },
+      data: updateData,
       select: {
         school_id: true,
+        image_id: true,
+        logo_id: true,
+        image_url: true,
+        logo_url: true,
         name_en: true,
         name_jp: true,
+        description_en: true,
+        description_jp: true,
+        admissions_language_requirements_students_en: true,
+        admissions_language_requirements_students_jp: true,
+        admissions_language_requirements_parents_en: true,
+        admissions_language_requirements_parents_jp: true,
+        admissions_age_requirements_en: true,
+        admissions_age_requirements_jp: true,
         address_en: true,
         address_jp: true,
         location_en: true,
@@ -157,24 +227,50 @@ export async function PUT(request: NextRequest) {
         phone_jp: true,
         email_en: true,
         email_jp: true,
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 
-    // Transform the response to match frontend expectations
-    const transformedSchool = {
-      school_id: updatedSchool.school_id,
-      name: updatedSchool.name_en || updatedSchool.name_jp,
-      address: updatedSchool.address_en || updatedSchool.address_jp,
-      city: updatedSchool.location_en || updatedSchool.location_jp,
-      country: updatedSchool.country_en || updatedSchool.country_jp,
-      website: updatedSchool.url_en || updatedSchool.url_jp,
-      phone_number: updatedSchool.phone_en || updatedSchool.phone_jp,
-      email: updatedSchool.email_en || updatedSchool.email_jp,
-    };
-
-    return NextResponse.json(transformedSchool);
+    // Return updated bilingual and media fields
+    return NextResponse.json(updatedSchool, { status: 201 });
   } catch (error) {
     console.error('Error updating school:', error);
     return NextResponse.json({ error: 'Failed to update school' }, { status: 500 });
+  }
+}
+
+// Add DELETE handler for deleting a school by super admins
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    // Get the school ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
+    }
+    // Fetch user role
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    if (user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    // Delete the school
+    await prisma.school.delete({ where: { school_id: schoolId as any } });
+    return NextResponse.json({ message: 'School deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting school:', error);
+    return NextResponse.json({ error: 'Failed to delete school' }, { status: 500 });
   }
 }

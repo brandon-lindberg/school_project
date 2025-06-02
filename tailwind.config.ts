@@ -18,6 +18,7 @@ export default {
   plugins: [
     scrollbarHide,
     require('tailwind-scrollbar'),
+    require('@tailwindcss/typography'),
     // Add other plugins here
   ],
 } satisfies Config;

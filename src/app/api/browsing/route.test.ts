@@ -1,9 +1,9 @@
 import { POST, GET, DELETE } from './route';
 import prisma from '../../../lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 
-// Mock next-auth
-jest.mock('next-auth');
+// Mock next-auth client
+jest.mock('next-auth/next');
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
 
 // Mock Prisma

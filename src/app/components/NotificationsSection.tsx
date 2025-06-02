@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDashboard } from '../contexts/DashboardContext';
+import Link from 'next/link';
 
 export default function NotificationsSection() {
   const { notifications, refreshData } = useDashboard();
@@ -53,22 +54,26 @@ export default function NotificationsSection() {
           </div>
         ) : (
           notifications.map(notification => (
-            <div
+            <Link
               key={notification.notification_id}
-              className={`p-4 rounded-lg border ${
-                notification.is_read ? 'bg-white' : 'bg-blue-50'
-              }`}
+              href={notification.url || '#'}
+              className="block"
             >
-              <div className="flex justify-between items-start">
-                <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                <span className="text-xs text-gray-500">
-                  {language === 'en'
-                    ? formatDate(notification.created_at, 'MMM d, h:mm a')
-                    : formatDate(notification.created_at, 'M月d日 aa h:mm')}
-                </span>
+              <div
+                className={`p-4 rounded-lg border ${notification.is_read ? 'bg-white' : 'bg-blue-50'
+                  }`}
+              >
+                <div className="flex justify-between items-start">
+                  <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                  <span className="text-xs text-gray-500">
+                    {language === 'en'
+                      ? formatDate(notification.created_at, 'MMM d, h:mm a')
+                      : formatDate(notification.created_at, 'M月d日 aa h:mm')}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
               </div>
-              <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
-            </div>
+            </Link>
           ))
         )}
       </div>

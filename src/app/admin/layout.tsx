@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import AdminNav from './components/AdminNav';
 import { UserRole } from '@prisma/client';
@@ -13,7 +13,7 @@ type ExtendedSession = Session & {
     email?: string | null;
     name?: string | null;
     role?: UserRole;
-    managedSchoolId?: number;
+    managedSchoolId?: string;
   };
 };
 
@@ -23,6 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     status: string;
   };
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Only redirect if we're definitely not authenticated
@@ -33,10 +34,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Only check role if we have a session
     if (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN') {
-      router.push('/');
-      return;
+      // Allow SCHOOL_ADMIN to access their own school's edit page
+      if (!(session?.user?.role === 'SCHOOL_ADMIN' && pathname?.startsWith('/admin/schools/'))) {
+        router.push('/');
+        return;
+      }
     }
-  }, [session, status, router]);
+  }, [session, status, router, pathname]);
 
   // Show loading state while checking authentication
   if (status === 'loading') {
@@ -49,12 +53,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Only block rendering if we're definitely not authorized
   if (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN') {
-    return null;
+    // Allow SCHOOL_ADMIN to access their own school's edit page
+    if (!(session?.user?.role === 'SCHOOL_ADMIN' && pathname?.startsWith('/admin/schools/'))) {
+      return null;
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+      {session?.user?.role === UserRole.SUPER_ADMIN && <AdminNav />}
       <main className="py-6">{children}</main>
     </div>
   );

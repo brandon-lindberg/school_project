@@ -16,9 +16,9 @@ export async function GET(request: Request) {
     // Directly query the UserListSchools table through the relationship
     const userListSchool = await prisma.userListSchools.findFirst({
       where: {
-        school_id: parseInt(schoolId, 10),
+        school_id: schoolId,
         list: {
-          user_id: parseInt(userId, 10),
+          user_id: userId,
         },
       },
       select: {
