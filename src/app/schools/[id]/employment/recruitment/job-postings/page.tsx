@@ -5,16 +5,32 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+// Define shape of job posting items
+interface JobPostingListItem {
+  id: number;
+  title: string;
+  description?: string;
+  requirements?: string[];
+  location: string;
+  employmentType: string;
+  createdAt: string;
+  isArchived: boolean;
+  hasApplied?: boolean;
+}
+
 export default function JobPostingsPage() {
   const { id: schoolId } = useParams() as { id: string };
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
+
+  // Derive typed managedSchools
+  const managedSchools = session?.user?.managedSchools as { school_id: string }[] ?? [];
   const isAdmin = isAuthenticated && (
     session?.user?.role === 'SUPER_ADMIN' ||
-    session?.user?.managedSchools?.some((s: any) => s.school_id === schoolId)
+    managedSchools.some(s => s.school_id === schoolId)
   );
   const [feature, setFeature] = useState<{ enabled: boolean; start: string; end: string }>({ enabled: false, start: '', end: '' });
-  const [jobPostings, setJobPostings] = useState([]);
+  const [jobPostings, setJobPostings] = useState<JobPostingListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
@@ -52,10 +68,11 @@ export default function JobPostingsPage() {
         if (!res.ok) {
           throw new Error('Failed to fetch job postings');
         }
-        const data = await res.json();
+        const data: JobPostingListItem[] = await res.json();
         setJobPostings(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -103,13 +120,13 @@ export default function JobPostingsPage() {
       )}
       {/* Filter postings by tab */}
       {(() => {
-        const filtered = jobPostings.filter((job: any) => activeTab === 'ACTIVE' ? !job.isArchived : job.isArchived);
+        const filtered = jobPostings.filter(job => activeTab === 'ACTIVE' ? !job.isArchived : job.isArchived);
         if (filtered.length === 0) {
           return <p>{activeTab === 'ACTIVE' ? 'No active job postings.' : 'No archived job postings.'}</p>;
         }
         return (
           <ul className="space-y-4">
-            {filtered.map((job: any) => (
+            {filtered.map((job: JobPostingListItem) => (
               <li key={job.id} className="bg-white p-4 rounded shadow">
                 <h2 className="text-xl font-semibold mb-1">
                   {job.title}
@@ -136,7 +153,7 @@ export default function JobPostingsPage() {
                 <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
                 <div className="mt-2 flex space-x-4">
                   {isAuthenticated ? (
-                    (session?.user?.role === 'SUPER_ADMIN' || session?.user?.managedSchools?.some((s: any) => s.school_id === schoolId)) ? (
+                    isAdmin ? (
                       <Link
                         href={`/schools/${schoolId}/employment/recruitment/applications?jobPostingId=${job.id}`}
                         className="text-green-500 hover:underline"

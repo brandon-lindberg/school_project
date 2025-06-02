@@ -14,7 +14,6 @@ import {
   AdmissionsTab,
   CampusTab,
   StudentLifeTab,
-  EmploymentTab,
   PoliciesTab,
 } from '@/app/components/school-detail';
 import { BasicInfoForm } from '@/app/components/school-detail/BasicInfoForm';
@@ -31,9 +30,22 @@ interface ClientSchoolDetailProps {
   school: School;
 }
 
+// Define the shape of a job posting to replace `any`
+interface JobPosting {
+  id: number;
+  title: string;
+  location: string;
+  employmentType: string;
+  description?: string;
+  requirements?: string[];
+  isArchived: boolean;
+  createdAt: string;
+  hasApplied?: boolean;
+}
+
 // Insert an inline job postings list component
 function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { schoolId: string; canEdit: boolean; isAuthenticated: boolean; filter: 'ACTIVE' | 'ARCHIVED'; }) {
-  const [jobPostings, setJobPostings] = useState<any[]>([]);
+  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Record<number, boolean>>({});
@@ -43,10 +55,11 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
       try {
         const res = await fetch(`/api/schools/${schoolId}/recruitment/job-postings`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch job postings');
-        const data = await res.json();
+        const data = await res.json() as JobPosting[];
         setJobPostings(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -65,8 +78,9 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
         throw new Error(data.error || 'Failed to delete job posting');
       }
       setJobPostings(prev => prev.filter(job => job.id !== id));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setDeletingIds(prev => ({ ...prev, [id]: false }));
     }
@@ -92,7 +106,7 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
   if (error) return <div className="text-red-500">Error loading job postings: {error}</div>;
 
   // Filter job postings based on Active/Archived filter prop
-  const filteredJobs = jobPostings.filter(job => filter === 'ACTIVE' ? !job.isArchived : job.isArchived);
+  const filteredJobs = jobPostings.filter((job: JobPosting) => filter === 'ACTIVE' ? !job.isArchived : job.isArchived);
   if (filteredJobs.length === 0) return (
     <p>
       {canEdit
@@ -106,7 +120,7 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
   return (
     <>
       <ul className="space-y-4">
-        {filteredJobs.map((job: any) => (
+        {filteredJobs.map((job: JobPosting) => (
           <li key={job.id} className="bg-white p-4 rounded shadow">
             <h3 className="text-xl font-semibold flex items-center">
               {job.title}
@@ -325,21 +339,6 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   const extracurricular = getLocalizedArray(
     school.education_extracurricular_activities_en,
     school.education_extracurricular_activities_jp,
-    language
-  );
-  const staffList = getLocalizedArray(
-    school.staff_staff_list_en,
-    school.staff_staff_list_jp,
-    language
-  );
-  const boardMembers = getLocalizedArray(
-    school.staff_board_members_en,
-    school.staff_board_members_jp,
-    language
-  );
-  const openPositions = getLocalizedArray(
-    school.employment_open_positions_en,
-    school.employment_open_positions_jp,
     language
   );
 

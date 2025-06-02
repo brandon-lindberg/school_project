@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { ClaimSchoolModal } from './ClaimSchoolModal';
 import NotificationBanner from '@/app/components/NotificationBanner';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
 import { OverviewForm } from './OverviewForm';
 
 interface OverviewTabProps {
@@ -176,10 +177,12 @@ export function OverviewTab({
       {/* Hero Section */}
       <div className="relative h-64 rounded-xl overflow-hidden">
         {bannerSrc.startsWith('http') ? (
-          <img
+          <Image
             src={bannerSrc}
             alt={name || ''}
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
+            unoptimized
             onError={e => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = '/school_placeholder.jpg';

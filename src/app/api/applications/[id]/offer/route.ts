@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
@@ -9,7 +10,10 @@ const offerSchema = z.object({
   letterUrl: z.string().url(),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -43,17 +47,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       data: { status: ApplicationStatus.OFFER, currentStage: ApplicationStage.OFFER },
     });
     // notify applicant
-    await prisma.notification.create({
-      data: {
-        user_id: app.userId || 0,
-        type: 'APPLICATION_STATUS_UPDATED',
-        title: 'Offer Letter Sent',
-        message: `An offer has been sent: ${letterUrl}`,
-        url: `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`,
-      } as any,
-    });
+    const notificationData: Prisma.NotificationCreateInput = {
+      user: { connect: { user_id: app.userId! } },
+      type: 'APPLICATION_STATUS_UPDATED',
+      title: 'Offer Letter Sent',
+      message: `An offer has been sent: ${letterUrl}`,
+      url: `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`,
+    };
+    await prisma.notification.create({ data: notificationData });
     return NextResponse.json(offer, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error sending offer:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

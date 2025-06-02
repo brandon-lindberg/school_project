@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import { z } from 'zod';
@@ -11,13 +12,14 @@ const patchInterviewSchema = z.object({
   status: z.enum(['SCHEDULED', 'COMPLETED']).optional(),
 });
 
-export async function DELETE(request: NextRequest, { params }: { params: any }) {
+export async function DELETE(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  // await params for sync-dynamic API compliance
-  const { id: applicationIdStr, interviewId: interviewIdStr } = await params;
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string; interviewId: string } };
+  const { id: applicationIdStr, interviewId: interviewIdStr } = params;
   const applicationId = parseInt(applicationIdStr, 10);
   const interviewId = parseInt(interviewIdStr, 10);
   if (isNaN(applicationId) || isNaN(interviewId)) {
@@ -54,13 +56,14 @@ export async function DELETE(request: NextRequest, { params }: { params: any }) 
   return NextResponse.json({ success: true });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: any }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  // await params for sync-dynamic API compliance
-  const { id: applicationIdStr, interviewId: interviewIdStr } = await params;
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string; interviewId: string } };
+  const { id: applicationIdStr, interviewId: interviewIdStr } = params;
   const applicationId = parseInt(applicationIdStr, 10);
   const interviewId = parseInt(interviewIdStr, 10);
   if (isNaN(applicationId) || isNaN(interviewId)) {
@@ -77,8 +80,8 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
   let parsed;
   try {
     parsed = patchInterviewSchema.parse(body);
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
+  } catch (err) {
+    return NextResponse.json({ error: 'Validation failed', details: (err as z.ZodError).errors }, { status: 400 });
   }
   const { scheduledAt, location, interviewerNames, status } = parsed;
 
@@ -117,10 +120,14 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     },
   });
 
-  // After scheduling/rescheduling by candidate, update application stage to INTERVIEW
+  // After scheduling/rescheduling, update application stage to INTERVIEW
+  const appUpdateData: Prisma.ApplicationUpdateInput = {
+    status: 'IN_PROCESS',
+    currentStage: 'INTERVIEW',
+  };
   await prisma.application.update({
     where: { id: applicationId },
-    data: { status: 'IN_PROCESS', currentStage: 'INTERVIEW' } as any,
+    data: appUpdateData,
   });
 
   return NextResponse.json(updated);

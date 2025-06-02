@@ -392,7 +392,6 @@ const ListPage: React.FC = () => {
         if (!mounted) return;
         const slots = data.slots as { slotNumber: number; school: School }[];
         setFeaturedSlots(slots);
-        const assignedCount = slots.length;
         // Count unique slot numbers (to handle overlapping schedules)
         const uniqueSlotCount = new Set(slots.map(slot => slot.slotNumber)).size;
         if (uniqueSlotCount < 4) {
@@ -402,7 +401,7 @@ const ListPage: React.FC = () => {
           if (!mounted) return;
           // Exclude any schools already scheduled
           const scheduledIds = new Set(slots.map(slot => slot.school.school_id));
-          let candidates = (randData.schools as School[]).filter(
+          const candidates = (randData.schools as School[]).filter(
             s => !scheduledIds.has(s.school_id)
           );
           // Shuffle candidates

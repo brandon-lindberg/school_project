@@ -71,8 +71,9 @@ export default function EditJobPostingPage() {
         setLocation(data.location);
         setEmploymentType(data.employmentType);
         setStatus(data.status);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -102,8 +103,9 @@ export default function EditJobPostingPage() {
         throw new Error(data.error || 'Failed to update job posting');
       }
       router.push(`/schools/${schoolId}/employment/recruitment/job-postings/${jobId}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setSubmitting(false);
     }

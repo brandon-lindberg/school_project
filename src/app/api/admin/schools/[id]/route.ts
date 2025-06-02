@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch the school
     const school = await prisma.school.findUnique({
-      where: { school_id: schoolId as any },
+      where: { school_id: schoolId },
       select: {
         school_id: true,
         image_id: true,
@@ -165,7 +166,7 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // Build update data, only SUPER_ADMIN can modify feature flags
-    const updateData: any = {
+    const updateData: Prisma.SchoolUpdateInput = {
       image_url,
       logo_url,
       name_en,
@@ -197,7 +198,7 @@ export async function PUT(request: NextRequest) {
       updateData.job_postings_end = job_postings_end ? new Date(job_postings_end) : null;
     }
     const updatedSchool = await prisma.school.update({
-      where: { school_id: schoolId as any },
+      where: { school_id: schoolId },
       data: updateData,
       select: {
         school_id: true,
@@ -267,7 +268,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
     // Delete the school
-    await prisma.school.delete({ where: { school_id: schoolId as any } });
+    await prisma.school.delete({ where: { school_id: schoolId } });
     return NextResponse.json({ message: 'School deleted successfully' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting school:', error);

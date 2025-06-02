@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import type { Prisma } from '@prisma/client';
+import { ApplicationStatus, ApplicationStage } from '@prisma/client';
 
 const applicationSchema = z.object({
   applicantName: z.string(),
@@ -39,27 +41,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (existingApps.length > 0) {
       return NextResponse.json({ error: 'You have already applied to this position' }, { status: 400 });
     }
-    // create application with user association
-    const application = await prisma.application.create({
-      data: {
-        jobPostingId: jobId,
-        userId: userId,
-        applicantName: data.applicantName,
-        email: data.email,
-        phone: data.phone,
-        hasJapaneseVisa: data.hasJapaneseVisa ?? false,
-        comment: data.comment,
-        certifications: data.certifications ?? [],
-        degrees: data.degrees ?? [],
-        currentResidence: data.currentResidence,
-        nationality: data.nationality,
-        jlpt: data.jlpt ?? 'None',
-        resumeUrl: data.resumeUrl,
-        coverLetter: data.coverLetter,
-        status: 'SCREENING',
-        currentStage: 'SCREENING',
-      } as any,
-    });
+    // Create application with nested relations
+    const createData: Prisma.ApplicationCreateInput = {
+      jobPosting: { connect: { id: jobId } },
+      user: { connect: { user_id: userId } },
+      applicantName: data.applicantName,
+      email: data.email,
+      phone: data.phone,
+      hasJapaneseVisa: data.hasJapaneseVisa ?? false,
+      comment: data.comment,
+      certifications: data.certifications ?? [],
+      degrees: data.degrees ?? [],
+      currentResidence: data.currentResidence,
+      nationality: data.nationality,
+      jlpt: data.jlpt ?? 'None',
+      resumeUrl: data.resumeUrl,
+      coverLetter: data.coverLetter,
+      status: ApplicationStatus.SCREENING,
+      currentStage: ApplicationStage.SCREENING,
+    };
+    const application = await prisma.application.create({ data: createData });
     // Optionally fetch job and school info if available
     let jobInfo;
     if (prisma.jobPosting && typeof prisma.jobPosting.findUnique === 'function') {

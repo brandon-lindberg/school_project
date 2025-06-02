@@ -29,6 +29,7 @@ type Notification = {
   message: string;
   is_read: boolean;
   created_at: string;
+  url: string;
 };
 
 type UserList = {

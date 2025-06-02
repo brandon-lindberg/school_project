@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
-
-// Helper to extract ID from URL
-const getIdFromUrl = (url: string) => {
-  const parts = new URL(url).pathname.split('/');
-  const id = parseInt(parts[parts.length - 1]);
-  return isNaN(id) ? null : id;
-};
+import type { Prisma } from '@prisma/client';
 
 // GET: Fetch a single featured slot by ID
 export async function GET(request: NextRequest) {
@@ -66,9 +60,11 @@ export async function PUT(request: NextRequest) {
     }
     const body = await request.json();
     const { slotNumber, schoolId, startDate, endDate } = body;
-    const data: any = {};
+    const data: Prisma.FeaturedSlotUpdateInput = {};
     if (slotNumber !== undefined) data.slotNumber = Number(slotNumber);
-    if (schoolId !== undefined) data.schoolId = schoolId as string;
+    if (schoolId !== undefined) {
+      data.school = { connect: { school_id: schoolId as string } };
+    }
     if (startDate !== undefined) data.startDate = new Date(startDate);
     if (endDate !== undefined) data.endDate = new Date(endDate);
     const updated = await prisma.featuredSlot.update({

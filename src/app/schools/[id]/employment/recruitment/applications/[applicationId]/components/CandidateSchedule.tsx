@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import AddToCalendarButton from '@/app/components/AddToCalendarButton';
 
 interface Slot {
   id: number;
@@ -27,7 +26,6 @@ export default function CandidateSchedule({ applicationId, onScheduled, intervie
   const [appLoading, setAppLoading] = useState(true);
   const [scheduling, setScheduling] = useState(false);
   const [scheduled, setScheduled] = useState(false);
-  const [scheduledAtStr, setScheduledAtStr] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSlots() {
@@ -50,8 +48,9 @@ export default function CandidateSchedule({ applicationId, onScheduled, intervie
         } else {
           setSelectedSlotId(null);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -100,11 +99,11 @@ export default function CandidateSchedule({ applicationId, onScheduled, intervie
         const data = await res.json();
         throw new Error(data.error || 'Failed to schedule interview');
       }
-      setScheduledAtStr(scheduledAt);
       setScheduled(true);
       if (onScheduled) onScheduled();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setScheduling(false);
     }

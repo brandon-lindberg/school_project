@@ -23,28 +23,28 @@ export default function JournalTimeline({ applicationId }: { applicationId: stri
     JOURNAL: 'border-yellow-200 bg-yellow-50',
   };
 
-  async function fetchEntries() {
-    try {
-      const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Failed to load journal entries');
-      const data = await res.json();
-      setEntries(data.reverse());
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    fetchEntries();
+    async function loadEntries() {
+      try {
+        const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load journal entries');
+        const data = await res.json();
+        setEntries(data.reverse());
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadEntries();
     const handler = () => {
       setLoading(true);
-      fetchEntries();
+      loadEntries();
     };
     window.addEventListener('journalEntryCreated', handler);
     return () => window.removeEventListener('journalEntryCreated', handler);
-  }, []);
+  }, [applicationId]);
 
   if (loading) return <div>Loading journal...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;

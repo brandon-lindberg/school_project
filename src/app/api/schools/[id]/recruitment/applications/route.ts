@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const { id } = params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -31,9 +34,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Support filtering by jobPostingId via query string
     const url = new URL(request.url);
     const jobPostingIdParam = url.searchParams.get('jobPostingId');
-    const whereClause: any = jobPostingIdParam
-      ? { jobPostingId: parseInt(jobPostingIdParam, 10), jobPosting: { schoolId } }
-      : { jobPosting: { schoolId } };
+    const whereClause: Prisma.ApplicationWhereInput = jobPostingIdParam
+      ? {
+        jobPostingId: parseInt(jobPostingIdParam, 10),
+        jobPosting: { is: { schoolId } },
+      }
+      : {
+        jobPosting: { is: { schoolId } },
+      };
     const applications = await prisma.application.findMany({
       where: whereClause,
       include: {

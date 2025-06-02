@@ -1,15 +1,20 @@
-import { School } from '@prisma/client';
+import type { School as PrismaSchool } from '@prisma/client';
+// Extend PrismaSchool to include optional client-side image URLs
+type SchoolWithUrls = PrismaSchool & {
+  image_url?: string | null;
+  logo_url?: string | null;
+};
 import React, { useState } from 'react';
 
 interface OverviewFormProps {
-  school: School;
+  school: SchoolWithUrls;
   translations: {
     sections: {
       [key: string]: string;
     };
   };
   language: 'en' | 'jp';
-  onSave: (data: Partial<School>) => Promise<void>;
+  onSave: (data: Partial<SchoolWithUrls>) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -44,9 +49,8 @@ export function OverviewForm({
     geography_en: school.geography_en ?? '',
     geography_jp: school.geography_jp ?? '',
     logo_id: school.logo_id ?? '',
-    image_id: school.image_id ?? '',
-    image_url: (school as any).image_url ?? '',
-    logo_url: (school as any).logo_url ?? '',
+    image_url: school.image_url ?? '',
+    logo_url: school.logo_url ?? '',
     affiliations_en: school.affiliations_en ?? [],
     affiliations_jp: school.affiliations_jp ?? [],
     accreditation_en: school.accreditation_en ?? [],

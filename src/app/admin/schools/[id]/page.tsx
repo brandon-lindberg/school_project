@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
+import type { Session } from 'next-auth';
 
 interface SchoolData {
   school_id: string;
@@ -35,6 +36,19 @@ interface SchoolData {
   job_postings_end: string | null;
 }
 
+// Managed schools list entry
+interface ManagedSchool {
+  school_id: string;
+}
+
+// Extend session user with managedSchools
+type SessionUserManaged = Session['user'] & {
+  managedSchools?: ManagedSchool[];
+};
+
+// Editable school fields (exclude school_id)
+type SchoolFields = Omit<SchoolData, 'school_id'>;
+
 export default function EditSchoolPage() {
   const fetchedRef = useRef(false);
   const router = useRouter();
@@ -50,9 +64,8 @@ export default function EditSchoolPage() {
     fetchedRef.current = true;
     // only SUPER_ADMIN or owning SCHOOL_ADMIN
     const role = session?.user.role;
-    const isManaged = (session as any)?.user.managedSchools?.some(
-      (ms: any) => String(ms.school_id) === id
-    );
+    const user = session?.user as SessionUserManaged;
+    const isManaged = user.managedSchools?.some(ms => String(ms.school_id) === id) ?? false;
     if (role !== 'SUPER_ADMIN' && (role !== 'SCHOOL_ADMIN' || !isManaged)) {
       router.replace('/');
       return;
@@ -65,7 +78,7 @@ export default function EditSchoolPage() {
       .finally(() => setLoading(false));
   }, [status, session, id, router]);
 
-  const handleChange = (key: keyof Omit<SchoolData, 'school_id'>, value: any) => {
+  const handleChange = <K extends keyof SchoolFields>(key: K, value: SchoolFields[K]) => {
     if (!school) return;
     setSchool({ ...school, [key]: value });
   };
@@ -80,7 +93,7 @@ export default function EditSchoolPage() {
         body: JSON.stringify(school),
       });
       if (!res.ok) throw new Error('Save failed');
-      const updated = await res.json();
+      await res.json();
       toast.success('School updated');
       // Redirect based on user role
       if (session?.user.role === 'SCHOOL_ADMIN') {

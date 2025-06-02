@@ -3,18 +3,21 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { ApplicationStatus } from '@prisma/client';
 
 const responseSchema = z.object({
   response: z.enum(['ACCEPTED', 'REJECTED']),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: any }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id } = await params;
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const offerId = parseInt(id, 10);
   if (isNaN(offerId)) {
     return NextResponse.json({ error: 'Invalid offer ID' }, { status: 400 });
@@ -38,10 +41,14 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
       where: { id: offerId },
       data: { status: response, responseAt: new Date() },
     });
-    // Update application status based on candidate response (cast to any to bypass TS mismatch)
+    // Update application status based on candidate response
     const updatedApp = await prisma.application.update({
       where: { id: offer.applicationId },
-      data: { status: (response === 'ACCEPTED' ? 'ACCEPTED_OFFER' : 'REJECTED_OFFER') as any },
+      data: {
+        status: response === 'ACCEPTED'
+          ? ApplicationStatus.ACCEPTED_OFFER
+          : ApplicationStatus.REJECTED_OFFER,
+      },
     });
     console.log('Respond route: updated application record:', updatedApp);
     // Notify all school admins of this response
@@ -59,7 +66,7 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
       });
     }
     return NextResponse.json(updatedOffer);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error responding to offer:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
