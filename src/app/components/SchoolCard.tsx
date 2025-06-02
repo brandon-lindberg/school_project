@@ -172,22 +172,19 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         <div className="p-4 flex-1 flex flex-col gap-2">
           {/* Logo and title container */}
           <div className="flex items-center gap-2">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-10 h-10 relative">
               {logoSrc.startsWith('http') ? (
                 <img
                   src={logoSrc}
                   alt="Logo"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
+                  className="rounded-full w-full h-full object-cover"
                 />
               ) : (
                 <Image
                   src={logoSrc}
                   alt="Logo"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
+                  fill
+                  className="rounded-full object-cover"
                 />
               )}
             </div>

@@ -238,9 +238,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
     <div className="w-full">
       {viewMode === 'grid' ? (
         <div className="w-full bg-white rounded-lg shadow overflow-hidden">
-          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 max-h-[calc(100vh-200px)]">
+          <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 max-h-[calc(100vh-200px)]">
             {/* Header - Fixed at top */}
-            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
+            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
               <div></div>
               <div>{getLocalizedContent('Name', '名前', language)}</div>
               <div>{getLocalizedContent('Description', '説明', language)}</div>
@@ -267,7 +267,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {getSortedSchools().map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                     }`}
                 >
                   <Link href={`/schools/${school.school_id}`} className="contents">
