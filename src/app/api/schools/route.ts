@@ -158,6 +158,9 @@ export async function GET(request: Request) {
           policies_privacy_policy_jp: true,
           policies_terms_of_use_en: true,
           policies_terms_of_use_jp: true,
+          job_postings_enabled: true,
+          job_postings_start: true,
+          job_postings_end: true,
         },
       });
 
@@ -354,6 +357,9 @@ export async function GET(request: Request) {
         policies_privacy_policy_jp: true,
         policies_terms_of_use_en: true,
         policies_terms_of_use_jp: true,
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 

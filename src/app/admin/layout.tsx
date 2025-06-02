@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+      {session?.user?.role === UserRole.SUPER_ADMIN && <AdminNav />}
       <main className="py-6">{children}</main>
     </div>
   );

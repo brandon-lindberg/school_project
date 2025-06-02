@@ -74,6 +74,10 @@ export async function GET(request: NextRequest) {
         phone_jp: true,
         email_en: true,
         email_jp: true,
+        // Job postings feature gating fields
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 
@@ -155,37 +159,46 @@ export async function PUT(request: NextRequest) {
       phone_jp,
       email_en,
       email_jp,
+      job_postings_enabled,
+      job_postings_start,
+      job_postings_end,
     } = body;
 
-    // Update school with all bilingual, image, and requirement fields
+    // Build update data, only SUPER_ADMIN can modify feature flags
+    const updateData: any = {
+      image_url,
+      logo_url,
+      name_en,
+      name_jp,
+      description_en,
+      description_jp,
+      admissions_language_requirements_students_en,
+      admissions_language_requirements_students_jp,
+      admissions_language_requirements_parents_en,
+      admissions_language_requirements_parents_jp,
+      admissions_age_requirements_en,
+      admissions_age_requirements_jp,
+      address_en,
+      address_jp,
+      location_en,
+      location_jp,
+      country_en,
+      country_jp,
+      url_en,
+      url_jp,
+      phone_en,
+      phone_jp,
+      email_en,
+      email_jp,
+    };
+    if (user.role === 'SUPER_ADMIN') {
+      updateData.job_postings_enabled = job_postings_enabled;
+      updateData.job_postings_start = job_postings_start ? new Date(job_postings_start) : null;
+      updateData.job_postings_end = job_postings_end ? new Date(job_postings_end) : null;
+    }
     const updatedSchool = await prisma.school.update({
       where: { school_id: schoolId as any },
-      data: {
-        image_url,
-        logo_url,
-        name_en,
-        name_jp,
-        description_en,
-        description_jp,
-        admissions_language_requirements_students_en,
-        admissions_language_requirements_students_jp,
-        admissions_language_requirements_parents_en,
-        admissions_language_requirements_parents_jp,
-        admissions_age_requirements_en,
-        admissions_age_requirements_jp,
-        address_en,
-        address_jp,
-        location_en,
-        location_jp,
-        country_en,
-        country_jp,
-        url_en,
-        url_jp,
-        phone_en,
-        phone_jp,
-        email_en,
-        email_jp,
-      },
+      data: updateData,
       select: {
         school_id: true,
         image_id: true,
@@ -214,6 +227,9 @@ export async function PUT(request: NextRequest) {
         phone_jp: true,
         email_en: true,
         email_jp: true,
+        job_postings_enabled: true,
+        job_postings_start: true,
+        job_postings_end: true,
       },
     });
 

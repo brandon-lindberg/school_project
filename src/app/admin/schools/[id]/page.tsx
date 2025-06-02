@@ -30,6 +30,9 @@ interface SchoolData {
   phone_jp: string | null;
   email_en: string | null;
   email_jp: string | null;
+  job_postings_enabled: boolean;
+  job_postings_start: string | null;
+  job_postings_end: string | null;
 }
 
 export default function EditSchoolPage() {
@@ -208,6 +211,45 @@ export default function EditSchoolPage() {
             <input type="email" className="w-full border p-2 rounded" value={school.email_jp ?? ''} onChange={e => handleChange('email_jp', e.target.value)} />
           </div>
         </div>
+        {session?.user.role === 'SUPER_ADMIN' && (
+          <div className="border-t pt-4 mt-4">
+            <h2 className="text-lg font-medium mb-2">Job Postings Feature</h2>
+            <div className="flex items-center mb-4">
+              <input
+                id="job-postings-enabled"
+                type="checkbox"
+                className="h-4 w-4 mr-2"
+                checked={school.job_postings_enabled}
+                onChange={e => handleChange('job_postings_enabled', e.target.checked)}
+              />
+              <label htmlFor="job-postings-enabled" className="font-medium">
+                Enable job postings
+              </label>
+            </div>
+            {school.job_postings_enabled && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 font-medium">Start Date</label>
+                  <input
+                    type="date"
+                    className="w-full border p-2 rounded"
+                    value={school.job_postings_start?.slice(0, 10) ?? ''}
+                    onChange={e => handleChange('job_postings_start', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-medium">End Date</label>
+                  <input
+                    type="date"
+                    className="w-full border p-2 rounded"
+                    value={school.job_postings_end?.slice(0, 10) ?? ''}
+                    onChange={e => handleChange('job_postings_end', e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleSave}

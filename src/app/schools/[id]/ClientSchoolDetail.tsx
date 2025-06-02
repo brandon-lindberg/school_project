@@ -187,8 +187,17 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
 
   const isAuthenticated = status === 'authenticated';
 
+  // Determine if job postings feature is currently open
+  const now = new Date();
+  const isFeatureOpen =
+    school.job_postings_enabled &&
+    school.job_postings_start &&
+    school.job_postings_end &&
+    now >= new Date(school.job_postings_start) &&
+    now <= new Date(school.job_postings_end);
+
   const handleTabClick = (tab: string) => {
-    if (!isAuthenticated && tab !== 'overview') {
+    if (!isAuthenticated && tab !== 'overview' && tab !== 'employment') {
       // Redirect to list page for non-authenticated users trying to access other tabs
       window.location.href = '/login';
       return;
@@ -416,16 +425,30 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         );
       case 'employment':
         return (
-          <>
-            <EmploymentTab
-              translations={translations}
-              language={language}
-              school={school}
-              openPositions={openPositions}
-              staffList={staffList}
-              boardMembers={boardMembers}
-            />
-            <div className="mt-6">
+          <div className="relative min-h-[60vh]">
+            {/* Overlay for SCHOOL_ADMIN when feature is closed */}
+            {session?.user?.role === 'SCHOOL_ADMIN' && !isFeatureOpen && (
+              <>
+                {/* Subtle full overlay blur */}
+                <div className="absolute inset-0 backdrop-blur-sm z-50" />
+                {/* Centered card */}
+                <div className="absolute inset-0 flex items-center justify-center z-50 px-4">
+                  <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 className="text-2xl font-bold mb-2">
+                      {language === 'en' ? 'Feature Locked' : '機能がロックされています'}
+                    </h3>
+                    <p className="text-base">
+                      {language === 'en' ? (
+                        <>The Job Posting feature is not enabled. Please contact <a href="mailto:info@isdb-j.com" className="underline text-blue-600">info@isdb-j.com</a> to request access.</>
+                      ) : (
+                        <>求人機能は有効になっていません。アクセスをリクエストするには <a href="mailto:info@isdb-j.com" className="underline text-blue-600">info@isdb-j.com</a> までご連絡ください。</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+            <div className="mt-6 pl-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">{language === 'en' ? 'Job Postings' : '求人情報'}</h2>
                 <div className="flex items-center space-x-4">
@@ -433,19 +456,25 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                     <>
                       <button
                         onClick={() => setActiveFilter('ACTIVE')}
-                        className={`pb-2 font-medium ${activeFilter === 'ACTIVE' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+                        className={`pb-2 font-medium ${activeFilter === 'ACTIVE'
+                          ? 'border-b-2 border-blue-500 text-blue-600'
+                          : 'text-gray-600 hover:text-gray-800'
+                          }`}
                       >
                         Active
                       </button>
                       <button
                         onClick={() => setActiveFilter('ARCHIVED')}
-                        className={`pb-2 font-medium ${activeFilter === 'ARCHIVED' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+                        className={`pb-2 pr-4 font-medium ${activeFilter === 'ARCHIVED'
+                          ? 'border-b-2 border-blue-500 text-blue-600'
+                          : 'text-gray-600 hover:text-gray-800'
+                          }`}
                       >
                         Archived
                       </button>
                     </>
                   )}
-                  {canEdit && (
+                  {canEdit && isFeatureOpen && (
                     <Link
                       href={`/schools/${school.school_id}/employment/recruitment/job-postings/new`}
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
@@ -462,7 +491,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                 filter={activeFilter}
               />
             </div>
-          </>
+          </div>
         );
       case 'policies':
         return <PoliciesTab {...commonTabProps} school={school} />;
@@ -497,7 +526,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
                 { id: 'employment', name: translations.tabs.employment },
                 { id: 'policies', name: translations.tabs.policies },
               ].map(tab => {
-                const isDisabled = !isAuthenticated && tab.id !== 'overview';
+                const isDisabled = !isAuthenticated && tab.id !== 'overview' && tab.id !== 'employment';
                 return (
                   <button
                     key={tab.id}

@@ -178,6 +178,10 @@ model School {
   jobPostings                                                     JobPosting[]
   blockedCountries                                                 BlockedCountry[]
   featuredSlots                                                    FeaturedSlot[]
+  // Job postings feature for paywall per school
+  job_postings_enabled         Boolean   @default(false)
+  job_postings_start           DateTime?
+  job_postings_end             DateTime?
 
   @@index([name_en, name_jp], map: "idx_school_name")
   @@index([location_en, location_jp], map: "idx_school_location")

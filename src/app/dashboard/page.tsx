@@ -48,7 +48,7 @@ function DashboardContent() {
       }
 
       // Update the list status context
-      updateListStatus(schoolId, { isInList: false, listId: null });
+      updateListStatus(String(schoolId), { isInList: false, listId: null });
 
       // Refresh dashboard data
       await refreshData();
@@ -80,12 +80,14 @@ function DashboardContent() {
                         >
                           {school.name}
                         </Link>
-                        <Link
-                          href={`/schools/${school.school_id}/employment/recruitment/job-postings`}
-                          className="text-green-600 hover:underline"
-                        >
-                          {language === 'en' ? 'Recruitment' : '採用'}
-                        </Link>
+                        {school.job_postings_enabled && (
+                          <Link
+                            href={`/schools/${school.school_id}/employment/recruitment/job-postings`}
+                            className="text-green-600 hover:underline"
+                          >
+                            {language === 'en' ? 'Recruitment' : '採用'}
+                          </Link>
+                        )}
                       </div>
                     </div>
                   ))}

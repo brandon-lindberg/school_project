@@ -22,6 +22,9 @@ export async function GET() {
               select: {
                 name_en: true,
                 name_jp: true,
+                job_postings_enabled: true,
+                job_postings_start: true,
+                job_postings_end: true,
               },
             },
           },
@@ -38,6 +41,9 @@ export async function GET() {
       managedSchools: user.managedSchools.map(admin => ({
         school_id: admin.school_id,
         name: admin.school.name_en || admin.school.name_jp,
+        job_postings_enabled: admin.school.job_postings_enabled,
+        job_postings_start: admin.school.job_postings_start,
+        job_postings_end: admin.school.job_postings_end,
       })),
     });
   } catch (error) {

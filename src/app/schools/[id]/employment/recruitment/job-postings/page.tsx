@@ -13,10 +13,37 @@ export default function JobPostingsPage() {
     session?.user?.role === 'SUPER_ADMIN' ||
     session?.user?.managedSchools?.some((s: any) => s.school_id === schoolId)
   );
+  const [feature, setFeature] = useState<{ enabled: boolean; start: string; end: string }>({ enabled: false, start: '', end: '' });
   const [jobPostings, setJobPostings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
+
+  useEffect(() => {
+    async function fetchFeature() {
+      try {
+        const res = await fetch(`/api/schools?id=${schoolId}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setFeature({
+          enabled: data.job_postings_enabled,
+          start: data.job_postings_start || '',
+          end: data.job_postings_end || '',
+        });
+      } catch {
+        // ignore
+      }
+    }
+    fetchFeature();
+  }, [schoolId]);
+
+  const now = new Date();
+  const isFeatureOpen =
+    feature.enabled &&
+    feature.start &&
+    feature.end &&
+    now >= new Date(feature.start) &&
+    now <= new Date(feature.end);
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -48,7 +75,7 @@ export default function JobPostingsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Job Postings</h1>
-        {isAdmin && (
+        {isAdmin && isFeatureOpen && (
           <Link
             href={`/schools/${schoolId}/employment/recruitment/job-postings/new`}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"

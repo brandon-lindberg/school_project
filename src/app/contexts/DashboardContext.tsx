@@ -51,6 +51,9 @@ type UserList = {
 type ManagedSchool = {
   school_id: number;
   name: string;
+  job_postings_enabled?: boolean;
+  job_postings_start?: string;
+  job_postings_end?: string;
 };
 
 type ClaimedSchool = {
