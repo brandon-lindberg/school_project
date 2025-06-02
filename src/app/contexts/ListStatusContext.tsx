@@ -11,14 +11,14 @@ interface ListStatus {
 interface UserList {
   list_id: number;
   schools: {
-    school_id: number;
+    school_id: string;
     list_id: number;
   }[];
 }
 
 interface ListStatusContextType {
   listStatuses: Record<string, ListStatus>;
-  updateListStatus: (schoolId: number, status: ListStatus) => void;
+  updateListStatus: (schoolId: string, status: ListStatus) => void;
 }
 
 const ListStatusContext = createContext<ListStatusContextType>({
@@ -64,7 +64,7 @@ export const ListStatusProvider = ({ children }: { children: React.ReactNode }) 
     fetchListStatuses();
   }, [userId]);
 
-  const updateListStatus = (schoolId: number, status: ListStatus) => {
+  const updateListStatus = (schoolId: string, status: ListStatus) => {
     setListStatuses(prev => ({
       ...prev,
       [schoolId]: status,

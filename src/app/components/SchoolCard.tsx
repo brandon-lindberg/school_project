@@ -108,7 +108,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           throw new Error('Failed to remove school from list');
         }
 
-        updateListStatus(Number(school.school_id), { isInList: false, listId: null });
+        updateListStatus(school.school_id, { isInList: false, listId: null });
         onNotification?.(
           'success',
           language === 'en' ? 'School removed from your list!' : '学校がリストから削除されました！'
@@ -131,7 +131,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         }
 
         const data = await response.json();
-        updateListStatus(Number(school.school_id), { isInList: true, listId: data.userList.list_id });
+        updateListStatus(school.school_id, { isInList: true, listId: data.userList.list_id });
         onNotification?.(
           'success',
           language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！'
@@ -220,59 +220,95 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
 
           {/* Requirements Info */}
           <div className="flex flex-col gap-1">
-            <p className="text-gray-600 text-xs leading-4 truncate">
-              <span className="font-medium">
-                {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
-              </span>{' '}
-              {highlightText(
-                school.admissions_language_requirements_students_en
-                  ? getLocalizedContent(
-                    school.admissions_language_requirements_students_en,
-                    school.admissions_language_requirements_students_jp,
-                    language
-                  ) || ''
-                  : language === 'en'
-                    ? 'N/A'
-                    : '未定',
-                searchQuery
-              )}
-            </p>
+            <Tooltip content={
+              school.admissions_language_requirements_students_en
+                ? getLocalizedContent(
+                  school.admissions_language_requirements_students_en,
+                  school.admissions_language_requirements_students_jp,
+                  language
+                )
+                : language === 'en'
+                  ? 'N/A'
+                  : '未定'
+            }>
+              <p className="text-gray-600 text-xs leading-4 truncate">
+                <span className="font-medium">
+                  {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
+                </span>{' '}
+                {highlightText(
+                  school.admissions_language_requirements_students_en
+                    ? getLocalizedContent(
+                      school.admissions_language_requirements_students_en,
+                      school.admissions_language_requirements_students_jp,
+                      language
+                    ) || ''
+                    : language === 'en'
+                      ? 'N/A'
+                      : '未定',
+                  searchQuery
+                )}
+              </p>
+            </Tooltip>
 
-            <p className="text-gray-600 text-xs leading-4 truncate">
-              <span className="font-medium">
-                {language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}
-              </span>{' '}
-              {highlightText(
-                school.admissions_language_requirements_parents_en
-                  ? getLocalizedContent(
-                    school.admissions_language_requirements_parents_en,
-                    school.admissions_language_requirements_parents_jp,
-                    language
-                  ) || ''
-                  : language === 'en'
-                    ? 'N/A'
-                    : '未定',
-                searchQuery
-              )}
-            </p>
+            <Tooltip content={
+              school.admissions_language_requirements_parents_en
+                ? getLocalizedContent(
+                  school.admissions_language_requirements_parents_en,
+                  school.admissions_language_requirements_parents_jp,
+                  language
+                )
+                : language === 'en'
+                  ? 'N/A'
+                  : '未定'
+            }>
+              <p className="text-gray-600 text-xs leading-4 truncate">
+                <span className="font-medium">
+                  {language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}
+                </span>{' '}
+                {highlightText(
+                  school.admissions_language_requirements_parents_en
+                    ? getLocalizedContent(
+                      school.admissions_language_requirements_parents_en,
+                      school.admissions_language_requirements_parents_jp,
+                      language
+                    ) || ''
+                    : language === 'en'
+                      ? 'N/A'
+                      : '未定',
+                  searchQuery
+                )}
+              </p>
+            </Tooltip>
 
-            <p className="text-gray-600 text-xs leading-4 truncate">
-              <span className="font-medium">
-                {language === 'en' ? 'Age Requirements:' : '年齢要件：'}
-              </span>{' '}
-              {highlightText(
-                school.admissions_age_requirements_en
-                  ? getLocalizedContent(
-                    school.admissions_age_requirements_en,
-                    school.admissions_age_requirements_jp,
-                    language
-                  ) || ''
-                  : language === 'en'
-                    ? 'N/A'
-                    : '未定',
-                searchQuery
-              )}
-            </p>
+            <Tooltip content={
+              school.admissions_age_requirements_en
+                ? getLocalizedContent(
+                  school.admissions_age_requirements_en,
+                  school.admissions_age_requirements_jp,
+                  language
+                )
+                : language === 'en'
+                  ? 'N/A'
+                  : '未定'
+            }>
+              <p className="text-gray-600 text-xs leading-4 truncate">
+                <span className="font-medium">
+                  {language === 'en' ? 'Age Requirements:' : '年齢要件：'}
+                </span>{' '}
+                {highlightText(
+                  school.admissions_age_requirements_en
+                    ? getLocalizedContent(
+                      school.admissions_age_requirements_en,
+                      school.admissions_age_requirements_jp,
+                      language
+                    ) || ''
+                    : language === 'en'
+                      ? 'N/A'
+                      : '未定',
+                  searchQuery
+                )}
+              </p>
+            </Tooltip>
           </div>
         </div>
 

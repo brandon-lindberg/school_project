@@ -243,12 +243,21 @@ export default function SchoolsManagement() {
                     <td className="px-4 py-2 border">{school.phone_number}</td>
                     <td className="px-4 py-2 border">{school.email}</td>
                     <td className="px-4 py-2 border">
-                      <button
-                        onClick={() => handleEditClick(school)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                      >
-                        Edit
-                      </button>
+                      {session?.user.role === 'SUPER_ADMIN' ? (
+                        <button
+                          onClick={() => router.push(`/admin/schools/${school.school_id}`)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleEditClick(school)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                      )}
                     </td>
                   </>
                 )}

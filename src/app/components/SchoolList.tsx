@@ -140,18 +140,16 @@ const SchoolList: React.FC<SchoolListProps> = ({
       <span>{label}</span>
       <div className="flex flex-col">
         <ChevronUpIcon
-          className={`h-3 w-3 ${
-            sortState.field === field && sortState.direction === 'asc'
-              ? 'text-blue-500'
-              : 'text-gray-300 group-hover:text-gray-400'
-          }`}
+          className={`h-3 w-3 ${sortState.field === field && sortState.direction === 'asc'
+            ? 'text-blue-500'
+            : 'text-gray-300 group-hover:text-gray-400'
+            }`}
         />
         <ChevronDownIcon
-          className={`h-3 w-3 -mt-1 ${
-            sortState.field === field && sortState.direction === 'desc'
-              ? 'text-blue-500'
-              : 'text-gray-300 group-hover:text-gray-400'
-          }`}
+          className={`h-3 w-3 -mt-1 ${sortState.field === field && sortState.direction === 'desc'
+            ? 'text-blue-500'
+            : 'text-gray-300 group-hover:text-gray-400'
+            }`}
         />
       </div>
     </div>
@@ -269,19 +267,28 @@ const SchoolList: React.FC<SchoolListProps> = ({
               {getSortedSchools().map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  }`}
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_50px] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
                 >
                   <Link href={`/schools/${school.school_id}`} className="contents">
                     <div className="flex items-center">
-                      <Image
-                        src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
-                        alt="Logo"
-                        width={30}
-                        height={30}
-                        className="rounded-full"
-                      />
+                      {(school.logo_url || (school.logo_id && school.logo_id.startsWith('http'))) ? (
+                        <img
+                          src={(school.logo_url || school.logo_id)!}
+                          alt="Logo"
+                          width={30}
+                          height={30}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <Image
+                          src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
+                          alt="Logo"
+                          width={30}
+                          height={30}
+                          className="rounded-full"
+                        />
+                      )}
                     </div>
                     <Tooltip
                       content={getLocalizedContent(school.name_en, school.name_jp, language)}
@@ -467,11 +474,10 @@ const SchoolList: React.FC<SchoolListProps> = ({
                       >
                         <button
                           onClick={e => handleToggleList(e, school)}
-                          className={`${
-                            listStatuses[school.school_id]?.isInList
-                              ? 'bg-blue-500 hover:bg-blue-600'
-                              : 'bg-green-500 hover:bg-green-600'
-                          } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+                          className={`${listStatuses[school.school_id]?.isInList
+                            ? 'bg-blue-500 hover:bg-blue-600'
+                            : 'bg-green-500 hover:bg-green-600'
+                            } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
                         >
                           <span className="text-lg">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}

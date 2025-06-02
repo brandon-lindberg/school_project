@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
@@ -33,6 +33,7 @@ interface SchoolData {
 }
 
 export default function EditSchoolPage() {
+  const fetchedRef = useRef(false);
   const router = useRouter();
   const { id } = useParams() as { id: string };
   const { data: session, status } = useSession();
@@ -41,7 +42,9 @@ export default function EditSchoolPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    // wait for authentication and run only once
+    if (status !== 'authenticated' || fetchedRef.current) return;
+    fetchedRef.current = true;
     // only SUPER_ADMIN or owning SCHOOL_ADMIN
     const role = session?.user.role;
     const managedId = (session as any)?.user.managedSchoolId;
@@ -49,7 +52,7 @@ export default function EditSchoolPage() {
       router.replace('/');
       return;
     }
-    // fetch school
+    // fetch school (initial load)
     fetch(`/api/admin/schools/${id}`)
       .then(res => res.json())
       .then(data => setSchool(data))
@@ -88,7 +91,7 @@ export default function EditSchoolPage() {
 
   return (
     <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Edit School</h1>
+      <h1 className="text-2xl font-bold mb-4">Edit School - {school.name_en ?? school.name_jp}</h1>
       <div className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">Image URL</label>
@@ -101,11 +104,11 @@ export default function EditSchoolPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1 font-medium">Name (EN)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.name_en} onChange={e => handleChange('name_en', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.name_en ?? ''} onChange={e => handleChange('name_en', e.target.value)} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Name (JP)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.name_jp} onChange={e => handleChange('name_jp', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.name_jp ?? ''} onChange={e => handleChange('name_jp', e.target.value)} />
           </div>
         </div>
         <div>
@@ -143,31 +146,31 @@ export default function EditSchoolPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1 font-medium">Address (EN)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.address_en} onChange={e => handleChange('address_en', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.address_en ?? ''} onChange={e => handleChange('address_en', e.target.value)} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Address (JP)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.address_jp} onChange={e => handleChange('address_jp', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.address_jp ?? ''} onChange={e => handleChange('address_jp', e.target.value)} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1 font-medium">City (EN)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.location_en} onChange={e => handleChange('location_en', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.location_en ?? ''} onChange={e => handleChange('location_en', e.target.value)} />
           </div>
           <div>
             <label className="block mb-1 font-medium">City (JP)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.location_jp} onChange={e => handleChange('location_jp', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.location_jp ?? ''} onChange={e => handleChange('location_jp', e.target.value)} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1 font-medium">Country (EN)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.country_en} onChange={e => handleChange('country_en', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.country_en ?? ''} onChange={e => handleChange('country_en', e.target.value)} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Country (JP)</label>
-            <input type="text" className="w-full border p-2 rounded" value={school.country_jp} onChange={e => handleChange('country_jp', e.target.value)} />
+            <input type="text" className="w-full border p-2 rounded" value={school.country_jp ?? ''} onChange={e => handleChange('country_jp', e.target.value)} />
           </div>
         </div>
         <div>
