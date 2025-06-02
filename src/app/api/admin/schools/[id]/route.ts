@@ -224,3 +224,37 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update school' }, { status: 500 });
   }
 }
+
+// Add DELETE handler for deleting a school by super admins
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    // Get the school ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const schoolId = pathParts[4]; // /api/admin/schools/[id]
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Invalid school ID' }, { status: 400 });
+    }
+    // Fetch user role
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    if (user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    // Delete the school
+    await prisma.school.delete({ where: { school_id: schoolId as any } });
+    return NextResponse.json({ message: 'School deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting school:', error);
+    return NextResponse.json({ error: 'Failed to delete school' }, { status: 500 });
+  }
+}

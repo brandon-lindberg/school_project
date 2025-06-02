@@ -206,7 +206,7 @@ model UserListSchools {
   list_id   Int
   school_id String
   list      UserList @relation(fields: [list_id], references: [list_id])
-  school    School   @relation(fields: [school_id], references: [school_id])
+  school    School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade)
 
   @@id([list_id, school_id])
 }
@@ -216,7 +216,7 @@ model BrowsingHistory {
   user_id    String
   school_id  String
   viewed_at  DateTime @default(now())
-  school     School   @relation(fields: [school_id], references: [school_id])
+  school     School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade)
   user       User     @relation(fields: [user_id], references: [user_id])
 
   @@index([user_id, school_id], map: "idx_browsing_history_user_school")
@@ -234,7 +234,7 @@ model SchoolClaim {
   processed_by        String?
   notes               String?
   processor           User?       @relation("ClaimProcessor", fields: [processed_by], references: [user_id])
-  school              School      @relation(fields: [school_id], references: [school_id])
+  school              School      @relation(fields: [school_id], references: [school_id], onDelete: Cascade)
   user                User        @relation(fields: [user_id], references: [user_id])
 
   @@index([school_id])
@@ -248,7 +248,7 @@ model SchoolAdmin {
   assigned_at DateTime @default(now())
   assigned_by String
   assigner    User     @relation("AdminAssigner", fields: [assigned_by], references: [user_id])
-  school      School   @relation(fields: [school_id], references: [school_id])
+  school      School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade)
   user        User     @relation(fields: [user_id], references: [user_id])
 
   @@id([school_id, user_id])
@@ -326,7 +326,7 @@ model MessageRecipient {
 model JobPosting {
   id               Int       @id @default(autoincrement())
   schoolId         String
-  school           School    @relation(fields: [schoolId], references: [school_id])
+  school           School    @relation(fields: [schoolId], references: [school_id], onDelete: Cascade)
   title            String
   description      String
   requirements     String[]
@@ -438,7 +438,7 @@ model Offer {
 model BlockedCountry {
   id         Int      @id @default(autoincrement())
   schoolId   String
-  school     School   @relation(fields: [schoolId], references: [school_id])
+  school     School   @relation(fields: [schoolId], references: [school_id], onDelete: Cascade)
   country    String
   reason     String?
   createdAt  DateTime @default(now())
@@ -485,7 +485,7 @@ model FeaturedSlot {
   id         Int      @id @default(autoincrement())
   slotNumber Int      // 1-4 indicating which featured slot
   schoolId   String   // Reference to the school
-  school     School   @relation(fields: [schoolId], references: [school_id])
+  school     School   @relation(fields: [schoolId], references: [school_id], onDelete: Cascade)
   startDate  DateTime // Inclusive start date for featuring
   endDate    DateTime // Inclusive end date for featuring
   createdAt  DateTime @default(now())

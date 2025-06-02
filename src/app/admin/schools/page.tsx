@@ -114,6 +114,21 @@ export default function SchoolsManagement() {
     }
   };
 
+  const handleDelete = async (schoolId: string) => {
+    if (!confirm('Are you sure you want to delete this school?')) return;
+    try {
+      const response = await fetch(`/api/admin/schools/${schoolId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete school');
+      }
+      setSchools(schools.filter(s => s.school_id !== schoolId));
+      toast.success('School deleted successfully');
+    } catch (error) {
+      console.error('Error deleting school:', error);
+      toast.error('Failed to delete school');
+    }
+  };
+
   if (loading) {
     return <div className="p-4">Loading...</div>;
   }
@@ -219,18 +234,20 @@ export default function SchoolsManagement() {
                       />
                     </td>
                     <td className="px-4 py-2 border">
-                      <button
-                        onClick={() => handleSaveEdit(editingSchool)}
-                        className="bg-green-500 text-white px-2 py-1 rounded mr-2 hover:bg-green-600"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
-                      >
-                        Cancel
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleSaveEdit(editingSchool)}
+                          className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </td>
                   </>
                 ) : (
@@ -243,21 +260,31 @@ export default function SchoolsManagement() {
                     <td className="px-4 py-2 border">{school.phone_number}</td>
                     <td className="px-4 py-2 border">{school.email}</td>
                     <td className="px-4 py-2 border">
-                      {session?.user.role === 'SUPER_ADMIN' ? (
-                        <button
-                          onClick={() => router.push(`/admin/schools/${school.school_id}`)}
-                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                        >
-                          Edit
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleEditClick(school)}
-                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                        >
-                          Edit
-                        </button>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {session?.user.role === 'SUPER_ADMIN' ? (
+                          <>
+                            <button
+                              onClick={() => router.push(`/admin/schools/${school.school_id}`)}
+                              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(school.school_id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(school)}
+                            className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </>
                 )}
