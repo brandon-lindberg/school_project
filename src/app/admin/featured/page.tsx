@@ -30,6 +30,9 @@ export default function AdminFeaturedPage() {
   const [newSchedules, setNewSchedules] = useState(
     Array.from({ length: 4 }, () => ({ schoolId: undefined as string | undefined, startDate: '', endDate: '' }))
   );
+  const [editingUpcomingId, setEditingUpcomingId] = useState<number | null>(null);
+  const [editingUpcomingData, setEditingUpcomingData] = useState<{ schoolId?: string; startDate: string; endDate: string }>({ schoolId: undefined, startDate: '', endDate: '' });
+  const [updatingUpcomingId, setUpdatingUpcomingId] = useState<number | null>(null);
 
   // Guard access
   useEffect(() => {
@@ -52,18 +55,32 @@ export default function AdminFeaturedPage() {
         const dataSchools = await resSchools.json();
         // map schools
         setSchools(dataSchools.map((s: any) => ({ school_id: s.school_id, name: s.name })));
-        // build slots state
+        // build slots state to show currently active schedules (date-only inclusive)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const state: SlotState[] = Array.from({ length: 4 }, (_, i) => {
-          const found = dataSlots.find((d: any) => d.slotNumber === i + 1);
-          return found
-            ? {
-              id: found.id,
-              slotNumber: found.slotNumber,
-              schoolId: found.school.school_id,
-              startDate: found.startDate.split('T')[0],
-              endDate: found.endDate.split('T')[0],
-            }
-            : { slotNumber: i + 1, startDate: '', endDate: '' };
+          const slotNum = i + 1;
+          // filter slots for this slot number
+          const relevantSlots = dataSlots.filter((d: any) => d.slotNumber === slotNum);
+          // find active slot
+          const activeSlot = relevantSlots.find((d: any) => {
+            const startDate = new Date(d.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(d.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            return startDate.getTime() <= today.getTime() && endDate.getTime() >= today.getTime();
+          });
+          if (activeSlot) {
+            return {
+              id: activeSlot.id,
+              slotNumber: activeSlot.slotNumber,
+              schoolId: activeSlot.school.school_id,
+              startDate: activeSlot.startDate.split('T')[0],
+              endDate: activeSlot.endDate.split('T')[0],
+            };
+          }
+          // no active schedule, show blank
+          return { slotNumber: slotNum, startDate: '', endDate: '' };
         });
         setSlots(state);
       } catch (error) {
@@ -95,6 +112,25 @@ export default function AdminFeaturedPage() {
     const sched = newSchedules[index];
     if (!sched.schoolId || !sched.startDate || !sched.endDate || sched.startDate > sched.endDate) {
       alert('Invalid new schedule data'); return;
+    }
+    // Prevent overlapping schedules in the same slot
+    const slotNum = index + 1;
+    const newStart = new Date(sched.startDate);
+    newStart.setHours(0, 0, 0, 0);
+    const newEnd = new Date(sched.endDate);
+    newEnd.setHours(23, 59, 59, 999);
+    const conflict = allSlots
+      .filter(d => d.slotNumber === slotNum)
+      .some(d => {
+        const existingStart = new Date(d.startDate);
+        existingStart.setHours(0, 0, 0, 0);
+        const existingEnd = new Date(d.endDate);
+        existingEnd.setHours(23, 59, 59, 999);
+        return newStart <= existingEnd && newEnd >= existingStart;
+      });
+    if (conflict) {
+      alert('This schedule overlaps an existing schedule for this slot.');
+      return;
     }
     setSavingSlot(index);
     try {
@@ -180,6 +216,61 @@ export default function AdminFeaturedPage() {
     }
   };
 
+  const handleEditUpcoming = (id: number, schoolId: string, startISO: string, endISO: string) => {
+    setEditingUpcomingId(id);
+    setEditingUpcomingData({
+      schoolId,
+      startDate: startISO.split('T')[0],
+      endDate: endISO.split('T')[0],
+    });
+  };
+
+  const handleUpdateUpcoming = async (id: number, slotNumber: number) => {
+    const d = editingUpcomingData;
+    if (!d.schoolId || !d.startDate || !d.endDate || d.startDate > d.endDate) {
+      alert('Invalid data');
+      return;
+    }
+    setUpdatingUpcomingId(id);
+    try {
+      const body = { slotNumber, schoolId: d.schoolId, startDate: d.startDate, endDate: d.endDate };
+      const res = await fetch(`/api/admin/featured/${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setAllSlots(curr => curr.map(d => d.id === id ? updated : d));
+        alert('Upcoming schedule updated');
+        setEditingUpcomingId(null);
+      } else {
+        const err = await res.json(); alert(err.error || 'Update failed');
+      }
+    } catch (e) {
+      console.error(e); alert('Error updating upcoming schedule');
+    } finally {
+      setUpdatingUpcomingId(null);
+    }
+  };
+
+  const handleDeleteUpcoming = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this upcoming schedule?')) return;
+    setUpdatingUpcomingId(id);
+    try {
+      const res = await fetch(`/api/admin/featured/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setAllSlots(curr => curr.filter(d => d.id !== id));
+        setEditingUpcomingId(null);
+        alert('Upcoming schedule deleted');
+      } else {
+        const err = await res.json(); alert(err.error || 'Delete failed');
+      }
+    } catch (e) {
+      console.error(e); alert('Error deleting upcoming schedule');
+    } finally {
+      setUpdatingUpcomingId(null);
+    }
+  };
+
   if (loading) return <p className="p-8">Loading...</p>;
 
   return (
@@ -236,16 +327,145 @@ export default function AdminFeaturedPage() {
                 Clear
               </button>
             </div>
-            <div className="mt-4 pt-4 border-t">
-              <h3 className="font-medium mb-2">Schedule Next</h3>
-              <select className="mb-2 block w-full border rounded p-2" value={newSchedules[idx].schoolId || ''} onChange={e => handleNewChange(idx, 'schoolId', e.target.value || undefined)}>
-                <option value="">-- Select School --</option>
-                {schools.map(s => <option key={s.school_id} value={s.school_id}>{s.name}</option>)}
-              </select>
-              <input type="date" className="mb-2 block w-full border rounded p-2" value={newSchedules[idx].startDate} onChange={e => handleNewChange(idx, 'startDate', e.target.value)} />
-              <input type="date" className="mb-4 block w-full border rounded p-2" value={newSchedules[idx].endDate} onChange={e => handleNewChange(idx, 'endDate', e.target.value)} />
-              <button onClick={() => handleScheduleNext(idx)} disabled={savingSlot === idx} className="w-full bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50">Schedule Next</button>
-            </div>
+            {/* Schedule Next and Upcoming Schedules (up to 5) */}
+            {(() => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const futureSlots = allSlots.filter((d: any) => d.slotNumber === slot.slotNumber);
+              const upcomingSlots = futureSlots
+                .filter((d: any) => {
+                  const start = new Date(d.startDate);
+                  start.setHours(0, 0, 0, 0);
+                  return start.getTime() > today.getTime();
+                })
+                .sort((a: any, b: any) => {
+                  const aDate = new Date(a.startDate);
+                  aDate.setHours(0, 0, 0, 0);
+                  const bDate = new Date(b.startDate);
+                  bDate.setHours(0, 0, 0, 0);
+                  return aDate.getTime() - bDate.getTime();
+                })
+                .slice(0, 5);
+              return (
+                <>
+                  <div className="mt-4 pt-4 border-t">
+                    {upcomingSlots.length < 5 ? (
+                      <>
+                        <h3 className="font-medium mb-2">Schedule Next (Slot {slot.slotNumber})</h3>
+                        <select
+                          className="mb-2 block w-full border rounded p-2"
+                          value={newSchedules[idx].schoolId || ''}
+                          onChange={e => handleNewChange(idx, 'schoolId', e.target.value || undefined)}
+                        >
+                          <option value="">-- Select School --</option>
+                          {schools.map(s => (
+                            <option key={s.school_id} value={s.school_id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="date"
+                          className="mb-2 block w-full border rounded p-2"
+                          value={newSchedules[idx].startDate}
+                          onChange={e => handleNewChange(idx, 'startDate', e.target.value)}
+                        />
+                        <input
+                          type="date"
+                          className="mb-4 block w-full border rounded p-2"
+                          value={newSchedules[idx].endDate}
+                          onChange={e => handleNewChange(idx, 'endDate', e.target.value)}
+                        />
+                        <button
+                          onClick={() => handleScheduleNext(idx)}
+                          disabled={savingSlot === idx}
+                          className="w-full bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+                        >
+                          Schedule Next
+                        </button>
+                      </>
+                    ) : (
+                      <div className="p-2 bg-yellow-50 text-sm text-gray-700 rounded">
+                        Maximum of 5 upcoming schedules reached.
+                      </div>
+                    )}
+                  </div>
+                  {upcomingSlots.length > 0 && (
+                    <div className="mt-4 mb-4 p-2 bg-gray-50 rounded">
+                      <h3 className="font-medium mb-1">Upcoming Schedules (Slot {slot.slotNumber})</h3>
+                      <ol className="list-none space-y-4 ml-4">
+                        {upcomingSlots.map((us: any) => {
+                          const isEditing = editingUpcomingId === us.id;
+                          const schoolObj = schools.find(s => s.school_id === us.schoolId);
+                          const startFormatted = new Date(us.startDate).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+                          const endFormatted = new Date(us.endDate).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+                          return (
+                            <li key={us.id} className="p-4 bg-white border border-gray-200 rounded">
+                              {isEditing ? (
+                                <div className="space-y-2">
+                                  <label className="block">
+                                    <span className="text-sm">School</span>
+                                    <select
+                                      className="mt-1 block w-full border rounded p-2"
+                                      value={editingUpcomingData.schoolId || ''}
+                                      onChange={e => setEditingUpcomingData(curr => ({ ...curr, schoolId: e.target.value || undefined }))}
+                                    >
+                                      <option value="">-- Select School --</option>
+                                      {schools.map(s => (
+                                        <option key={s.school_id} value={s.school_id}>{s.name}</option>
+                                      ))}
+                                    </select>
+                                  </label>
+                                  <label className="block">
+                                    <span className="text-sm">Start Date</span>
+                                    <input
+                                      type="date"
+                                      className="mt-1 block w-full border rounded p-2"
+                                      value={editingUpcomingData.startDate}
+                                      onChange={e => setEditingUpcomingData(curr => ({ ...curr, startDate: e.target.value }))}
+                                    />
+                                  </label>
+                                  <label className="block">
+                                    <span className="text-sm">End Date</span>
+                                    <input
+                                      type="date"
+                                      className="mt-1 block w-full border rounded p-2"
+                                      value={editingUpcomingData.endDate}
+                                      onChange={e => setEditingUpcomingData(curr => ({ ...curr, endDate: e.target.value }))}
+                                    />
+                                  </label>
+                                  <div className="flex space-x-2 pt-2">
+                                    <button
+                                      onClick={() => handleUpdateUpcoming(us.id, slot.slotNumber)}
+                                      disabled={updatingUpcomingId === us.id}
+                                      className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 disabled:opacity-50"
+                                    >Save</button>
+                                    <button
+                                      onClick={() => setEditingUpcomingId(null)}
+                                      className="flex-1 bg-gray-300 text-gray-800 px-3 py-2 rounded"
+                                    >Cancel</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-1">
+                                  <p className="font-semibold">{schoolObj?.name || 'Unknown School'}</p>
+                                  <p className="text-sm">Start: {startFormatted}</p>
+                                  <p className="text-sm">End: {endFormatted}</p>
+                                  <div className="flex space-x-2 pt-2">
+                                    <button onClick={() => handleEditUpcoming(us.id, us.schoolId, us.startDate, us.endDate)} className="text-blue-500">Edit</button>
+                                    <button onClick={() => handleDeleteUpcoming(us.id)} className="text-red-500">Delete</button>
+                                  </div>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         ))}
       </div>
