@@ -53,6 +53,8 @@ const basicSchema = z.object({
   url_jp: urlSchema,
   logo_id: z.string().nullable().default(''),
   image_id: z.string().nullable().default(''),
+  image_url: urlSchema.default(''),
+  logo_url: urlSchema.default(''),
   affiliations_en: z.array(z.string()).nullable().default([]),
   affiliations_jp: z.array(z.string()).nullable().default([]),
   accreditation_en: z.array(z.string()).nullable().default([]),

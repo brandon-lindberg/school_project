@@ -48,8 +48,20 @@ export async function GET(request: NextRequest) {
       where: { school_id: schoolId as any },
       select: {
         school_id: true,
+        image_id: true,
+        logo_id: true,
+        image_url: true,
+        logo_url: true,
         name_en: true,
         name_jp: true,
+        description_en: true,
+        description_jp: true,
+        admissions_language_requirements_students_en: true,
+        admissions_language_requirements_students_jp: true,
+        admissions_language_requirements_parents_en: true,
+        admissions_language_requirements_parents_jp: true,
+        admissions_age_requirements_en: true,
+        admissions_age_requirements_jp: true,
         address_en: true,
         address_jp: true,
         location_en: true,
@@ -69,19 +81,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Transform the data to match the frontend expectations
-    const transformedSchool = {
-      school_id: school.school_id,
-      name: school.name_en || school.name_jp,
-      address: school.address_en || school.address_jp,
-      city: school.location_en || school.location_jp,
-      country: school.country_en || school.country_jp,
-      website: school.url_en || school.url_jp,
-      phone_number: school.phone_en || school.phone_jp,
-      email: school.email_en || school.email_jp,
-    };
-
-    return NextResponse.json(transformedSchool);
+    // Return the bilingual school data directly
+    return NextResponse.json(school);
   } catch (error) {
     console.error('Error in school route:', error);
     return NextResponse.json({ error: 'Failed to fetch school' }, { status: 500 });
@@ -129,24 +130,78 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, address, city, country, website, phone_number, email } = body;
+    const {
+      image_url,
+      logo_url,
+      name_en,
+      name_jp,
+      description_en,
+      description_jp,
+      admissions_language_requirements_students_en,
+      admissions_language_requirements_students_jp,
+      admissions_language_requirements_parents_en,
+      admissions_language_requirements_parents_jp,
+      admissions_age_requirements_en,
+      admissions_age_requirements_jp,
+      address_en,
+      address_jp,
+      location_en,
+      location_jp,
+      country_en,
+      country_jp,
+      url_en,
+      url_jp,
+      phone_en,
+      phone_jp,
+      email_en,
+      email_jp,
+    } = body;
 
-    // Update school with bilingual fields
+    // Update school with all bilingual, image, and requirement fields
     const updatedSchool = await prisma.school.update({
       where: { school_id: schoolId as any },
       data: {
-        name_en: name,
-        address_en: address,
-        location_en: city,
-        country_en: country,
-        url_en: website,
-        phone_en: phone_number,
-        email_en: email,
+        image_url,
+        logo_url,
+        name_en,
+        name_jp,
+        description_en,
+        description_jp,
+        admissions_language_requirements_students_en,
+        admissions_language_requirements_students_jp,
+        admissions_language_requirements_parents_en,
+        admissions_language_requirements_parents_jp,
+        admissions_age_requirements_en,
+        admissions_age_requirements_jp,
+        address_en,
+        address_jp,
+        location_en,
+        location_jp,
+        country_en,
+        country_jp,
+        url_en,
+        url_jp,
+        phone_en,
+        phone_jp,
+        email_en,
+        email_jp,
       },
       select: {
         school_id: true,
+        image_id: true,
+        logo_id: true,
+        image_url: true,
+        logo_url: true,
         name_en: true,
         name_jp: true,
+        description_en: true,
+        description_jp: true,
+        admissions_language_requirements_students_en: true,
+        admissions_language_requirements_students_jp: true,
+        admissions_language_requirements_parents_en: true,
+        admissions_language_requirements_parents_jp: true,
+        admissions_age_requirements_en: true,
+        admissions_age_requirements_jp: true,
         address_en: true,
         address_jp: true,
         location_en: true,
@@ -162,19 +217,8 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // Transform the response to match frontend expectations
-    const transformedSchool = {
-      school_id: updatedSchool.school_id,
-      name: updatedSchool.name_en || updatedSchool.name_jp,
-      address: updatedSchool.address_en || updatedSchool.address_jp,
-      city: updatedSchool.location_en || updatedSchool.location_jp,
-      country: updatedSchool.country_en || updatedSchool.country_jp,
-      website: updatedSchool.url_en || updatedSchool.url_jp,
-      phone_number: updatedSchool.phone_en || updatedSchool.phone_jp,
-      email: updatedSchool.email_en || updatedSchool.email_jp,
-    };
-
-    return NextResponse.json(transformedSchool);
+    // Return updated bilingual and media fields
+    return NextResponse.json(updatedSchool, { status: 201 });
   } catch (error) {
     console.error('Error updating school:', error);
     return NextResponse.json({ error: 'Failed to update school' }, { status: 500 });

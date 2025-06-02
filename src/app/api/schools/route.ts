@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 const QUERY_MODE: Prisma.QueryMode = 'insensitive';
 
@@ -47,6 +46,8 @@ export async function GET(request: Request) {
           location_en: true,
           location_jp: true,
           logo_id: true,
+          image_url: true,
+          logo_url: true,
           email_en: true,
           email_jp: true,
           phone_en: true,
@@ -245,6 +246,8 @@ export async function GET(request: Request) {
         location_en: true,
         location_jp: true,
         logo_id: true,
+        image_url: true,
+        logo_url: true,
         email_en: true,
         phone_en: true,
         url_en: true,

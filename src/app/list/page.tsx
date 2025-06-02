@@ -572,7 +572,7 @@ const ListPage: React.FC = () => {
               <h2 className="text-lg font-medium mb-3 text-gray-600">
                 {translations.recentlyViewed}
               </h2>
-              <div className="relative">
+              <div>
                 <div className="flex overflow-x-auto space-x-3 p-2 scrollbar">
                   {browsingHistory.map(entry => (
                     <div
@@ -614,7 +614,7 @@ const ListPage: React.FC = () => {
                 {browsingHistory.length > 0 && (
                   <button
                     onClick={handleClearHistory}
-                    className="absolute -top-8 right-0 text-sm text-gray-500 hover:text-gray-700"
+                    className="block text-sm text-gray-500 hover:text-gray-700 mt-2"
                   >
                     {translations.clearHistory}
                   </button>

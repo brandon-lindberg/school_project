@@ -63,6 +63,23 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   const description = getLocalizedContent(school.description_en, school.description_jp, language);
   const url = getLocalizedContent(school.url_en, school.url_jp, language);
 
+  // Resolve image URL: use external URL if provided, else fall back to existing logic
+  const bannerSrc = school.image_url
+    ? school.image_url
+    : school.image_id
+      ? school.image_id.startsWith('http')
+        ? school.image_id
+        : `/logos/${school.image_id}.png`
+      : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s=';
+  // Resolve logo URL: use external URL if provided, else fall back to existing logic
+  const logoSrc = school.logo_url
+    ? school.logo_url
+    : school.logo_id
+      ? school.logo_id.startsWith('http')
+        ? school.logo_id
+        : `/logos/${school.logo_id}.png`
+      : '/logo.png';
+
   const handleToggleList = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -91,7 +108,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           throw new Error('Failed to remove school from list');
         }
 
-        updateListStatus(school.school_id, { isInList: false, listId: null });
+        updateListStatus(Number(school.school_id), { isInList: false, listId: null });
         onNotification?.(
           'success',
           language === 'en' ? 'School removed from your list!' : '学校がリストから削除されました！'
@@ -114,7 +131,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         }
 
         const data = await response.json();
-        updateListStatus(school.school_id, { isInList: true, listId: data.userList.list_id });
+        updateListStatus(Number(school.school_id), { isInList: true, listId: data.userList.list_id });
         onNotification?.(
           'success',
           language === 'en' ? 'School added to your list!' : '学校がリストに追加されました！'
@@ -133,16 +150,20 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
     <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
       {/* Image */}
       <div className="w-full h-36 relative">
-        <Image
-          src={
-            school.image_id
-              ? `/logos/${school.image_id}.png`
-              : 'https://media.istockphoto.com/id/1654230729/ja/%E3%82%B9%E3%83%88%E3%83%83%E3%82%AF%E3%83%95%E3%82%A9%E3%83%88/%E6%97%A5%E6%9C%AC%E3%81%AE%E9%AB%98%E6%A0%A1%E3%81%AE%E3%83%95%E3%82%A1%E3%82%B5%E3%83%BC%E3%83%89%E3%81%AE%E5%BB%BA%E7%89%A9-%E6%BC%AB%E7%94%BB%E3%81%A7%E8%A6%8B%E3%81%88%E3%82%8B%E4%BC%9D%E7%B5%B1%E7%9A%84%E3%81%AA%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB.jpg?s=612x612&w=0&k=20&c=5fOeZO7_Stdrui-zCVAQ5RAxxgIjHpg9ZFPLEC9Q-2s='
-          }
-          alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
-          fill
-          className="object-cover"
-        />
+        {bannerSrc.startsWith('http') ? (
+          <img
+            src={bannerSrc}
+            alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <Image
+            src={bannerSrc}
+            alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
+            fill
+            className="object-cover"
+          />
+        )}
       </div>
 
       {/* Main content area */}
@@ -150,15 +171,25 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         {/* Content section */}
         <div className="p-4 flex-1 flex flex-col gap-2">
           {/* Logo and title container */}
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2">
             <div className="flex-shrink-0">
-              <Image
-                src={school.logo_id ? `/logos/${school.logo_id}.png` : '/logo.png'}
-                alt="Logo"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
+              {logoSrc.startsWith('http') ? (
+                <img
+                  src={logoSrc}
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <Image
+                  src={logoSrc}
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <Link href={`/schools/${school.school_id}`} className="block hover:text-blue-600">
@@ -196,10 +227,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_students_en
                   ? getLocalizedContent(
-                      school.admissions_language_requirements_students_en,
-                      school.admissions_language_requirements_students_jp,
-                      language
-                    ) || ''
+                    school.admissions_language_requirements_students_en,
+                    school.admissions_language_requirements_students_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -214,10 +245,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_language_requirements_parents_en
                   ? getLocalizedContent(
-                      school.admissions_language_requirements_parents_en,
-                      school.admissions_language_requirements_parents_jp,
-                      language
-                    ) || ''
+                    school.admissions_language_requirements_parents_en,
+                    school.admissions_language_requirements_parents_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -232,10 +263,10 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {highlightText(
                 school.admissions_age_requirements_en
                   ? getLocalizedContent(
-                      school.admissions_age_requirements_en,
-                      school.admissions_age_requirements_jp,
-                      language
-                    ) || ''
+                    school.admissions_age_requirements_en,
+                    school.admissions_age_requirements_jp,
+                    language
+                  ) || ''
                   : language === 'en'
                     ? 'N/A'
                     : '未定',
@@ -258,10 +289,9 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
             </a>
           )}
-
-          {/* List Button */}
-          {session && !isFeatured && (
-            <div>
+          {/* List & Edit Actions */}
+          <div className="flex items-center gap-2">
+            {session && !isFeatured && (
               <Tooltip
                 content={
                   isInList
@@ -275,15 +305,24 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               >
                 <button
                   onClick={handleToggleList}
-                  className={`${
-                    isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                  } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
+                  className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                    } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
                 >
                   <span className="text-lg cursor-pointer">{isInList ? '✓' : '+'}</span>
                 </button>
               </Tooltip>
-            </div>
-          )}
+            )}
+            {session?.user?.role === 'SUPER_ADMIN' ||
+              (session?.user?.role === 'SCHOOL_ADMIN' &&
+                (session.user as any).managedSchools?.some((ms: any) => String(ms.school_id) === school.school_id)) ? (
+              <Link
+                href={`/admin/schools/${school.school_id}`}
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
+              >
+                Edit
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

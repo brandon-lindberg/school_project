@@ -58,6 +58,8 @@ model School {
   url_jp                                                          String?
   logo_id                                                         String?
   image_id                                                        String?
+  image_url                                                       String?
+  logo_url                                                        String?
   affiliations_en                                                 String[]
   affiliations_jp                                                 String[]
   accreditation_en                                                String[]
