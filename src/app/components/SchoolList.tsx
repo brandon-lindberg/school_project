@@ -479,7 +479,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
                             : 'bg-green-500 hover:bg-green-600'
                             } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
                         >
-                          <span className="text-lg">
+                          <span className="text-xs">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}
                           </span>
                         </button>

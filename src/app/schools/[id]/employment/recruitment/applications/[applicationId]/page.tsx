@@ -16,6 +16,34 @@ import OfferStatus from '../../offers/components/OfferStatus';
 import ApplicationMessages from './components/ApplicationMessages';
 import { ChatBubbleLeftRightIcon, XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
+// Mapping backend status codes to user-friendly text
+const statusLabelMap: Record<string, string> = {
+  APPLIED: 'Applied',
+  SCREENING: 'Screening',
+  IN_PROCESS: 'In Process',
+  REJECTED: 'Rejected',
+  OFFER: 'Offer Extended',
+  ACCEPTED_OFFER: 'Offer Accepted',
+  REJECTED_OFFER: 'Offer Rejected',
+  WITHDRAWN: 'Withdrawn',
+};
+
+// Mapping backend stage codes to user-friendly text
+const stageLabelMap: Record<string, string> = {
+  SCREENING: 'Screening',
+  INTERVIEW_INVITATION_SENT: 'Interview Invitation Sent',
+  INTERVIEW: 'Interview',
+  OFFER: 'Offer',
+  REJECTED: 'Rejected',
+};
+
+// Mapping offer status codes to user-friendly text
+const offerStatusLabelMap: Record<string, string> = {
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+};
+
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
   const { data: session } = useSession();
@@ -194,10 +222,10 @@ export default function ApplicationDetailPage() {
   const isDetailOfferAccepted = application.offer?.status === 'ACCEPTED';
   const isDetailOfferRejected = application.offer?.status === 'REJECTED';
   const detailStatusText = isDetailOfferAccepted
-    ? 'Accepted'
+    ? offerStatusLabelMap['ACCEPTED']
     : isDetailOfferRejected
-      ? 'Rejected'
-      : application.status;
+      ? offerStatusLabelMap['REJECTED']
+      : statusLabelMap[application.status] ?? application.status;
   const detailStatusClass = isDetailOfferAccepted
     ? 'text-green-600 font-medium'
     : isDetailOfferRejected
@@ -339,7 +367,7 @@ export default function ApplicationDetailPage() {
             </div>
           )}
           <p><strong>Status:</strong> <span className={detailStatusClass}>{detailStatusText}</span></p>
-          <p><strong>Stage:</strong> {application.currentStage}</p>
+          <p><strong>Stage:</strong> {stageLabelMap[application.currentStage] ?? application.currentStage}</p>
           {withdrawSuccess && (
             <div className="p-4 bg-green-100 text-green-800 rounded mb-4">
               Application withdrawn successfully

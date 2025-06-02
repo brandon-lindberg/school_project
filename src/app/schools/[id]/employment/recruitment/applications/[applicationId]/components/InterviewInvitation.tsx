@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AvailabilityGrid from './AvailabilityGrid';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface InterviewInvitationProps {
   applicationId: string;
@@ -198,7 +199,15 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1,
           </button>
           <div className="mt-4">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Location</span>
+              <div className="flex items-center mb-1">
+                <span className="text-sm font-medium text-gray-700">Location</span>
+                <div className="relative flex items-center ml-2 group">
+                  <InformationCircleIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-60 bg-gray-800 text-white text-base rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
+                    Please enter a Google Maps URL for an in-person location or a meeting link for online interviews (Zoom, Google Meet, Microsoft Teams).
+                  </div>
+                </div>
+              </div>
               <input
                 type="text"
                 className="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
