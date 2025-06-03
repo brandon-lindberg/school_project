@@ -18,7 +18,7 @@ export function BulletList({ items, columns = 1, className = '', emptyMessage }:
     >
       {items.map((item, index) => (
         <li key={index} className="flex items-start space-x-2">
-          <span className="text-green-500">•</span>
+          <span className="text-primary">•</span>
           <span>{item}</span>
         </li>
       ))}

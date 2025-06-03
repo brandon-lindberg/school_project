@@ -27,7 +27,7 @@ export function StudentLifeTab({
         <div className="flex justify-end">
           <button
             onClick={onEdit}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
           >
             {translations.buttons?.edit || 'Edit Student Life Information'}
           </button>
@@ -36,7 +36,7 @@ export function StudentLifeTab({
 
       {/* Counseling */}
       {(school.student_life_counseling_en || school.student_life_counseling_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.counseling}</h2>
           <p className="text-gray-700 whitespace-pre-wrap">
             {getLocalizedContent(
@@ -50,12 +50,12 @@ export function StudentLifeTab({
 
       {/* Support Services */}
       {supportServices.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.supportServices}</h2>
           <ul className="space-y-3">
             {supportServices.map((service, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="text-green-500">•</span>
+                <span className="text-primary">•</span>
                 <span>{service}</span>
               </li>
             ))}
@@ -65,7 +65,7 @@ export function StudentLifeTab({
 
       {/* Library */}
       {(school.student_life_library_en || school.student_life_library_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.library}</h2>
           <p className="text-gray-700 whitespace-pre-wrap">
             {getLocalizedContent(
@@ -79,7 +79,7 @@ export function StudentLifeTab({
 
       {/* Calendar */}
       {(school.student_life_calendar_en || school.student_life_calendar_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.calendar}</h2>
           <p className="text-gray-700 whitespace-pre-wrap">
             {getLocalizedContent(
@@ -93,7 +93,7 @@ export function StudentLifeTab({
 
       {/* Tour */}
       {(school.student_life_tour_en || school.student_life_tour_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.tour}</h2>
           <a
             href={getLocalizedContent(
@@ -103,7 +103,7 @@ export function StudentLifeTab({
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 text-green-500 hover:underline"
+            className="inline-flex items-center space-x-2 text-primary hover:underline"
           >
             <span>🎥</span>
             <span>{translations.sections.tour}</span>

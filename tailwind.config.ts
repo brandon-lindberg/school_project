@@ -10,8 +10,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#ededed",
-        foreground: "#0a0a0a",
+        primary: '#5EA8A3',
+        secondary: '#F4A261',
+        neutral: {
+          50: '#FCFCFA',
+          100: '#F7F7F5',
+          200: '#E5E5E1',
+          400: '#6B7280',
+          700: '#374151',
+          900: '#111827',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Mulish', 'Inter', 'sans-serif'],
       },
     },
   },

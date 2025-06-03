@@ -4,6 +4,7 @@ import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronDownIcon, ChevronUpIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useDashboard } from '../contexts/DashboardContext';
+import { Card } from './shared/Card';
 
 export type MessageContent = {
   message_id: number;
@@ -128,8 +129,8 @@ export default function MessagesSection() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+    <Card>
+      <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
         {language === 'en' ? 'Messages' : 'メッセージ'}
       </h2>
 
@@ -144,13 +145,12 @@ export default function MessagesSection() {
               {/* Message Preview */}
               <button
                 onClick={() => handleMessageClick(msg.message.message_id)}
-                className={`w-full text-left transition-colors ${
-                  expandedMessageId === msg.message.message_id
-                    ? 'bg-blue-50'
-                    : msg.is_read
-                      ? 'bg-white hover:bg-gray-50'
-                      : 'bg-blue-50 hover:bg-blue-100'
-                } p-4 rounded-lg border flex items-start justify-between group`}
+                className={`w-full text-left transition-colors ${expandedMessageId === msg.message.message_id
+                  ? 'bg-neutral-100'
+                  : msg.is_read
+                    ? 'bg-neutral-50 hover:bg-neutral-100'
+                    : 'bg-primary/10 hover:bg-primary/20'
+                  } p-4 rounded-md border border-neutral-200 flex items-start justify-between group`}
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -188,8 +188,8 @@ export default function MessagesSection() {
 
               {/* Expanded Message */}
               {expandedMessageId === msg.message.message_id && (
-                <div className="ml-4 pl-4 border-l-2 border-blue-200">
-                  <div className="bg-white rounded-lg border p-4">
+                <div className="ml-4 pl-4 border-l-2 border-neutral-200">
+                  <div className="bg-neutral-50 rounded-md border border-neutral-200 p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <div className="font-medium text-gray-900">
@@ -237,6 +237,6 @@ export default function MessagesSection() {
           ))
         )}
       </div>
-    </div>
+    </Card>
   );
 }

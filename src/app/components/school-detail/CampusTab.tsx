@@ -27,7 +27,7 @@ export function CampusTab({
         <div className="flex justify-end">
           <button
             onClick={onEdit}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
           >
             {translations.buttons?.edit || 'Edit Campus Information'}
           </button>
@@ -35,13 +35,13 @@ export function CampusTab({
       )}
 
       {/* Facilities */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-neutral-50 rounded-md p-6">
         <h2 className="text-2xl font-bold mb-6">{translations.sections.facilities}</h2>
         {facilities.length > 0 ? (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {facilities.map((facility, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="text-green-500">•</span>
+                <span className="text-primary">•</span>
                 <span>{facility}</span>
               </li>
             ))}
@@ -53,7 +53,7 @@ export function CampusTab({
 
       {/* Virtual Tour */}
       {(school.campus_virtual_tour_en || school.campus_virtual_tour_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.virtualTour}</h2>
           <a
             href={getLocalizedContent(
@@ -63,7 +63,7 @@ export function CampusTab({
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 text-green-500 hover:underline"
+            className="inline-flex items-center space-x-2 text-primary hover:underline"
           >
             <span>🎥</span>
             <span>{translations.sections.virtualTour}</span>

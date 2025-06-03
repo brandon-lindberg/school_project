@@ -24,12 +24,12 @@ export function EmploymentTab({
     <div className="space-y-6">
       {/* Open Positions */}
       {openPositions.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.openPositions}</h2>
           <ul className="space-y-3">
             {openPositions.map((position, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="text-green-500">•</span>
+                <span className="text-primary">•</span>
                 <span>{position}</span>
               </li>
             ))}
@@ -39,7 +39,7 @@ export function EmploymentTab({
 
       {/* Application Process */}
       {(school.employment_application_process_en || school.employment_application_process_jp) && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.applicationProcess}</h2>
           <p className="text-gray-700 whitespace-pre-wrap">
             {getLocalizedContent(
@@ -53,12 +53,12 @@ export function EmploymentTab({
 
       {/* Staff List */}
       {staffList.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.staff}</h2>
           <ul className="space-y-3">
             {staffList.map((staff, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="text-green-500">•</span>
+                <span className="text-primary">•</span>
                 <span>{staff}</span>
               </li>
             ))}
@@ -68,12 +68,12 @@ export function EmploymentTab({
 
       {/* Board Members */}
       {boardMembers.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-neutral-50 rounded-md p-6">
           <h2 className="text-2xl font-bold mb-4">{translations.sections.boardMembers}</h2>
           <ul className="space-y-3">
             {boardMembers.map((member, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="text-green-500">•</span>
+                <span className="text-primary">•</span>
                 <span>{member}</span>
               </li>
             ))}

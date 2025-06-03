@@ -247,10 +247,10 @@ const SchoolList: React.FC<SchoolListProps> = ({
   return (
     <div className="w-full">
       {viewMode === 'grid' ? (
-        <div className="w-full bg-white rounded-lg shadow overflow-hidden">
+        <div className="w-full bg-neutral-50 rounded-md">
           <div className="grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 max-h-[calc(100vh-200px)]">
             {/* Header - Fixed at top */}
-            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-gray-50 font-semibold text-sm sticky top-0 z-10">
+            <div className="col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-neutral-100 font-semibold text-sm sticky top-0 z-10">
               <div></div>
               <div>{getLocalizedContent('Name', '名前', language)}</div>
               <div>{getLocalizedContent('Description', '説明', language)}</div>
@@ -273,11 +273,11 @@ const SchoolList: React.FC<SchoolListProps> = ({
             </div>
 
             {/* Scrollable content */}
-            <div className="col-span-full divide-y divide-gray-200 max-h-[600px] overflow-y-auto scrollbar">
+            <div className="col-span-full divide-y divide-neutral-200 max-h-[600px] overflow-y-auto scrollbar">
               {getSortedSchools().map((school, index) => (
                 <div
                   key={`school-${school.school_id}`}
-                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 relative ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  className={`col-span-full grid grid-cols-[30px_minmax(200px,_1fr)_1fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 cursor-pointer hover:bg-neutral-100 relative ${index % 2 === 0 ? 'bg-neutral-50' : 'bg-neutral-100'
                     }`}
                 >
                   <Link href={`/schools/${school.school_id}`} className="contents">
@@ -487,9 +487,9 @@ const SchoolList: React.FC<SchoolListProps> = ({
                         <button
                           onClick={e => handleToggleList(e, school)}
                           className={`${listStatuses[school.school_id]?.isInList
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'bg-green-500 hover:bg-green-600'
-                            } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors`}
+                            ? 'bg-secondary hover:bg-secondary/90'
+                            : 'bg-primary hover:bg-primary/90'
+                            } text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors`}
                         >
                           <span className="text-xs">
                             {listStatuses[school.school_id]?.isInList ? '✓' : '+'}
@@ -513,7 +513,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
                         >
                           <Link
                             href={`/admin/schools/${school.school_id}`}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors"
+                            className="bg-secondary hover:bg-secondary/90 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                           >
                             <span className="text-xs">✎</span>
                           </Link>

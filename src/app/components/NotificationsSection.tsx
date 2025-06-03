@@ -3,6 +3,7 @@ import { ja } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
+import { Card } from './shared/Card';
 
 export default function NotificationsSection() {
   const { notifications, refreshData } = useDashboard();
@@ -32,9 +33,9 @@ export default function NotificationsSection() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <Card>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-[#333333]">
+        <h2 className="text-2xl font-heading font-semibold text-neutral-900">
           {language === 'en' ? 'Notifications' : '通知'}
         </h2>
         {notifications.length > 0 && (
@@ -60,23 +61,23 @@ export default function NotificationsSection() {
               className="block"
             >
               <div
-                className={`p-4 rounded-lg border ${notification.is_read ? 'bg-white' : 'bg-blue-50'
+                className={`p-4 rounded-md border border-neutral-200 ${notification.is_read ? 'bg-neutral-50' : 'bg-primary/10'
                   }`}
               >
                 <div className="flex justify-between items-start">
-                  <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                  <h4 className="font-medium text-neutral-900">{notification.title}</h4>
                   <span className="text-xs text-gray-500">
                     {language === 'en'
                       ? formatDate(notification.created_at, 'MMM d, h:mm a')
                       : formatDate(notification.created_at, 'M月d日 aa h:mm')}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
+                <p className="mt-1 text-sm text-neutral-700">{notification.message}</p>
               </div>
             </Link>
           ))
         )}
       </div>
-    </div>
+    </Card>
   );
 }

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useLanguage } from '../../../../../contexts/LanguageContext';
+import { Card } from '../../../../../components/shared/Card';
 
 // Define shape of job posting items
 interface JobPostingListItem {
@@ -21,6 +23,7 @@ interface JobPostingListItem {
 export default function JobPostingsPage() {
   const { id: schoolId } = useParams() as { id: string };
   const { data: session, status } = useSession();
+  const { language } = useLanguage();
   const isAuthenticated = status === 'authenticated';
 
   // Derive typed managedSchools
@@ -125,73 +128,61 @@ export default function JobPostingsPage() {
           return <p>{activeTab === 'ACTIVE' ? 'No active job postings.' : 'No archived job postings.'}</p>;
         }
         return (
-          <ul className="space-y-4">
+          <ul className="space-y-6 list-none">
             {filtered.map((job: JobPostingListItem) => (
-              <li key={job.id} className="bg-white p-4 rounded shadow">
-                <h2 className="text-xl font-semibold mb-1">
-                  {job.title}
-                  {job.isArchived && (
-                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-gray-200 text-gray-700 rounded">
-                      Archived
-                    </span>
+              <li key={job.id}>
+                <Card>
+                  <h2 className="text-2xl font-heading font-bold mb-4">
+                    {job.title}
+                    {job.isArchived && (
+                      <span className="ml-2 inline-block px-2 py-1 text-xs font-semibold bg-neutral-200 text-neutral-700 rounded-md">
+                        Archived
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-gray-700">
+                    {job.location} — {job.employmentType}
+                  </p>
+                  {job.description && (
+                    <div
+                      className="mt-4 prose prose-sm text-gray-700 max-w-none"
+                      dangerouslySetInnerHTML={{ __html: job.description }}
+                    />
                   )}
-                </h2>
-                <p className="text-gray-600">{job.location} — {job.employmentType}</p>
-                {job.description && (
-                  <div className="mt-2 prose prose-sm" dangerouslySetInnerHTML={{ __html: job.description }} />
-                )}
-                {job.requirements && job.requirements.length > 0 && (
-                  <div className="mt-2">
-                    <h3 className="font-medium">Requirements:</h3>
-                    <ul className="list-disc list-inside mt-1">
-                      {job.requirements.map((req: string, idx: number) => (
-                        <li key={idx}>{req}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
-                <div className="mt-2 flex space-x-4">
-                  {isAuthenticated ? (
-                    isAdmin ? (
+                  {job.requirements && job.requirements.length > 0 && (
+                    <div className="mt-4">
+                      <h3 className="text-lg font-semibold mb-2">Requirements:</h3>
+                      <ul className="list-disc list-inside space-y-2 text-gray-700">
+                        {job.requirements.map((req: string, idx: number) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="mt-6 flex justify-between items-center">
+                    <div className="flex space-x-4">
                       <Link
                         href={`/schools/${schoolId}/employment/recruitment/applications?jobPostingId=${job.id}`}
-                        className="text-green-500 hover:underline"
+                        className="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
                       >
                         Applications
                       </Link>
-                    ) : (
-                      job.hasApplied ? (
-                        <button
-                          disabled
-                          className="text-gray-400 cursor-not-allowed"
-                        >
-                          Applied
-                        </button>
-                      ) : (
-                        <Link
-                          href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
-                          className="text-green-500 hover:underline"
-                        >
-                          Apply
-                        </Link>
-                      )
-                    )
-                  ) : (
-                    <Link
-                      href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
-                      className="text-green-500 hover:underline"
-                    >
-                      Sign up to Apply
-                    </Link>
-                  )}
-                  <Link
-                    href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    Manage
-                  </Link>
-                </div>
+                      <Link
+                        href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`}
+                        className="bg-secondary hover:bg-secondary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
+                      >
+                        Manage
+                      </Link>
+                    </div>
+                    <p className="text-sm text-neutral-700">
+                      Created at:{' '}
+                      {new Date(job.createdAt).toLocaleString(
+                        language === 'en' ? 'en-US' : 'ja-JP',
+                        { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' }
+                      )}
+                    </p>
+                  </div>
+                </Card>
               </li>
             ))}
           </ul>
