@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export function GET(request: Request) {
+export function GET() {
   const now = new Date();
   // define inclusive date range covering all of today
   const todayStart = new Date(now);

@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import OfferStatus from '../components/OfferStatus';
 
+interface OfferDetail {
+  application: { applicantName: string };
+  sentAt: string;
+  letterUrl: string;
+  status: string;
+}
+
 export default function OfferDetailPage() {
-  const { id: schoolId, offerId } = useParams() as { id: string; offerId: string };
-  const [offer, setOffer] = useState<any>(null);
+  const { offerId } = useParams() as { id: string; offerId: string };
+  const [offer, setOffer] = useState<OfferDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,9 +22,11 @@ export default function OfferDetailPage() {
       try {
         const res = await fetch(`/api/offers/${offerId}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to load offer');
-        setOffer(await res.json());
-      } catch (err: any) {
-        setError(err.message);
+        const data: OfferDetail = await res.json();
+        setOffer(data);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -39,7 +47,7 @@ export default function OfferDetailPage() {
           View Letter
         </a>
       </p>
-      <OfferStatus offerId={offerId} initialStatus={offer.status} />
+      <OfferStatus offerId={offerId} initialStatus={offer.status} letterUrl={offer.letterUrl} />
     </div>
   );
 }

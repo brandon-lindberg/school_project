@@ -26,8 +26,9 @@ export default function ApplicationReview({ applicationId, onAccept, onReject }:
         throw new Error(data.error || 'Failed to reject application');
       }
       onReject?.();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -47,8 +48,9 @@ export default function ApplicationReview({ applicationId, onAccept, onReject }:
         throw new Error(data.error || 'Failed to accept application');
       }
       onAccept();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }

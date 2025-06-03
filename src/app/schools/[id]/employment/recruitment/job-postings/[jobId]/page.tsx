@@ -39,8 +39,9 @@ export default function JobPostingDetailPage() {
         const res = await fetch(`/api/job-postings/${jobId}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to load job posting');
         setJob(await res.json());
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -55,11 +56,12 @@ export default function JobPostingDetailPage() {
       try {
         const res = await fetch('/api/applications', { cache: 'no-store' });
         if (!res.ok) return;
-        const data = await res.json();
-        const applied = data.some((app: any) => app.jobPosting?.id === parseInt(jobId, 10));
+        const data: { jobPosting?: { id: number } }[] = await res.json();
+        const applied = data.some(app => app.jobPosting?.id === parseInt(jobId, 10));
         setHasApplied(applied);
-      } catch {
-        // ignore
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       }
     }
     checkApplied();
@@ -83,8 +85,9 @@ export default function JobPostingDetailPage() {
         throw new Error(data.error || 'Failed to delete job posting');
       }
       window.location.href = `/schools/${schoolId}/employment/recruitment/job-postings`;
-    } catch (err: any) {
-      setActionError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
     } finally {
       setDeleting(false);
     }
@@ -107,8 +110,9 @@ export default function JobPostingDetailPage() {
       // Update local state to reflect archived status
       const updatedJob: JobPosting = await res.json();
       setJob(updatedJob);
-    } catch (err: any) {
-      setActionError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
     } finally {
       setArchiving(false);
     }
@@ -131,8 +135,9 @@ export default function JobPostingDetailPage() {
       // Update local state to reflect unarchived status
       const updatedJob: JobPosting = await res.json();
       setJob(updatedJob);
-    } catch (err: any) {
-      setActionError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
     } finally {
       setArchiving(false);
     }
@@ -195,7 +200,7 @@ export default function JobPostingDetailPage() {
               )}
             </>
           ) : isAuthenticated ? (
-            job.hasApplied ? (
+            hasApplied ? (
               <button
                 disabled
                 className="bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed disabled:opacity-50"

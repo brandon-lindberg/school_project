@@ -10,8 +10,10 @@ const entrySchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
 });
 
-export async function GET(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -58,8 +60,10 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
     const authorId = session.user.id;
     const entry = await prisma.journalEntry.create({ data: { applicationId, authorId, type, content, rating } });
     return NextResponse.json(entry, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error creating journal entry:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

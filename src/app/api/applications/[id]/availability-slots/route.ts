@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
@@ -11,7 +12,9 @@ const slotSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format'),
 });
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const applicationId = parseInt(params.id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -30,7 +33,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -49,21 +54,23 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][parsedDate.getDay()];
 
     const userId = session.user.id;
+    // Create availability slot, connecting user and application relations
+    const createData: Prisma.AvailabilitySlotCreateInput = {
+      user: { connect: { user_id: userId } },
+      application: { connect: { id: applicationId } },
+      date: parsedDate,
+      dayOfWeek,
+      startTime,
+      endTime,
+    };
     const slot = await prisma.availabilitySlot.create({
-      data: {
-        applicationId,
-        userId,
-        date: parsedDate,
-        dayOfWeek,
-        startTime,
-        endTime,
-      } as any,
+      data: createData,
       include: {
         user: { select: { user_id: true, first_name: true, family_name: true } },
       },
     });
     return NextResponse.json(slot, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error creating availability slot:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

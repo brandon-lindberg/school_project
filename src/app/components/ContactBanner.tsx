@@ -14,7 +14,7 @@ const ContactBanner: React.FC = () => {
         <p className="text-sm text-gray-600">
           {language === 'en' ? (
             <>
-              Don't see your school? Want your school to be featured?{' '}
+              Don&apos;t see your school? Want your school to be featured?{' '}
               <a href="mailto:contact@isdb-japan.com" className="text-blue-600 hover:text-blue-800">
                 Contact us
               </a>

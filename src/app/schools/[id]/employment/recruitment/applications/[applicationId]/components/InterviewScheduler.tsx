@@ -40,8 +40,9 @@ export default function InterviewScheduler({ applicationId, initialInterviews, t
       setInterviews(prev => [newInterview, ...prev]);
       setScheduledAt('');
       setLocation('');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 

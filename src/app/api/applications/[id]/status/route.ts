@@ -6,19 +6,22 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import fs from 'fs/promises';
 import path from 'path';
 import { sendEmail } from '@/lib/email';
+import type { Prisma, ApplicationStatus } from '@prisma/client';
 
 const statusSchema = z.object({
   status: z.enum(['APPLIED', 'SCREENING', 'IN_PROCESS', 'REJECTED', 'OFFER', 'ACCEPTED_OFFER', 'REJECTED_OFFER', 'WITHDRAWN']),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: any }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Await params for NextJS 15 dynamic API handling
-  const { id } = await params;
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+  // extract application ID
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -44,19 +47,18 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     }
     const updated = await prisma.application.update({
       where: { id: applicationId },
-      data: { status: status as any },
+      data: { status: status as ApplicationStatus },
     });
 
     // Create in-app notification
-    await prisma.notification.create({
-      data: {
-        user_id: app.userId || 0,
-        type: 'APPLICATION_STATUS_UPDATED',
-        title: `Application ${status}`,
-        message: `Your application for "${app.jobPosting.title}" has been ${status.toLowerCase()}.`,
-        url: `/schools/${app.jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
-      } as any,
-    });
+    const notificationData: Prisma.NotificationCreateInput = {
+      user: { connect: { user_id: app.userId! } },
+      type: 'APPLICATION_STATUS_UPDATED',
+      title: `Application ${status}`,
+      message: `Your application for "${app.jobPosting.title}" has been ${status.toLowerCase()}.`,
+      url: `/schools/${app.jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
+    };
+    await prisma.notification.create({ data: notificationData });
 
     // Send email for rejection
     if (status === 'REJECTED') {
@@ -77,7 +79,7 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     }
 
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error updating application status:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

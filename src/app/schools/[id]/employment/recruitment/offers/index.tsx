@@ -4,9 +4,29 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
+// Define types for fetched applications and offers
+interface ApplicationDTO {
+  id: number;
+  applicantName: string;
+  offer?: {
+    id: number;
+    sentAt: string;
+    letterUrl: string;
+    status: string;
+  };
+}
+interface OfferListItem {
+  id: number;
+  sentAt: string;
+  letterUrl: string;
+  status: string;
+  applicantName: string;
+  applicationId: number;
+}
+
 export default function OffersPage() {
   const { id: schoolId } = useParams() as { id: string };
-  const [offers, setOffers] = useState<any[]>([]);
+  const [offers, setOffers] = useState<OfferListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,13 +35,21 @@ export default function OffersPage() {
       try {
         const res = await fetch(`/api/schools/${schoolId}/recruitment/applications`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch applications');
-        const apps = await res.json();
-        const offersList = apps
-          .filter((app: any) => app.offer)
-          .map((app: any) => ({ ...app.offer, applicantName: app.applicantName, applicationId: app.id }));
+        const apps: ApplicationDTO[] = await res.json();
+        const offersList: OfferListItem[] = apps
+          .filter(app => app.offer)
+          .map(app => ({
+            id: app.offer!.id,
+            sentAt: app.offer!.sentAt,
+            letterUrl: app.offer!.letterUrl,
+            status: app.offer!.status,
+            applicantName: app.applicantName,
+            applicationId: app.id,
+          }));
         setOffers(offersList);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }

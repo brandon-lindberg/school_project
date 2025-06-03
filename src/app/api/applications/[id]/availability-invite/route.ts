@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -57,7 +60,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (typeof location !== 'string' || !location.trim()) {
       return NextResponse.json({ error: 'Location is required' }, { status: 400 });
     }
-    await prisma.application.update({ where: { id: applicationId }, data: { currentStage: 'INTERVIEW_INVITATION_SENT', interviewLocation: location, interviewerNames } as any });
+    // Update application with interview invitation details
+    const updateData: Prisma.ApplicationUpdateInput = {
+      currentStage: 'INTERVIEW_INVITATION_SENT',
+      interviewLocation: location,
+      interviewerNames,
+    };
+    await prisma.application.update({ where: { id: applicationId }, data: updateData });
     // Notify candidate: initial invite or reschedule
     const jobPosting = app.jobPosting;
     const jobTitle = jobPosting.title;
@@ -72,19 +81,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const message = isRescheduleInvite
       ? `The ${schoolName} school has requested to reschedule your interview for the "${jobTitle}" position. Please select a new time slot in the portal.`
       : `The ${schoolName} school has sent you interview availability for the "${jobTitle}" position. Please select a time slot in the portal.`;
-    await prisma.notification.create({
-      data: {
-        user_id: app.userId || 0,
-        type: 'MESSAGE_RECEIVED',
-        title,
-        message,
-        url: `/schools/${jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
-      } as any,
-    });
+    // Create notification for candidate
+    const notificationData: Prisma.NotificationCreateInput = {
+      user: { connect: { user_id: app.userId! } },
+      type: 'MESSAGE_RECEIVED',
+      title,
+      message,
+      url: `/schools/${jobPosting.schoolId}/employment/recruitment/applications/${applicationId}`,
+    };
+    await prisma.notification.create({ data: notificationData });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error sending availability invitation:', err);
-    return NextResponse.json({ error: err.message || 'Failed to send availability invitation' }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : 'Failed to send availability invitation';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

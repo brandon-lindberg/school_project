@@ -3,7 +3,9 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
-export async function GET(request: NextRequest, { params }: { params: any }) {
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
   const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
@@ -37,7 +39,9 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: any }) {
+export async function PATCH(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -70,11 +74,10 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
     }
     const updated = await prisma.application.update({
       where: { id: applicationId },
-      // @ts-ignore: allowCandidateMessages is a new field on Application
       data: { allowCandidateMessages },
     });
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error updating application:', err);
     return NextResponse.json({ error: 'Failed to update application' }, { status: 500 });
   }

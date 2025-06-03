@@ -9,7 +9,6 @@ interface InterviewInvitationProps {
   refresh: () => void;
   round?: number;
   isReschedule?: boolean;
-  interviewId?: string;
 }
 
 // Suggestion shape from match-suggestions API
@@ -30,7 +29,7 @@ function getNextDate(dayAbbrev: string): Date {
   return date;
 }
 
-export default function InterviewInvitation({ applicationId, refresh, round = 1, isReschedule = false, interviewId }: InterviewInvitationProps) {
+export default function InterviewInvitation({ applicationId, refresh, round = 1, isReschedule = false }: InterviewInvitationProps) {
   const [newInterviewer, setNewInterviewer] = useState<string>('');
   const [interviewerNames, setInterviewerNames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -49,8 +48,9 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1,
         if (!res.ok) throw new Error('Failed to load suggestions');
         const data = await res.json();
         setSuggestions(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -99,8 +99,9 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1,
       }
       setAvailabilitySent(true);
       refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setSendingAvailability(false);
     }
@@ -133,8 +134,9 @@ export default function InterviewInvitation({ applicationId, refresh, round = 1,
         throw new Error(data.error || 'Failed to invite for interview');
       }
       refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 

@@ -10,12 +10,14 @@ const slotSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format'),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string; slotId: string } }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string; slotId: string } };
   const applicationId = parseInt(params.id, 10);
   const slotId = parseInt(params.slotId, 10);
   if (isNaN(applicationId) || isNaN(slotId)) {
@@ -40,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     });
 
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error updating availability slot:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
@@ -49,12 +51,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string; slotId: string } }) {
+export async function DELETE(request: NextRequest, context: unknown) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string; slotId: string } };
   const applicationId = parseInt(params.id, 10);
   const slotId = parseInt(params.slotId, 10);
   if (isNaN(applicationId) || isNaN(slotId)) {
@@ -73,7 +77,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     await prisma.availabilitySlot.delete({ where: { id: slotId } });
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error deleting availability slot:', err);
     return NextResponse.json({ error: 'Failed to delete slot' }, { status: 500 });
   }

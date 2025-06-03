@@ -7,8 +7,7 @@ import { countries } from '@/lib/countries';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 export default function JobApplicationPage() {
-  const params = useParams() as { id: string; jobId: string };
-  const { id: schoolId, jobId } = params;
+  const { jobId } = useParams() as { id: string; jobId: string };
   const [applicantName, setApplicantName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -64,8 +63,9 @@ export default function JobApplicationPage() {
         throw new Error(data.error || 'Failed to submit application');
       }
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 
@@ -198,7 +198,7 @@ export default function JobApplicationPage() {
             <div className="relative flex items-center ml-2 group">
               <InformationCircleIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-60 bg-gray-800 text-white text-base rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
-                Since we don't host files directly, please upload your CV to a free cloud service (e.g., Google Drive or Dropbox) and paste the shareable link here.
+                Since we don&apos;t host files directly, please upload your CV to a free cloud service (e.g., Google Drive or Dropbox) and paste the shareable link here.
               </div>
             </div>
           </label>

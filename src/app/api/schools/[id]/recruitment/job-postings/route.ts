@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { UserRole } from '@prisma/client';
 
@@ -14,7 +15,9 @@ const jobPostingSchema = z.object({
   status: z.string().optional(),
 });
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const { id } = params;
   const schoolId = id;
   if (!schoolId) {
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Debug logging
     console.log('Debug GET job-postings for schoolId:', schoolId, 'isAuthorized:', isAuthorized);
     // Build filter for postings
-    const whereClause: any = { schoolId };
+    const whereClause: Prisma.JobPostingWhereInput = { schoolId };
     console.log('Initial whereClause:', whereClause);
     if (!isAuthorized) {
       whereClause.isArchived = false;
@@ -72,7 +75,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

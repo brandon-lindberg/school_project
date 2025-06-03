@@ -11,8 +11,11 @@ export default function RecruitmentLayout({ children }: { children: React.ReactN
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const userRole = session?.user?.role;
-  const managedFromSession = session?.user?.managedSchools ?? [];
-  const isAdmin = isAuthenticated && (userRole === 'SUPER_ADMIN' || (userRole === 'SCHOOL_ADMIN' && managedFromSession.some((s: any) => s.school_id === schoolId)));
+  const managedFromSession = session?.user?.managedSchools as { school_id: string }[] ?? [];
+  const isAdmin = isAuthenticated && (
+    userRole === 'SUPER_ADMIN' ||
+    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === schoolId))
+  );
   const pathname = usePathname() || '';
   const base = `/schools/${schoolId}/employment/recruitment`;
 

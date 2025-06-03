@@ -33,9 +33,6 @@ function formatDayHeader(dayAbbrev: string): string {
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Abbreviations for weekdays to derive dayOfWeek from a date
-const weekdayAbbrevs = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export default function AvailabilityGrid({ applicationId }: { applicationId: string }) {
   const { data: session } = useSession();
   const currentUserId: string | null = session?.user?.id ?? null;
@@ -53,24 +50,21 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
   const [updatingSlot, setUpdatingSlot] = useState(false);
 
   useEffect(() => {
-    fetchSlots();
-  }, []);
-
-  async function fetchSlots() {
-    try {
-      const res = await fetch(`/api/applications/${applicationId}/availability-slots`, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Failed to load availability slots');
-      const data: Slot[] = await res.json();
-      // Only include slots whose end time is in the future
-      const now = Date.now();
-      const upcoming = data.filter(
-        s => new Date(`${s.date}T${s.endTime}`).getTime() > now
-      );
-      setSlots(upcoming);
-    } catch (err: any) {
-      setError(err.message);
+    async function loadSlots() {
+      try {
+        const res = await fetch(`/api/applications/${applicationId}/availability-slots`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load availability slots');
+        const data: Slot[] = await res.json();
+        const now = Date.now();
+        const upcoming = data.filter(s => new Date(`${s.date}T${s.endTime}`).getTime() > now);
+        setSlots(upcoming);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+      }
     }
-  }
+    loadSlots();
+  }, [applicationId]);
 
   async function addSlot() {
     // Compute endTime based on duration
@@ -98,8 +92,9 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
       }
       const newSlot = await res.json();
       setSlots(prev => [...prev, newSlot]);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   }
 
@@ -114,8 +109,9 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
         throw new Error(data.error || 'Failed to delete slot');
       }
       setSlots(prev => prev.filter(s => s.id !== slotId));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   }
 
@@ -156,8 +152,9 @@ export default function AvailabilityGrid({ applicationId }: { applicationId: str
       const updated = await res.json();
       setSlots(prev => prev.map(s => (s.id === updated.id ? updated : s)));
       setEditingSlot(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setUpdatingSlot(false);
     }

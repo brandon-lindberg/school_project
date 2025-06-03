@@ -17,14 +17,16 @@ const jobPostingSchema = z.object({
 
 const updateJobPostingSchema = jobPostingSchema.partial();
 
-export async function GET(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const jobId = parseInt(id, 10);
   if (isNaN(jobId)) {
     return NextResponse.json({ error: 'Invalid job posting ID' }, { status: 400 });
   }
   try {
-    const jobPosting: any = await prisma.jobPosting.findUnique({ where: { id: jobId } });
+    const jobPosting = await prisma.jobPosting.findUnique({ where: { id: jobId } });
     if (!jobPosting) {
       return NextResponse.json({ error: 'Job posting not found' }, { status: 404 });
     }
@@ -59,8 +61,10 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function PUT(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const jobId = parseInt(id, 10);
   if (isNaN(jobId)) {
     return NextResponse.json({ error: 'Invalid job posting ID' }, { status: 400 });
@@ -106,8 +110,10 @@ export async function PUT(request: NextRequest, { params }: { params: any }) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function DELETE(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const jobId = parseInt(id, 10);
   if (isNaN(jobId)) {
     return NextResponse.json({ error: 'Invalid job posting ID' }, { status: 400 });

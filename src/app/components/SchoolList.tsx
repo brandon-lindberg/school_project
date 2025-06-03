@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { useListStatus } from '../contexts/ListStatusContext';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import type { Session } from 'next-auth';
 
 type SortField = 'location' | 'studentLang' | 'parentLang' | 'age' | 'list';
 type SortDirection = 'asc' | 'desc' | null;
@@ -31,6 +32,14 @@ interface SchoolListProps {
   viewMode: 'list' | 'grid';
 }
 
+interface ManagedSchool {
+  school_id: string;
+}
+
+type SessionUserManaged = Session['user'] & {
+  managedSchools?: ManagedSchool[];
+};
+
 const SchoolList: React.FC<SchoolListProps> = ({
   schools,
   searchQuery = '',
@@ -44,6 +53,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
   const { data: session } = useSession();
   const { listStatuses, updateListStatus } = useListStatus();
   const [sortState, setSortState] = useState<SortState>({ field: null, direction: null });
+  const user = session?.user as SessionUserManaged;
 
   const handleSort = (field: SortField) => {
     setSortState(prev => ({
@@ -273,12 +283,13 @@ const SchoolList: React.FC<SchoolListProps> = ({
                   <Link href={`/schools/${school.school_id}`} className="contents">
                     <div className="flex items-center">
                       {(school.logo_url || (school.logo_id && school.logo_id.startsWith('http'))) ? (
-                        <img
+                        <Image
                           src={(school.logo_url || school.logo_id)!}
                           alt="Logo"
                           width={30}
                           height={30}
                           className="rounded-full"
+                          unoptimized
                         />
                       ) : (
                         <Image
@@ -287,6 +298,7 @@ const SchoolList: React.FC<SchoolListProps> = ({
                           width={30}
                           height={30}
                           className="rounded-full"
+                          unoptimized
                         />
                       )}
                     </div>
@@ -485,16 +497,14 @@ const SchoolList: React.FC<SchoolListProps> = ({
                         </button>
                       </Tooltip>
                     )}
-                    {(session?.user?.role === 'SUPER_ADMIN' ||
-                      (session?.user?.role === 'SCHOOL_ADMIN' &&
-                        (session.user as any).managedSchools?.some(
-                          (ms: any) => String(ms.school_id) === school.school_id
-                        )
+                    {(user?.role === 'SUPER_ADMIN' ||
+                      (user?.role === 'SCHOOL_ADMIN' &&
+                        user.managedSchools?.some(ms => ms.school_id === school.school_id)
                       )
                     ) && (
                         <Tooltip
                           content={
-                            session.user.role === 'SUPER_ADMIN'
+                            user.role === 'SUPER_ADMIN'
                               ? 'Edit School'
                               : language === 'en'
                                 ? 'Edit Your School'

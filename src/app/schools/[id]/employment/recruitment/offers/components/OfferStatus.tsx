@@ -30,8 +30,9 @@ export default function OfferStatus({ offerId, initialStatus, letterUrl }: Offer
       setStatus(response);
       // Notify parent to refresh application data
       window.dispatchEvent(new Event('offerResponded'));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -4,9 +4,24 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import ApplicationList from './components/ApplicationList';
 
+// Define shape of applications for this list
+interface ApplicationListItem {
+  id: number;
+  applicantName: string;
+  email: string;
+  status: string;
+  currentStage: string;
+  rating?: number | null;
+  interviews?: { id: number }[];
+  offer?: { status: string };
+  nationality?: string;
+  hasJapaneseVisa?: boolean;
+  jlpt?: string;
+}
+
 export default function ApplicationsPage() {
   const { id: schoolId } = useParams() as { id: string };
-  const [applications, setApplications] = useState<any[]>([]);
+  const [applications, setApplications] = useState<ApplicationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nationalityFilter, setNationalityFilter] = useState<string[]>(['All']);
@@ -32,11 +47,12 @@ export default function ApplicationsPage() {
         const endpoint = `/api/schools/${schoolId}/recruitment/applications${jobPostingId ? `?jobPostingId=${jobPostingId}` : ''}`;
         const res = await fetch(endpoint, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch applications');
-        const data = await res.json();
+        const data: ApplicationListItem[] = await res.json();
         console.log('fetchApplications data:', data);
         setApplications(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }

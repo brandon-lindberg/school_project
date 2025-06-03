@@ -36,8 +36,9 @@ export default function ApplicationMessages({ applicationId, allowCandidateMessa
         if (!res.ok) throw new Error('Failed to load messages');
         const data: MessageType[] = await res.json();
         setMessages(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -60,8 +61,9 @@ export default function ApplicationMessages({ applicationId, allowCandidateMessa
       const sent: MessageType = await res.json();
       setMessages(prev => [...prev, sent]);
       setNewMessage('');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 
@@ -78,8 +80,9 @@ export default function ApplicationMessages({ applicationId, allowCandidateMessa
         throw new Error(data.error || 'Failed to update setting');
       }
       setAllowCandidateMessages(updated);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 

@@ -15,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import OfferStatus from '../../offers/components/OfferStatus';
 import ApplicationMessages from './components/ApplicationMessages';
 import { ChatBubbleLeftRightIcon, XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import type { Application as PrismaApplication, Notification } from '@prisma/client';
 
 // Mapping backend status codes to user-friendly text
 const statusLabelMap: Record<string, string> = {
@@ -44,6 +45,29 @@ const offerStatusLabelMap: Record<string, string> = {
   REJECTED: 'Rejected',
 };
 
+// Detailed application including related records (with serialized date strings)
+type ApplicationDetail = Omit<PrismaApplication, 'interviews' | 'offer'> & {
+  interviews: {
+    id: number;
+    scheduledAt: string;
+    location: string;
+    status: string;
+    interviewerNames?: string[];
+  }[];
+  offer?: { id: number; letterUrl: string; status: string } | null;
+  allowCandidateMessages?: boolean;
+};
+
+// Journal entry shape for this page
+interface JournalEntry {
+  id: number;
+  type: string;
+  content: string;
+  rating?: number;
+  createdAt: string;
+  author: { user_id: number; first_name: string; family_name: string };
+}
+
 export default function ApplicationDetailPage() {
   const { id: schoolId, applicationId } = useParams() as { id: string; applicationId: string };
   const { data: session } = useSession();
@@ -72,8 +96,9 @@ export default function ApplicationDetailPage() {
         throw new Error(data.error || 'Failed to reject application');
       }
       setRefreshFlag(f => f + 1);
-    } catch (err: any) {
-      setActionError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
     } finally {
       setRejecting(false);
     }
@@ -94,14 +119,15 @@ export default function ApplicationDetailPage() {
       }
       setRefreshFlag(f => f + 1);
       setWithdrawSuccess(true);
-    } catch (err: any) {
-      setActionError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
     } finally {
       setWithdrawing(false);
     }
   };
 
-  const [application, setApplication] = useState<any>(null);
+  const [application, setApplication] = useState<ApplicationDetail | null>(null);
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,16 +137,16 @@ export default function ApplicationDetailPage() {
   const [showMessagesPanel, setShowMessagesPanel] = useState(false);
   const [showJournalPanel, setShowJournalPanel] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
-  const [journalEntries, setJournalEntries] = useState<any[]>([]);
-  const [journalLoading, setJournalLoading] = useState(true);
-  const [journalError, setJournalError] = useState<string | null>(null);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [, setJournalLoading] = useState(true);
+  const [, setJournalError] = useState<string | null>(null);
 
   // Handler to mark message notifications as read and open messages panel
   const handleOpenMessages = async () => {
     try {
       const res = await fetch('/api/notifications');
       if (res.ok) {
-        const notifs = (await res.json()) as any[];
+        const notifs = (await res.json()) as Notification[];
         const toMark = notifs.filter(n =>
           n.type === 'MESSAGE_RECEIVED' &&
           !n.is_read &&
@@ -135,7 +161,7 @@ export default function ApplicationDetailPage() {
         }
         setUnreadMessagesCount(0);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error marking messages read:', err);
     }
     setShowMessagesPanel(true);
@@ -149,8 +175,9 @@ export default function ApplicationDetailPage() {
         const app = await res.json();
         setApplication(app);
         setCandidateRating(app.rating || 0);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -179,13 +206,13 @@ export default function ApplicationDetailPage() {
         const res = await fetch('/api/notifications');
         if (!res.ok) return;
         const notifs = await res.json();
-        const count = (notifs as any[]).filter(n =>
+        const count = (notifs as Notification[]).filter(n =>
           n.type === 'MESSAGE_RECEIVED' &&
           !n.is_read &&
           n.url === `/schools/${schoolId}/employment/recruitment/applications/${applicationId}`
         ).length;
         setUnreadMessagesCount(count);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching unread notifications:', err);
       }
     }
@@ -198,10 +225,11 @@ export default function ApplicationDetailPage() {
       try {
         const res = await fetch(`/api/applications/${applicationId}/journal-entries`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch journal entries');
-        const data = await res.json();
+        const data = (await res.json()) as JournalEntry[];
         setJournalEntries(data);
-      } catch (err: any) {
-        setJournalError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setJournalError(message);
       } finally {
         setJournalLoading(false);
       }
@@ -395,7 +423,7 @@ export default function ApplicationDetailPage() {
           {!isAdmin && !application.offer && application.status !== 'WITHDRAWN' && (
             <div className="space-y-6">
               {/* List all interviews with completion status */}
-              {application.interviews.map((intv: any, idx: number) => (
+              {application.interviews.map((intv, idx: number) => (
                 <div key={intv.id} className="bg-white shadow-lg rounded-lg p-6 space-y-2">
                   <h2 className="text-xl font-semibold">
                     Round {idx + 1}{' '}

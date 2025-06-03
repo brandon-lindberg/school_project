@@ -4,8 +4,10 @@ import * as ReactDOMClient from 'react-dom/client';
 import * as ReactDOM from 'react-dom';
 
 // Polyfill findDOMNode for ReactQuill compatibility
-if (!(ReactDOMClient as any).findDOMNode && (ReactDOM as any).findDOMNode) {
-  (ReactDOMClient as any).findDOMNode = (ReactDOM as any).findDOMNode;
+const clientDOM = ReactDOMClient as unknown as Record<string, unknown>;
+const domDOM = ReactDOM as unknown as Record<string, unknown>;
+if (!clientDOM.findDOMNode && domDOM.findDOMNode) {
+  clientDOM.findDOMNode = domDOM.findDOMNode;
 }
 
 import { SessionProvider } from 'next-auth/react';

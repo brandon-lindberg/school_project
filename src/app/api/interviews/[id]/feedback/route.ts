@@ -9,7 +9,10 @@ const feedbackSchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
 });
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Optionally send notification/email here
     return NextResponse.json(feedback, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error submitting feedback:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

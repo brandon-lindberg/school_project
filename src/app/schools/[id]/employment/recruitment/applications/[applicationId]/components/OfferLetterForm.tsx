@@ -30,8 +30,9 @@ export default function OfferLetterForm({ applicationId, initialLetterUrl }: Off
       }
       setSuccess(true);
       window.dispatchEvent(new Event('offerResponded'));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ export default function OfferLetterForm({ applicationId, initialLetterUrl }: Off
           <div className="relative flex items-center ml-2 group">
             <InformationCircleIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-60 bg-gray-800 text-white text-base rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
-              We don't host files directly, please upload your offer letter to a free cloud service (e.g., Google Drive or Dropbox) and paste the shareable link here.
+              We don&apos;t host files directly, please upload your offer letter to a free cloud service (e.g., Google Drive or Dropbox) and paste the shareable link here.
             </div>
           </div>
         </label>

@@ -8,7 +8,10 @@ const stageSchema = z.object({
   stage: z.enum(['SCREENING', 'INTERVIEW_INVITATION_SENT', 'INTERVIEW', 'OFFER', 'REJECTED']),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -46,7 +49,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       data: { currentStage: stage },
     });
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error updating application stage:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

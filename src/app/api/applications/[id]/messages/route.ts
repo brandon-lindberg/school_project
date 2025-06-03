@@ -4,8 +4,10 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 
 // Fetch all messages for a given application
-export async function GET(request: NextRequest, { params }: { params: any }) {
-  const { id } = await params;
+export async function GET(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -37,7 +39,6 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   }
 
   // Retrieve messages
-  // @ts-ignore: applicationMessage delegate may not yet be recognized on PrismaClient
   const messages = await prisma.applicationMessage.findMany({
     where: { applicationId },
     include: { sender: { select: { user_id: true, first_name: true, family_name: true } } },
@@ -48,13 +49,15 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
 }
 
 // Post a new message for this application
-export async function POST(request: NextRequest, { params }: { params: any }) {
+export async function POST(request: NextRequest, context: unknown) {
+  // Extract route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const userId = session.user.id;
-  const { id } = await params;
+  const { id } = params;
   const applicationId = parseInt(id, 10);
   if (isNaN(applicationId)) {
     return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
@@ -79,7 +82,6 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
   if (!isAdmin && application.userId !== userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
-  // @ts-ignore: allowCandidateMessages is a new field on Application
   if (!isAdmin && !application.allowCandidateMessages) {
     return NextResponse.json({ error: 'Candidate communication not allowed' }, { status: 403 });
   }
@@ -92,12 +94,11 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
     if (!content || typeof content !== 'string') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
-  } catch (err: any) {
+  } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
   try {
-    // @ts-ignore: applicationMessage delegate may not yet be recognized on PrismaClient
     const message = await prisma.applicationMessage.create({
       data: {
         applicationId,
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest, { params }: { params: any }) {
     }
 
     return NextResponse.json(message, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error creating application message:', err);
     return NextResponse.json({ error: 'Failed to create message' }, { status: 500 });
   }

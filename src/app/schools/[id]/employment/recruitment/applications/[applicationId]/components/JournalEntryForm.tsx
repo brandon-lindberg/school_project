@@ -10,7 +10,7 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
   async function handleSubmit() {
     setError(null);
     try {
-      const payload: any = { type, content };
+      const payload = { type, content };
       const res = await fetch(`/api/applications/${applicationId}/journal-entries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,8 +23,9 @@ export default function JournalEntryForm({ applicationId }: { applicationId: str
       setContent('');
       // Notify timeline to refresh
       window.dispatchEvent(new Event('journalEntryCreated'));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   }
 

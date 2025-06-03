@@ -49,8 +49,9 @@ export default function JobPostingForm({ schoolId, onSuccess }: JobPostingFormPr
         throw new Error(data.error || 'Failed to create job posting');
       }
       onSuccess();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 

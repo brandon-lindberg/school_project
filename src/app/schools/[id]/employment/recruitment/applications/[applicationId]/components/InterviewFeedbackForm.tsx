@@ -37,8 +37,9 @@ export default function InterviewFeedbackForm({ interviewId, initialFeedbacks, o
       setContent('');
       // Notify timeline to refresh new feedback entries
       window.dispatchEvent(new Event('journalEntryCreated'));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   };
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     return NextResponse.json(note, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error creating note:', err);
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });

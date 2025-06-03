@@ -1,13 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import type { Application as PrismaApplication } from '@prisma/client';
+// Shape expected by InterviewRoundsList for each interview
+type InterviewDTO = {
+  id: number;
+  scheduledAt: string;
+  location: string;
+  status: string;
+  interviewer?: { first_name: string; family_name: string };
+  interviewerNames?: string[];
+  feedback?: { id: number; content: string; rating?: number; createdAt: string }[];
+};
+// Only letterUrl is used from offer
+type OfferDTO = { letterUrl: string };
 import ApplicationReview from './ApplicationReview';
 import InterviewInvitation from './InterviewInvitation';
 import InterviewRoundsList from './InterviewRoundsList';
 import OfferLetterForm from './OfferLetterForm';
 
 interface EmployerWorkflowProps {
-  application: any;
+  application: PrismaApplication & { interviews: InterviewDTO[]; offer?: OfferDTO | null };
   refresh: () => void;
 }
 
@@ -31,8 +44,6 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
     : isReschedule
       ? app.interviews.length
       : app.interviews.length + 1;
-  // Track last interview ID for reschedule
-  const lastInterviewId = lastInterview ? lastInterview.id.toString() : undefined;
 
   return (
     <div className="space-y-8">
@@ -62,7 +73,6 @@ export default function EmployerWorkflow({ application, refresh }: EmployerWorkf
           applicationId={app.id.toString()}
           round={roundNum}
           isReschedule={isReschedule}
-          interviewId={isReschedule ? lastInterviewId : undefined}
           refresh={() => { setInviting(false); refresh(); }}
         />
       )}

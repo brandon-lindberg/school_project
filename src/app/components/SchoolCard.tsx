@@ -9,6 +9,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedContent } from '@/utils/language';
 import { useListStatus } from '../contexts/ListStatusContext';
 import { Tooltip } from './Tooltip';
+import type { Session } from 'next-auth';
 
 interface SchoolCardProps {
   school: School;
@@ -17,6 +18,14 @@ interface SchoolCardProps {
   userId?: number | null;
   isFeatured?: boolean;
 }
+
+interface ManagedSchool {
+  school_id: string;
+}
+
+type SessionUserManaged = Session['user'] & {
+  managedSchools?: ManagedSchool[];
+};
 
 const SchoolCard: React.FC<SchoolCardProps> = ({
   school,
@@ -31,6 +40,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   const listStatus = listStatuses[school.school_id];
   const isInList = listStatus?.isInList || false;
   const listId = listStatus?.listId || null;
+  const user = session?.user as SessionUserManaged;
 
   // Function to highlight search query in text
   const highlightText = (text: string | undefined, query: string) => {
@@ -150,20 +160,13 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
     <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
       {/* Image */}
       <div className="w-full h-36 relative">
-        {bannerSrc.startsWith('http') ? (
-          <img
-            src={bannerSrc}
-            alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <Image
-            src={bannerSrc}
-            alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
-            fill
-            className="object-cover"
-          />
-        )}
+        <Image
+          src={bannerSrc}
+          alt={getLocalizedContent(school.name_en, school.name_jp, language) || 'School image'}
+          fill
+          className="object-cover"
+          unoptimized
+        />
       </div>
 
       {/* Main content area */}
@@ -173,20 +176,13 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           {/* Logo and title container */}
           <div className="flex items-center gap-2">
             <div className="flex-shrink-0 w-10 h-10 relative">
-              {logoSrc.startsWith('http') ? (
-                <img
-                  src={logoSrc}
-                  alt="Logo"
-                  className="rounded-full w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={logoSrc}
-                  alt="Logo"
-                  fill
-                  className="rounded-full object-cover"
-                />
-              )}
+              <Image
+                src={logoSrc}
+                alt="Logo"
+                fill
+                className="rounded-full object-cover"
+                unoptimized
+              />
             </div>
             <div className="min-w-0 flex-1">
               <Link href={`/schools/${school.school_id}`} className="block hover:text-blue-600">
@@ -347,7 +343,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             )}
             {session?.user?.role === 'SUPER_ADMIN' ||
               (session?.user?.role === 'SCHOOL_ADMIN' &&
-                (session.user as any).managedSchools?.some((ms: any) => String(ms.school_id) === school.school_id)) ? (
+                user.managedSchools?.some(ms => ms.school_id === school.school_id)) ? (
               <Link
                 href={`/admin/schools/${school.school_id}`}
                 className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"

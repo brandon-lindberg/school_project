@@ -8,7 +8,9 @@ const ratingSchema = z.object({
   rating: z.number().int().min(0).max(5),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: any }) {
+export async function PATCH(request: NextRequest, context: unknown) {
+  // Extract dynamic route params
+  const { params } = context as { params: { id: string } };
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,8 +28,9 @@ export async function PATCH(request: NextRequest, { params }: { params: any }) {
   let data;
   try {
     data = ratingSchema.parse(body);
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 400 });
+  } catch (err) {
+    const details = err instanceof z.ZodError ? err.errors : undefined;
+    return NextResponse.json({ error: 'Validation failed', details }, { status: 400 });
   }
   try {
     const updated = await prisma.application.update({

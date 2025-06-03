@@ -17,6 +17,22 @@ interface SlotState {
   endDate: string;
 }
 
+// Raw featured slot from API
+interface RawSlot {
+  id: number;
+  slotNumber: number;
+  startDate: string;
+  endDate: string;
+  schoolId: string;
+}
+
+// New schedule entry type
+interface NewSchedule {
+  schoolId?: string;
+  startDate: string;
+  endDate: string;
+}
+
 export default function AdminFeaturedPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -27,8 +43,8 @@ export default function AdminFeaturedPage() {
   const [loading, setLoading] = useState(true);
   const [savingSlot, setSavingSlot] = useState<number | null>(null);
   const [allSlots, setAllSlots] = useState<SlotState[]>([]);
-  const [newSchedules, setNewSchedules] = useState(
-    Array.from({ length: 4 }, () => ({ schoolId: undefined as string | undefined, startDate: '', endDate: '' }))
+  const [newSchedules, setNewSchedules] = useState<NewSchedule[]>(
+    Array.from({ length: 4 }, () => ({ schoolId: undefined, startDate: '', endDate: '' }))
   );
   const [editingUpcomingId, setEditingUpcomingId] = useState<number | null>(null);
   const [editingUpcomingData, setEditingUpcomingData] = useState<{ schoolId?: string; startDate: string; endDate: string }>({ schoolId: undefined, startDate: '', endDate: '' });
@@ -48,22 +64,22 @@ export default function AdminFeaturedPage() {
       try {
         // fetch existing featured slots
         const resSlots = await fetch('/api/admin/featured');
-        const dataSlots = await resSlots.json();
+        const dataSlots = (await resSlots.json()) as RawSlot[];
         setAllSlots(dataSlots);
         // fetch all schools
         const resSchools = await fetch('/api/admin/schools');
-        const dataSchools = await resSchools.json();
+        const dataSchools = (await resSchools.json()) as SchoolOption[];
         // map schools
-        setSchools(dataSchools.map((s: any) => ({ school_id: s.school_id, name: s.name })));
+        setSchools(dataSchools);
         // build slots state to show currently active schedules (date-only inclusive)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const state: SlotState[] = Array.from({ length: 4 }, (_, i) => {
           const slotNum = i + 1;
           // filter slots for this slot number
-          const relevantSlots = dataSlots.filter((d: any) => d.slotNumber === slotNum);
+          const relevantSlots = dataSlots.filter(d => d.slotNumber === slotNum);
           // find active slot
-          const activeSlot = relevantSlots.find((d: any) => {
+          const activeSlot = relevantSlots.find(d => {
             const startDate = new Date(d.startDate);
             startDate.setHours(0, 0, 0, 0);
             const endDate = new Date(d.endDate);
@@ -74,7 +90,7 @@ export default function AdminFeaturedPage() {
             return {
               id: activeSlot.id,
               slotNumber: activeSlot.slotNumber,
-              schoolId: activeSlot.school.school_id,
+              schoolId: activeSlot.schoolId,
               startDate: activeSlot.startDate.split('T')[0],
               endDate: activeSlot.endDate.split('T')[0],
             };
@@ -92,20 +108,28 @@ export default function AdminFeaturedPage() {
     load();
   }, [status]);
 
-  const handleChange = (index: number, key: keyof SlotState, value: any) => {
-    setSlots(curr => {
-      const next = [...curr];
-      (next[index] as any)[key] = value;
-      return next;
-    });
+  const handleChange = (
+    index: number,
+    key: keyof SlotState,
+    value: SlotState[keyof SlotState]
+  ) => {
+    setSlots(curr =>
+      curr.map((slot, i) =>
+        i === index ? { ...slot, [key]: value } : slot
+      )
+    );
   };
 
-  const handleNewChange = (index: number, key: keyof typeof newSchedules[0], value: any) => {
-    setNewSchedules(curr => {
-      const next = [...curr];
-      (next[index] as any)[key] = value;
-      return next;
-    });
+  const handleNewChange = (
+    index: number,
+    key: keyof NewSchedule,
+    value: NewSchedule[keyof NewSchedule]
+  ) => {
+    setNewSchedules(curr =>
+      curr.map((sched, i) =>
+        i === index ? { ...sched, [key]: value } : sched
+      )
+    );
   };
 
   const handleScheduleNext = async (index: number) => {
@@ -331,14 +355,14 @@ export default function AdminFeaturedPage() {
             {(() => {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
-              const futureSlots = allSlots.filter((d: any) => d.slotNumber === slot.slotNumber);
+              const futureSlots = allSlots.filter(d => d.slotNumber === slot.slotNumber);
               const upcomingSlots = futureSlots
-                .filter((d: any) => {
+                .filter(d => {
                   const start = new Date(d.startDate);
                   start.setHours(0, 0, 0, 0);
                   return start.getTime() > today.getTime();
                 })
-                .sort((a: any, b: any) => {
+                .sort((a, b) => {
                   const aDate = new Date(a.startDate);
                   aDate.setHours(0, 0, 0, 0);
                   const bDate = new Date(b.startDate);
@@ -394,7 +418,7 @@ export default function AdminFeaturedPage() {
                     <div className="mt-4 mb-4 p-2 bg-gray-50 rounded">
                       <h3 className="font-medium mb-1">Upcoming Schedules (Slot {slot.slotNumber})</h3>
                       <ol className="list-none space-y-4 ml-4">
-                        {upcomingSlots.map((us: any) => {
+                        {upcomingSlots.map((us) => {
                           const isEditing = editingUpcomingId === us.id;
                           const schoolObj = schools.find(s => s.school_id === us.schoolId);
                           const startFormatted = new Date(us.startDate).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
@@ -436,7 +460,7 @@ export default function AdminFeaturedPage() {
                                   </label>
                                   <div className="flex space-x-2 pt-2">
                                     <button
-                                      onClick={() => handleUpdateUpcoming(us.id, slot.slotNumber)}
+                                      onClick={() => handleUpdateUpcoming(us.id!, slot.slotNumber)}
                                       disabled={updatingUpcomingId === us.id}
                                       className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 disabled:opacity-50"
                                     >Save</button>
@@ -452,8 +476,8 @@ export default function AdminFeaturedPage() {
                                   <p className="text-sm">Start: {startFormatted}</p>
                                   <p className="text-sm">End: {endFormatted}</p>
                                   <div className="flex space-x-2 pt-2">
-                                    <button onClick={() => handleEditUpcoming(us.id, us.schoolId, us.startDate, us.endDate)} className="text-blue-500">Edit</button>
-                                    <button onClick={() => handleDeleteUpcoming(us.id)} className="text-red-500">Delete</button>
+                                    <button onClick={() => handleEditUpcoming(us.id!, us.schoolId!, us.startDate, us.endDate)} className="text-blue-500">Edit</button>
+                                    <button onClick={() => handleDeleteUpcoming(us.id!)} className="text-red-500">Delete</button>
                                   </div>
                                 </div>
                               )}
