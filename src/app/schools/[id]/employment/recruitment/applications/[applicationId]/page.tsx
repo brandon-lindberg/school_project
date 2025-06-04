@@ -56,6 +56,7 @@ type ApplicationDetail = Omit<PrismaApplication, 'interviews' | 'offer'> & {
   }[];
   offer?: { id: number; letterUrl: string; status: string } | null;
   allowCandidateMessages?: boolean;
+  jobPosting: { title: string };
 };
 
 // Journal entry shape for this page
@@ -266,7 +267,10 @@ export default function ApplicationDetailPage() {
         <div className="bg-white shadow rounded-lg p-6 space-y-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold">{application.applicantName}</h1>
+                <p className="text-lg text-gray-600">Application for <b>{application.jobPosting.title}</b></p>
+              </div>
               {isAdmin && (
                 <div className="flex space-x-1">
                   {[1, 2, 3, 4, 5].map(n => (

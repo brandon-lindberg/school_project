@@ -15,6 +15,7 @@ import { DashboardProvider, useDashboard } from '../contexts/DashboardContext';
 import Link from 'next/link';
 import ClaimedSchools from '../components/ClaimedSchools';
 import AddToCalendarButton from '../components/AddToCalendarButton';
+import { Card } from '../components/shared/Card';
 
 function DashboardContent() {
   const router = useRouter();
@@ -59,15 +60,15 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans">
+    <div className="min-h-screen bg-neutral-100 font-sans">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - My Lists, Managed Schools, and Claimed Schools */}
           <div className="space-y-6">
             {/* Managed Schools Section */}
             {userRole === 'SCHOOL_ADMIN' && managedSchools.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+              <Card>
+                <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
                   {language === 'en' ? 'Managed Schools' : '管理している学校'}
                 </h2>
                 <div className="space-y-4">
@@ -76,14 +77,14 @@ function DashboardContent() {
                       <div>
                         <Link
                           href={`/schools/${school.school_id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium mr-4"
+                          className="inline-block bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-md mr-4 transition-colors"
                         >
                           {school.name}
                         </Link>
                         {school.job_postings_enabled && (
                           <Link
                             href={`/schools/${school.school_id}/employment/recruitment/job-postings`}
-                            className="text-green-600 hover:underline"
+                            className="inline-block bg-secondary hover:bg-secondary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
                           >
                             {language === 'en' ? 'Recruitment' : '採用'}
                           </Link>
@@ -92,7 +93,7 @@ function DashboardContent() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Claimed Schools Section */}
@@ -100,8 +101,8 @@ function DashboardContent() {
 
             {/* User Applications Section */}
             {userRole === 'USER' && applications.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+              <Card>
+                <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
                   {language === 'en' ? 'My Applications' : '応募'}
                 </h2>
                 <ul className="space-y-2">
@@ -109,7 +110,7 @@ function DashboardContent() {
                     <li key={app.id}>
                       <Link
                         href={`/schools/${app.jobPosting.schoolId}/employment/recruitment/applications/${app.id}`}
-                        className="text-blue-600 hover:underline"
+                        className="text-primary hover:underline"
                       >
                         {app.jobPosting.title} — {
                           /* Show offer response status if present */
@@ -123,26 +124,37 @@ function DashboardContent() {
                         }
                       </Link>
                       {app.interviews?.length > 0 && (
-                        <span className="block text-sm text-green-600">
-                          Interview scheduled on {new Date(app.interviews[0].scheduledAt).toLocaleString()} at {app.interviews[0].location}
-                        </span>
+                        <p className="block text-sm text-neutral-700 mt-2">
+                          Interview scheduled on {new Date(app.interviews[0].scheduledAt).toLocaleString(
+                            language === 'en' ? 'en-US' : 'ja-JP',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: 'numeric',
+                            }
+                          )} at {app.interviews[0].location}
+                        </p>
                       )}
                       {app.interviews?.length > 0 && (
-                        <AddToCalendarButton start={app.interviews[0].scheduledAt} location={app.interviews[0].location} />
+                        <div className="flex space-x-2 mt-2">
+                          <AddToCalendarButton start={app.interviews[0].scheduledAt} location={app.interviews[0].location} />
+                        </div>
                       )}
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             )}
 
             {/* My Lists Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+            <Card>
+              <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
                 {language === 'en' ? 'My List' : 'マイリスト'}
               </h2>
               <UserLists userLists={userLists} onDeleteSchool={handleDeleteSchoolFromList} />
-            </div>
+            </Card>
           </div>
 
           {/* Right Column - Messages, Notifications and Browsing History */}
@@ -154,8 +166,8 @@ function DashboardContent() {
             <NotificationsSection />
 
             {/* Browsing History Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+            <Card>
+              <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
                 {language === 'en' ? 'Browsing History' : '閲覧履歴'}
               </h2>
               <BrowsingHistory
@@ -163,7 +175,7 @@ function DashboardContent() {
                 onClearHistory={handleClearHistory}
                 onDeleteEntry={handleDeleteHistoryEntry}
               />
-            </div>
+            </Card>
           </div>
         </div>
       </div>

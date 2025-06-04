@@ -19,33 +19,39 @@ export default function RecruitmentLayout({ children }: { children: React.ReactN
   const pathname = usePathname() || '';
   const base = `/schools/${schoolId}/employment/recruitment`;
 
-  const navItems = [
+  let navItems = [
     { label: 'Job Postings', href: `${base}/job-postings` },
   ];
   if (isAdmin) {
     navItems.push({ label: 'Applications', href: `${base}/applications` });
   }
+  // Hide Job Postings tab for non-admin users on application detail pages
+  if (!isAdmin && pathname.startsWith(`${base}/applications`)) {
+    navItems = [];
+  }
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto">
-        <nav className="flex space-x-6 border-b mb-6">
-          {navItems.map(item => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`pb-2 text-sm font-medium ${isActive
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-                  }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        {navItems.length > 0 && (
+          <nav className="flex space-x-6 border-b mb-6">
+            {navItems.map(item => {
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`pb-2 text-sm font-medium ${isActive
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
         <div>{children}</div>
       </div>
     </div>

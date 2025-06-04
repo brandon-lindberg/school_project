@@ -23,6 +23,7 @@ import { CampusForm } from '@/app/components/school-detail/CampusForm';
 import { StudentLifeForm } from '@/app/components/school-detail/StudentLifeForm';
 import { EmploymentForm } from '@/app/components/school-detail/EmploymentForm';
 import { PoliciesForm } from '@/app/components/school-detail/PoliciesForm';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 type Language = 'en' | 'jp';
 
@@ -90,7 +91,7 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
     return (
       <ul className="space-y-4">
         {[1, 2, 3].map(n => (
-          <li key={n} className="bg-white p-4 rounded shadow animate-pulse">
+          <li key={n} className="bg-neutral-50 p-4 rounded-md animate-pulse">
             <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -121,7 +122,7 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
     <>
       <ul className="space-y-4">
         {filteredJobs.map((job: JobPosting) => (
-          <li key={job.id} className="bg-white p-4 rounded shadow">
+          <li key={job.id} className="bg-neutral-50 p-4 rounded-md flex flex-col">
             <h3 className="text-xl font-semibold flex items-center">
               {job.title}
               {job.isArchived && (
@@ -144,31 +145,48 @@ function InlineJobPostings({ schoolId, canEdit, isAuthenticated, filter }: { sch
                 </ul>
               </div>
             )}
-            <p className="text-gray-500 text-sm">Created at: {new Date(job.createdAt).toLocaleString()}</p>
-            <div className="mt-2 flex items-center space-x-4">
-              {isAuthenticated ? (
-                canEdit ? (
-                  <Link href={`/schools/${schoolId}/employment/recruitment/applications`} className="text-green-500 hover:underline">Applications</Link>
-                ) : job.hasApplied ? (
-                  <button disabled className="text-gray-400 cursor-not-allowed">Applied</button>
+            {/* bottom row: actions on left, formatted date on right */}
+            <div className="mt-6 flex justify-between items-center pt-4 border-t border-neutral-200">
+              <div className="flex items-center space-x-4">
+                {isAuthenticated ? (
+                  canEdit ? (
+                    <Link
+                      href={`/schools/${schoolId}/employment/recruitment/applications`}
+                      className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                    >Applications</Link>
+                  ) : job.hasApplied ? (
+                    <button disabled className="px-3 py-1 bg-neutral-200 text-neutral-500 rounded cursor-not-allowed">Applied</button>
+                  ) : (
+                    <Link
+                      href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
+                      className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                    >Apply</Link>
+                  )
                 ) : (
-                  <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Apply</Link>
-                )
-              ) : (
-                <Link href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`} className="text-green-500 hover:underline">Sign up to Apply</Link>
-              )}
-              {canEdit && (
-                <Link href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`} className="text-blue-500 hover:underline">Manage</Link>
-              )}
-              {canEdit && (
-                <button
-                  onClick={() => handleDelete(job.id)}
-                  disabled={deletingIds[job.id]}
-                  className="ml-auto bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
-                >
-                  {deletingIds[job.id] ? 'Deleting...' : 'Delete'}
-                </button>
-              )}
+                  <Link
+                    href={`/register?next=/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
+                    className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                  >Sign up to Apply</Link>
+                )}
+                {canEdit && (
+                  <Link
+                    href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`}
+                    className="px-3 py-1 bg-secondary text-white rounded hover:bg-secondary/90"
+                  >Manage</Link>
+                )}
+                {canEdit && (
+                  <button
+                    onClick={() => handleDelete(job.id)}
+                    disabled={deletingIds[job.id]}
+                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+                  >{deletingIds[job.id] ? 'Deleting...' : 'Delete'}</button>
+                )}
+              </div>
+              <p className="text-sm text-neutral-400">
+                {new Date(job.createdAt).toLocaleString('en-US', {
+                  month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+                })}
+              </p>
             </div>
           </li>
         ))}
@@ -189,6 +207,8 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   } | null>(null);
   // State for active/archived filter in job postings list
   const [activeFilter, setActiveFilter] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
+  // State for collapsible slide-out panel
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const translations = getSchoolDetailTranslations(language);
 
@@ -288,7 +308,7 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -499,8 +519,19 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
     }
   };
 
+  // Extract tab definitions
+  const tabs = [
+    { id: 'overview', name: translations.tabs.overview },
+    { id: 'education', name: translations.tabs.education },
+    { id: 'admissions', name: translations.tabs.admissions },
+    { id: 'campus', name: translations.tabs.campus },
+    { id: 'studentLife', name: translations.tabs.studentLife },
+    { id: 'employment', name: translations.tabs.employment },
+    { id: 'policies', name: translations.tabs.policies },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-6 py-12">
       <BrowsingHistoryRecorder schoolId={school.school_id} />
 
       {notification && (
@@ -511,56 +542,47 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="overflow-x-auto" aria-label="Tabs">
-            <div className="flex min-w-full whitespace-nowrap">
-              {[
-                { id: 'overview', name: translations.tabs.overview },
-                { id: 'education', name: translations.tabs.education },
-                { id: 'admissions', name: translations.tabs.admissions },
-                { id: 'campus', name: translations.tabs.campus },
-                { id: 'studentLife', name: translations.tabs.studentLife },
-                { id: 'employment', name: translations.tabs.employment },
-                { id: 'policies', name: translations.tabs.policies },
-              ].map(tab => {
-                const isDisabled = !isAuthenticated && tab.id !== 'overview' && tab.id !== 'employment';
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={`
-                      ${activeTab === tab.id
-                        ? 'border-green-500 text-green-600'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                      }
-                      ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                      whitespace-nowrap border-b-2 py-3 px-3 sm:px-4 text-sm font-medium flex-shrink-0
-                      flex items-center
-                    `}
-                    disabled={isDisabled}
-                  >
-                    {tab.name}
-                    {isDisabled && (
-                      <span className="ml-1 text-xs text-gray-400 hidden sm:inline">
-                        {language === 'en' ? '(Login required)' : '(ログインが必要)'}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </nav>
-        </div>
+      {/* Slide-out vertical tabs anchored to right edge of left navbar */}
+      {/* Toggle handle */}
+      <button
+        onClick={() => setSidebarOpen(open => !open)}
+        className="fixed left-64 top-7 p-2 bg-white rounded-r-md shadow-md z-50 focus:outline-none"
+      >
+        {sidebarOpen ? <ChevronLeftIcon className="h-5 w-5 text-gray-600" /> : <ChevronRightIcon className="h-5 w-5 text-gray-600" />}
+      </button>
+      {/* Slide-out panel */}
+      <div
+        className={`fixed top-16 left-64 w-48 bg-white shadow-md transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <ul className="p-4 space-y-2">
+          {tabs.map(tab => {
+            const isDisabled = !isAuthenticated && tab.id !== 'overview' && tab.id !== 'employment';
+            return (
+              <li key={tab.id}>
+                <button
+                  onClick={() => { handleTabClick(tab.id); setSidebarOpen(false); }}
+                  disabled={isDisabled}
+                  className={`w-full text-left px-3 py-2 rounded ${activeTab === tab.id ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-700 hover:bg-gray-100'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {tab.name}
+                  {isDisabled && (
+                    <span className="ml-1 text-xs text-gray-400">
+                      {language === 'en' ? '(Login required)' : '(ログインが必要)'}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       {/* Content */}
-      <div className="mt-8">{renderTab()}</div>
+      <div className="mt-12">{renderTab()}</div>
 
       {/* Login/Register prompt for non-authenticated users */}
       {!isAuthenticated && activeTab === 'overview' && (
-        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
+        <div className="mt-8 bg-neutral-50 rounded-md p-6">
           <div className="text-center">
             <h3 className="text-lg font-medium text-gray-900">
               {language === 'en'
@@ -575,13 +597,13 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
             <div className="mt-4 flex justify-center space-x-4">
               <Link
                 href="/login"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary/90"
               >
                 {language === 'en' ? 'Login' : 'ログイン'}
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-primary text-primary bg-white hover:bg-primary/10"
               >
                 {language === 'en' ? 'Register' : '登録'}
               </Link>

@@ -157,7 +157,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   };
 
   return (
-    <div className="border rounded-lg shadow-md flex flex-col w-full relative overflow-hidden bg-white hover:shadow-lg transition-shadow h-[24rem]">
+    <div className="bg-neutral-50 rounded-md flex flex-col w-full relative overflow-hidden transition-transform hover:scale-105 h-[24rem]">
       {/* Image */}
       <div className="w-full h-36 relative">
         <Image
@@ -186,14 +186,14 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
             </div>
             <div className="min-w-0 flex-1">
               <Link href={`/schools/${school.school_id}`} className="block hover:text-blue-600">
-                <h3 className="font-bold text-gray-900 text-xs leading-5 line-clamp-2 cursor-pointer">
+                <h3 className="font-bold text-neutral-900 text-sm leading-5 line-clamp-2 cursor-pointer">
                   {highlightText(
                     getLocalizedContent(school.name_en, school.name_jp, language) || '',
                     searchQuery
                   )}
                 </h3>
               </Link>
-              <p className="text-gray-500 text-xs">
+              <p className="text-neutral-700 text-xs">
                 {highlightText(
                   getLocalizedContent(school.location_en, school.location_jp, language) || '',
                   searchQuery
@@ -205,7 +205,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           {/* Description */}
           {description && (
             <Tooltip content={description}>
-              <p className="text-gray-600 text-xs leading-4 line-clamp-2 cursor-help">
+              <p className="text-neutral-700 text-sm leading-5 line-clamp-2 cursor-help">
                 {highlightText(description, searchQuery)}
               </p>
             </Tooltip>
@@ -224,7 +224,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
                   ? 'N/A'
                   : '未定'
             }>
-              <p className="text-gray-600 text-xs leading-4 truncate">
+              <p className="text-neutral-700 text-xs leading-4 truncate">
                 <span className="font-medium">
                   {language === 'en' ? 'Student Language Requirements:' : '生徒の語学要件：'}
                 </span>{' '}
@@ -254,7 +254,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
                   ? 'N/A'
                   : '未定'
             }>
-              <p className="text-gray-600 text-xs leading-4 truncate">
+              <p className="text-neutral-700 text-xs leading-4 truncate">
                 <span className="font-medium">
                   {language === 'en' ? 'Parent Language Requirements:' : '保護者の語学要件：'}
                 </span>{' '}
@@ -284,7 +284,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
                   ? 'N/A'
                   : '未定'
             }>
-              <p className="text-gray-600 text-xs leading-4 truncate">
+              <p className="text-neutral-700 text-xs leading-4 truncate">
                 <span className="font-medium">
                   {language === 'en' ? 'Age Requirements:' : '年齢要件：'}
                 </span>{' '}
@@ -306,14 +306,14 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         </div>
 
         {/* Footer actions - fixed at bottom */}
-        <div className="p-4 flex justify-between items-center border-t bg-white mt-auto">
+        <div className="p-4 flex justify-between items-center border-t border-neutral-200 bg-neutral-50">
           {/* Contact Info */}
           {url && (
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-xs"
+              className="text-primary hover:text-primary/90 text-sm"
             >
               {language === 'en' ? 'Visit Website' : 'ウェブサイト'}
             </a>
@@ -334,8 +334,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
               >
                 <button
                   onClick={handleToggleList}
-                  className={`${isInList ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                    } text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer`}
+                  className={`${isInList ? 'bg-secondary hover:bg-secondary/90' : 'bg-primary hover:bg-primary/90'} text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors`}
                 >
                   <span className="text-lg cursor-pointer">{isInList ? '✓' : '+'}</span>
                 </button>
@@ -346,7 +345,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
                 user.managedSchools?.some(ms => ms.school_id === school.school_id)) ? (
               <Link
                 href={`/admin/schools/${school.school_id}`}
-                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
+                className="bg-secondary text-white px-3 py-1 rounded hover:bg-secondary/90 text-xs"
               >
                 Edit
               </Link>

@@ -48,21 +48,21 @@ const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
       <div className="flex justify-end">
         <button
           onClick={onClearHistory}
-          className="text-sm px-3 py-1 text-[#D9534F] hover:bg-red-50 rounded-md transition-colors"
+          className="text-sm px-3 py-1 text-red-600 hover:bg-red-50 rounded-md transition-colors"
         >
           {language === 'en' ? 'Clear All' : 'すべて削除'}
         </button>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-neutral-200">
         {browsingHistory.map(entry => (
           <div
             key={entry.history_id}
-            className="py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            className="py-3 flex items-center justify-between hover:bg-neutral-100 transition-colors"
           >
             <div className="space-y-1">
               <Link
                 href={`/schools/${entry.school_id}`}
-                className="text-[#0057B7] hover:text-[#004494] transition-colors block"
+                className="text-primary hover:text-primary/90 transition-colors block"
               >
                 {getSchoolName(entry.school)}
               </Link>
@@ -81,7 +81,7 @@ const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
             </div>
             <button
               onClick={() => onDeleteEntry(entry.history_id)}
-              className="p-2 text-[#D9534F] hover:bg-red-50 rounded-full transition-colors"
+              className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
               aria-label="Remove from history"
             >
               <TrashIcon className="h-5 w-5" />

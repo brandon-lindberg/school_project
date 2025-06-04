@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Card } from './shared/Card';
 import { ClaimStatus } from '@prisma/client';
 
 type ClaimedSchool = {
@@ -55,21 +56,21 @@ export default function ClaimedSchools({ claims }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-2xl font-semibold text-[#333333] mb-6">
+    <Card>
+      <h2 className="text-2xl font-heading font-semibold text-neutral-900 mb-6">
         {language === 'en' ? 'Claimed Schools' : '申請した学校'}
       </h2>
       <div className="space-y-4">
         {claims.map(claim => (
           <div
             key={claim.claim_id}
-            className="flex flex-col p-4 border border-gray-100 rounded-lg hover:bg-gray-50"
+            className="flex flex-col p-4 border border-neutral-200 rounded-md hover:bg-neutral-100 transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <Link
                   href={`/schools/${claim.school.school_id}`}
-                  className="text-lg font-medium text-gray-900 hover:text-blue-600 block mb-2"
+                  className="text-lg font-medium text-neutral-900 hover:text-primary/90 block mb-2"
                 >
                   {language === 'en'
                     ? claim.school.name_en || claim.school.name_jp
@@ -102,6 +103,6 @@ export default function ClaimedSchools({ claims }: Props) {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

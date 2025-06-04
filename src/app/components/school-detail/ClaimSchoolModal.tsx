@@ -18,8 +18,8 @@ export function ClaimSchoolModal({
   onSuccess,
   onNotification,
 }: ClaimSchoolModalProps) {
-  const [verificationMethod, setVerificationMethod] = useState<'EMAIL' | 'DOCUMENT'>('EMAIL');
-  const [verificationData, setVerificationData] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +39,8 @@ export function ClaimSchoolModal({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          verificationMethod,
-          verificationData,
+          email,
+          phone_number: phoneNumber,
           notes,
         }),
       });
@@ -90,58 +90,32 @@ export function ClaimSchoolModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {language === 'en' ? 'Verification Method' : '確認方法'}
+              {language === 'en' ? 'School Email Address' : '学校のメールアドレス'}
             </label>
-            <select
-              value={verificationMethod}
-              onChange={e => setVerificationMethod(e.target.value as 'EMAIL' | 'DOCUMENT')}
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder={language === 'en' ? 'e.g., your.name@school.edu' : '例：your.name@school.edu'}
+              required
               className="w-full rounded-md border border-gray-300 p-2"
               disabled={isSubmitting}
-            >
-              <option value="EMAIL">
-                {language === 'en' ? 'Email Address' : 'メールアドレス'}
-              </option>
-              <option value="DOCUMENT">
-                {language === 'en' ? 'Document Upload' : '書類アップロード'}
-              </option>
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {verificationMethod === 'EMAIL'
-                ? language === 'en'
-                  ? 'School Email Address'
-                  : '学校のメールアドレス'
-                : language === 'en'
-                  ? 'Document URL'
-                  : '書類のURL'}
+              {language === 'en' ? 'Phone Number' : '電話番号'}
             </label>
             <input
-              type={verificationMethod === 'EMAIL' ? 'email' : 'text'}
-              value={verificationData}
-              onChange={e => setVerificationData(e.target.value)}
-              placeholder={
-                verificationMethod === 'EMAIL'
-                  ? language === 'en'
-                    ? 'e.g., your.name@school.edu'
-                    : '例：your.name@school.edu'
-                  : language === 'en'
-                    ? 'URL to verification document'
-                    : '確認書類のURL'
-              }
+              type="tel"
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
+              placeholder={language === 'en' ? 'e.g., +1-234-567-8901' : '例：+81-90-1234-5678'}
+              required
               className="w-full rounded-md border border-gray-300 p-2"
               disabled={isSubmitting}
             />
-            <p className="mt-1 text-sm text-gray-500">
-              {verificationMethod === 'EMAIL'
-                ? language === 'en'
-                  ? 'Enter your school email address. This will help us verify your affiliation with the school.'
-                  : '学校のメールアドレスを入力してください。学校との関係を確認するために使用されます。'
-                : language === 'en'
-                  ? 'Provide a URL to an official document proving your affiliation with the school.'
-                  : '学校との関係を証明する公式書類のURLを提供してください。'}
-            </p>
           </div>
 
           <div>
@@ -216,27 +190,16 @@ export function ClaimSchoolModal({
           </h3>
           <ul className="list-disc list-inside space-y-1">
             <li>
-              {language === 'en' ? 'Choose your verification method' : '確認方法を選択してください'}
+              {language === 'en' ? 'Provide your school email address.' : '学校のメールアドレスを提供してください。'}
             </li>
             <li>
-              {language === 'en'
-                ? 'If using email, provide your school email address'
-                : 'メールの場合、学校のメールアドレスを入力してください'}
+              {language === 'en' ? 'Provide your phone number.' : '電話番号を提供してください。'}
             </li>
             <li>
-              {language === 'en'
-                ? 'If using document, provide a URL to official documentation'
-                : '書類の場合、公式書類のURLを提供してください'}
+              {language === 'en' ? 'Your claim will be reviewed by an administrator.' : '管理者が申請を確認します。'}
             </li>
             <li>
-              {language === 'en'
-                ? 'Your claim will be reviewed by an administrator'
-                : '管理者が申請を確認します'}
-            </li>
-            <li>
-              {language === 'en'
-                ? "You'll be notified when your claim is processed"
-                : '申請が処理されたら通知されます'}
+              {language === 'en' ? "You'll be notified when your claim is processed." : '申請が処理されたら通知されます。'}
             </li>
           </ul>
         </div>

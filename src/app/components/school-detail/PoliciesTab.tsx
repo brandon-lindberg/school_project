@@ -28,7 +28,7 @@ export function PoliciesTab({
         <div className="flex justify-end">
           <button
             onClick={onEdit}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
           >
             {translations.buttons?.edit || 'Edit Policies Information'}
           </button>

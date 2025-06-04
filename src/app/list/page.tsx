@@ -460,7 +460,7 @@ const ListPage: React.FC = () => {
       {viewMode === 'list' && showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="fixed bottom-8 right-8 z-50 p-3 bg-neutral-50 rounded-full transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary"
           aria-label={language === 'en' ? 'Back to top' : 'トップに戻る'}
         >
           <svg
@@ -488,7 +488,7 @@ const ListPage: React.FC = () => {
           <div className="fixed top-20 sm:top-4 right-4 z-30">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 bg-neutral-50 rounded-full transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary"
               aria-label={isSearchOpen ? 'Close search' : 'Open search'}
             >
               <svg
@@ -545,7 +545,7 @@ const ListPage: React.FC = () => {
           {session?.user && (
             <button
               onClick={() => updateViewMode(viewMode === 'list' ? 'grid' : 'list')}
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md bg-neutral-100 hover:bg-neutral-200 transition-colors"
             >
               {viewMode === 'list' ? (
                 <>
@@ -603,7 +603,7 @@ const ListPage: React.FC = () => {
                       </Link>
                       <button
                         onClick={() => handleDeleteHistoryEntry(entry.history_id)}
-                        className="absolute bottom-2 right-3 text-xs text-gray-400 hover:text-[#D9534F] transition-colors z-10"
+                        className="absolute bottom-2 right-3 text-xs text-neutral-400 hover:text-red-600 transition-colors z-10"
                       >
                         {language === 'en' ? 'Remove' : '削除'}
                       </button>
@@ -613,7 +613,7 @@ const ListPage: React.FC = () => {
                 {browsingHistory.length > 0 && (
                   <button
                     onClick={handleClearHistory}
-                    className="block text-sm text-gray-500 hover:text-gray-700 mt-2"
+                    className="block text-sm text-neutral-500 hover:text-neutral-700 mt-2"
                   >
                     {translations.clearHistory}
                   </button>
