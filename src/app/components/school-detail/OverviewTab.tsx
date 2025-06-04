@@ -9,6 +9,7 @@ import NotificationBanner from '@/app/components/NotificationBanner';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { OverviewForm } from './OverviewForm';
+import Link from 'next/link';
 
 interface OverviewTabProps {
   school: School;
@@ -41,6 +42,7 @@ export function OverviewTab({
   isSchoolAdmin,
 }: OverviewTabProps) {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
@@ -200,33 +202,28 @@ export function OverviewTab({
           <div className="p-6 text-white">
             <h1 className="text-4xl font-bold mb-2">{name}</h1>
             <p className="text-lg">{shortDescription}</p>
-            {isAuthenticated && !canEdit && (
-              <button
-                onClick={() => setIsClaimModalOpen(true)}
-                className="mt-4 bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-colors"
-                disabled={
-                  claimStatus?.hasPendingClaim ||
-                  claimStatus?.isClaimed ||
-                  claimStatus?.hasExistingSchool
-                }
-              >
-                {claimStatus?.isClaimed ? (
-                  <span className="inline-flex items-center">
-                    <CheckCircleIcon className="h-5 w-5 mr-2" />
-                    {language === 'en' ? 'Already Claimed' : '申請済み'}
-                  </span>
-                ) : claimStatus?.hasPendingClaim ? (
-                  language === 'en' ? 'Claim Pending' : '申請審査中'
-                ) : claimStatus?.hasExistingSchool ? (
-                  language === 'en'
-                    ? 'Already Managing Another School'
-                    : '他の学校を管理中'
-                ) : language === 'en' ? (
-                  'Claim School'
-                ) : (
-                  '学校を申請する'
-                )}
-              </button>
+            {!canEdit && !claimStatus?.isClaimed && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setIsClaimModalOpen(true);
+                    } else {
+                      setLoginPromptOpen(true);
+                    }
+                  }}
+                  className="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-colors"
+                  disabled={claimStatus?.hasPendingClaim || claimStatus?.hasExistingSchool}
+                >
+                  {claimStatus?.hasPendingClaim ? (
+                    (language === 'en' ? 'Claim Pending' : '申請審査中')
+                  ) : claimStatus?.hasExistingSchool ? (
+                    (language === 'en' ? 'Already Managing Another School' : '他の学校を管理中')
+                  ) : (
+                    (language === 'en' ? 'Claim School' : '学校を申請する')
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -361,6 +358,40 @@ export function OverviewTab({
         schoolId={school.school_id}
         onNotification={setNotification}
       />
+      {loginPromptOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">
+              {language === 'en' ? 'Claim School' : '学校を申請する'}
+            </h2>
+            <p className="mb-4 text-gray-700">
+              {language === 'en'
+                ? 'Are you a school administrator for this school? Claiming this school gives you access to update and manage its details. To claim this school, please log in or register.'
+                : '学校を申請すると、その詳細を更新および管理できるようになります。申請するには、ログインまたは登録してください。'}
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Link
+                href={`/login?next=/schools/${school.school_id}`}
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+              >
+                {language === 'en' ? 'Login' : 'ログイン'}
+              </Link>
+              <Link
+                href={`/register?next=/schools/${school.school_id}`}
+                className="px-4 py-2 border border-primary text-primary bg-white rounded hover:bg-primary/10"
+              >
+                {language === 'en' ? 'Register' : '登録'}
+              </Link>
+              <button
+                onClick={() => setLoginPromptOpen(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                {language === 'en' ? 'Close' : '閉じる'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -231,8 +231,8 @@ model SchoolClaim {
   school_id           String
   user_id             String
   status              ClaimStatus @default(PENDING)
-  verification_method String
-  verification_data   String
+  email               String?
+  phone_number        String?
   submitted_at        DateTime    @default(now())
   processed_at        DateTime?
   processed_by        String?

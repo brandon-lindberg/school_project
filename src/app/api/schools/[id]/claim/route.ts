@@ -6,8 +6,8 @@ import { z } from 'zod';
 
 // Schema for claim request validation
 const claimRequestSchema = z.object({
-  verificationMethod: z.enum(['EMAIL', 'DOCUMENT']),
-  verificationData: z.string(),
+  email: z.string().email(),
+  phone_number: z.string().min(1),
   notes: z.string().optional(),
 });
 
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
         user_id: user.user_id,
         school_id: schoolId,
         status: 'PENDING',
-        verification_method: validatedData.verificationMethod,
-        verification_data: validatedData.verificationData,
+        email: validatedData.email,
+        phone_number: validatedData.phone_number,
         notes: validatedData.notes,
       },
     });

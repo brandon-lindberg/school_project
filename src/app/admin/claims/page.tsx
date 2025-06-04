@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ClaimStatus } from '@prisma/client';
+import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 
 type Claim = {
   claim_id: number;
@@ -16,7 +17,9 @@ type Claim = {
   };
   status: ClaimStatus;
   submitted_at: string;
-  verification_method: string;
+  email: string | null;
+  phone_number: string | null;
+  notes: string | null;
 };
 
 type User = {
@@ -34,6 +37,7 @@ export default function ClaimsManagementPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [message, setMessage] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [claimFilter, setClaimFilter] = useState('');
 
   useEffect(() => {
     fetchClaims();
@@ -162,6 +166,30 @@ export default function ClaimsManagementPage() {
     }
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setMessage(`${label} copied to clipboard`);
+        setTimeout(() => setMessage(''), 2000);
+      })
+      .catch(err => console.error('Copy failed', err));
+  };
+
+  const filteredClaims = claims
+    .filter(claim => claim.status !== 'REJECTED')
+    .filter(claim => {
+      if (!claimFilter) return true;
+      const q = claimFilter.toLowerCase();
+      return (
+        (claim.school.name_en?.toLowerCase().includes(q) ?? false) ||
+        (claim.school.name_jp?.toLowerCase().includes(q) ?? false) ||
+        claim.user.email.toLowerCase().includes(q) ||
+        (claim.email?.toLowerCase().includes(q) ?? false) ||
+        (claim.phone_number?.toLowerCase().includes(q) ?? false) ||
+        (claim.notes?.toLowerCase().includes(q) ?? false)
+      );
+    });
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">School Claims Management</h1>
@@ -172,45 +200,98 @@ export default function ClaimsManagementPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                School
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Claimant
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Submitted
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {claims
-              .filter(claim => claim.status !== 'REJECTED')
-              .map(claim => (
+      {/* Claim search input */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={claimFilter}
+          onChange={e => setClaimFilter(e.target.value)}
+          placeholder="Search claims by school, user, email, phone, or notes..."
+          className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      <div className="bg-white shadow-md rounded-lg">
+        <div className="overflow-x-auto">
+          <table className="table-auto min-w-max divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  School
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Claimant
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Notes
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Submitted
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredClaims.map(claim => (
                 <tr key={claim.claim_id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {claim.school.name_en || claim.school.name_jp}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{claim.user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    {claim.email ? (
+                      <div className="flex items-center">
+                        <span>{claim.email}</span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(claim.email!, 'Email')}
+                          className="ml-2 text-gray-400 hover:text-gray-600"
+                          title="Copy email"
+                        >
+                          <ClipboardDocumentIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {claim.phone_number ? (
+                      <div className="flex items-center">
+                        <span>{claim.phone_number}</span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(claim.phone_number!, 'Phone number')}
+                          className="ml-2 text-gray-400 hover:text-gray-600"
+                          title="Copy phone number"
+                        >
+                          <ClipboardDocumentIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal">{claim.notes || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        claim.status === 'APPROVED'
-                          ? 'bg-green-100 text-green-800'
-                          : claim.status === 'REJECTED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${claim.status === 'APPROVED'
+                        ? 'bg-green-100 text-green-800'
+                        : claim.status === 'REJECTED'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                        }`}
                     >
                       {claim.status}
                     </span>
@@ -258,8 +339,9 @@ export default function ClaimsManagementPage() {
                   </td>
                 </tr>
               ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {selectedClaim && (
@@ -290,13 +372,12 @@ export default function ClaimsManagementPage() {
                   <div>
                     <label className="block text-xs text-gray-500">Claim Status</label>
                     <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        selectedClaim.status === 'APPROVED'
-                          ? 'bg-green-100 text-green-800'
-                          : selectedClaim.status === 'REJECTED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedClaim.status === 'APPROVED'
+                        ? 'bg-green-100 text-green-800'
+                        : selectedClaim.status === 'REJECTED'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                        }`}
                     >
                       {selectedClaim.status}
                     </span>
@@ -336,9 +417,8 @@ export default function ClaimsManagementPage() {
                         <div
                           key={user.user_id}
                           onClick={() => setSelectedUser(user)}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                            selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
-                          }`}
+                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${selectedUser?.user_id === user.user_id ? 'bg-indigo-50' : ''
+                            }`}
                         >
                           <div className="font-medium">
                             {user.first_name} {user.family_name}
@@ -373,11 +453,10 @@ export default function ClaimsManagementPage() {
                 <button
                   onClick={handleTransferClaim}
                   disabled={!selectedUser}
-                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                    selectedUser
-                      ? 'bg-blue-500 hover:bg-blue-700'
-                      : 'bg-blue-300 cursor-not-allowed'
-                  }`}
+                  className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${selectedUser
+                    ? 'bg-blue-500 hover:bg-blue-700'
+                    : 'bg-blue-300 cursor-not-allowed'
+                    }`}
                 >
                   Transfer Claim
                 </button>
