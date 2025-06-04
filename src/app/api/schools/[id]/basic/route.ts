@@ -15,17 +15,17 @@ const urlSchema = z
   .refine(
     val => {
       if (!val) return true;
+      // Allow relative URLs starting with '/'
+      if (val.startsWith('/')) return true;
+      // Allow data URIs
+      if (val.startsWith('data:')) return true;
       try {
-        if (!val.startsWith('http://') && !val.startsWith('https://')) {
-          return false;
-        }
         new URL(val);
         return true;
       } catch {
         return false;
       }
-    },
-    { message: 'Invalid URL format' }
+    }, { message: 'Invalid URL format' }
   );
 
 const basicSchema = z.object({
@@ -51,8 +51,6 @@ const basicSchema = z.object({
   address_jp: z.string().nullable().default(''),
   url_en: urlSchema,
   url_jp: urlSchema,
-  logo_id: z.string().nullable().default(''),
-  image_id: z.string().nullable().default(''),
   image_url: urlSchema.default(''),
   logo_url: urlSchema.default(''),
   affiliations_en: z.array(z.string()).nullable().default([]),
