@@ -95,8 +95,9 @@ export async function PUT(request: Request) {
           status: 'APPROVED',
           processed_at: new Date(),
           processed_by: adminUser.user_id,
-          verification_method: currentClaim.verification_method,
-          verification_data: currentClaim.verification_data,
+          email: currentClaim.email,
+          phone_number: currentClaim.phone_number,
+          notes: currentClaim.notes,
         },
         include: {
           school: true,

@@ -6,7 +6,6 @@ import { Translations } from '../../../interfaces/Translations';
 import { useSession } from 'next-auth/react';
 import { ClaimSchoolModal } from './ClaimSchoolModal';
 import NotificationBanner from '@/app/components/NotificationBanner';
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { OverviewForm } from './OverviewForm';
 import Link from 'next/link';
