@@ -125,334 +125,561 @@ export function AdmissionsTab({
       </div>
 
       {/* Fees Overview */}
-      <div className="bg-neutral-50 rounded-md p-6">
-        <h2 className="text-2xl font-bold mb-6">{translations.sections.feesOverview}</h2>
+      {(
+        getLocalizedContent(school.admissions_breakdown_fees_application_fee_en, school.admissions_breakdown_fees_application_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_day_care_fee_tuition_en, school.admissions_breakdown_fees_day_care_fee_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_day_care_fee_registration_fee_en, school.admissions_breakdown_fees_day_care_fee_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en, school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_kindergarten_tuition_en, school.admissions_breakdown_fees_kindergarten_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_kindergarten_registration_fee_en, school.admissions_breakdown_fees_kindergarten_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_kindergarten_maintenance_fee_en, school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_elementary_tuition_en, school.admissions_breakdown_fees_grade_elementary_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_elementary_registration_fee_en, school.admissions_breakdown_fees_grade_elementary_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en, school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_junior_high_tuition_en, school.admissions_breakdown_fees_grade_junior_high_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_junior_high_registration_fee_en, school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en, school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_high_school_tuition_en, school.admissions_breakdown_fees_grade_high_school_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_high_school_registration_fee_en, school.admissions_breakdown_fees_grade_high_school_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en, school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_summer_school_tuition_en, school.admissions_breakdown_fees_summer_school_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_summer_school_registration_fee_en, school.admissions_breakdown_fees_summer_school_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_summer_school_maintenance_fee_en, school.admissions_breakdown_fees_summer_school_maintenance_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_other_tuition_en, school.admissions_breakdown_fees_other_tuition_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_other_registration_fee_en, school.admissions_breakdown_fees_other_registration_fee_jp, language) ||
+        getLocalizedContent(school.admissions_breakdown_fees_other_maintenance_fee_en, school.admissions_breakdown_fees_other_maintenance_fee_jp, language)
+      ) && (
+          <div className="bg-neutral-50 rounded-md p-6">
+            <h2 className="text-2xl font-bold mb-6">{translations.sections.feesOverview}</h2>
 
-        {/* Application Fee */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">{translations.sections.applicationFee}</h3>
-          <div className="bg-gray-50 p-4 rounded">
-            <p className="text-gray-700">
-              {getLocalizedContent(
-                school.admissions_breakdown_fees_application_fee_en,
-                school.admissions_breakdown_fees_application_fee_jp,
+            {/* Application Fee */}
+            {getLocalizedContent(
+              school.admissions_breakdown_fees_application_fee_en,
+              school.admissions_breakdown_fees_application_fee_jp,
+              language
+            ) && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-4">{translations.sections.applicationFee}</h3>
+                  <div className="bg-gray-50 p-4 rounded">
+                    <p className="text-gray-700">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_application_fee_en,
+                        school.admissions_breakdown_fees_application_fee_jp,
+                        language
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            {/* School Level Fees */}
+            <div className="space-y-8">
+              {/* Day Care Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_day_care_fee_tuition_en,
+                school.admissions_breakdown_fees_day_care_fee_tuition_jp,
                 language
-              ) || translations.sections.noFeeInfo}
-            </p>
-          </div>
-        </div>
+              ) || getLocalizedContent(
+                school.admissions_breakdown_fees_day_care_fee_registration_fee_en,
+                school.admissions_breakdown_fees_day_care_fee_registration_fee_jp,
+                language
+              ) || getLocalizedContent(
+                school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en,
+                school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp,
+                language
+              )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.daycare}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Tuition */}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_day_care_fee_tuition_en,
+                        school.admissions_breakdown_fees_day_care_fee_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_day_care_fee_tuition_en,
+                                school.admissions_breakdown_fees_day_care_fee_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
 
-        {/* School Level Fees */}
-        <div className="space-y-8">
-          {/* Day Care Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.daycare}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_day_care_fee_tuition_en,
-                    school.admissions_breakdown_fees_day_care_fee_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_day_care_fee_registration_fee_en,
-                    school.admissions_breakdown_fees_day_care_fee_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en,
-                    school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
+                      {/* Registration */}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_day_care_fee_registration_fee_en,
+                        school.admissions_breakdown_fees_day_care_fee_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">
+                              {translations.sections.registration}
+                            </h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_day_care_fee_registration_fee_en,
+                                school.admissions_breakdown_fees_day_care_fee_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+
+                      {/* Maintenance */}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en,
+                        school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">
+                              {translations.sections.maintenance}
+                            </h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_day_care_fee_maintenance_fee_en,
+                                school.admissions_breakdown_fees_day_care_fee_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Kindergarten Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_kindergarten_tuition_en,
+                school.admissions_breakdown_fees_kindergarten_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_kindergarten_registration_fee_en,
+                  school.admissions_breakdown_fees_kindergarten_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_kindergarten_maintenance_fee_en,
+                  school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.kindergarten}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_kindergarten_tuition_en,
+                        school.admissions_breakdown_fees_kindergarten_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_kindergarten_tuition_en,
+                                school.admissions_breakdown_fees_kindergarten_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_kindergarten_registration_fee_en,
+                        school.admissions_breakdown_fees_kindergarten_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_kindergarten_registration_fee_en,
+                                school.admissions_breakdown_fees_kindergarten_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_kindergarten_maintenance_fee_en,
+                        school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_kindergarten_maintenance_fee_en,
+                                school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Elementary School Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_grade_elementary_tuition_en,
+                school.admissions_breakdown_fees_grade_elementary_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_elementary_registration_fee_en,
+                  school.admissions_breakdown_fees_grade_elementary_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en,
+                  school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.elementary}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_elementary_tuition_en,
+                        school.admissions_breakdown_fees_grade_elementary_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_elementary_tuition_en,
+                                school.admissions_breakdown_fees_grade_elementary_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_elementary_registration_fee_en,
+                        school.admissions_breakdown_fees_grade_elementary_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_elementary_registration_fee_en,
+                                school.admissions_breakdown_fees_grade_elementary_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en,
+                        school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en,
+                                school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Junior High School Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_grade_junior_high_tuition_en,
+                school.admissions_breakdown_fees_grade_junior_high_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_junior_high_registration_fee_en,
+                  school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en,
+                  school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.juniorhigh}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_junior_high_tuition_en,
+                        school.admissions_breakdown_fees_grade_junior_high_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_junior_high_tuition_en,
+                                school.admissions_breakdown_fees_grade_junior_high_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_junior_high_registration_fee_en,
+                        school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_junior_high_registration_fee_en,
+                                school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en,
+                        school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en,
+                                school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* High School Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_grade_high_school_tuition_en,
+                school.admissions_breakdown_fees_grade_high_school_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_high_school_registration_fee_en,
+                  school.admissions_breakdown_fees_grade_high_school_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en,
+                  school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.highschool}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_high_school_tuition_en,
+                        school.admissions_breakdown_fees_grade_high_school_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_high_school_tuition_en,
+                                school.admissions_breakdown_fees_grade_high_school_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_high_school_registration_fee_en,
+                        school.admissions_breakdown_fees_grade_high_school_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_high_school_registration_fee_en,
+                                school.admissions_breakdown_fees_grade_high_school_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en,
+                        school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en,
+                                school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Summer School Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_summer_school_tuition_en,
+                school.admissions_breakdown_fees_summer_school_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_summer_school_registration_fee_en,
+                  school.admissions_breakdown_fees_summer_school_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_summer_school_maintenance_fee_en,
+                  school.admissions_breakdown_fees_summer_school_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.summerSchool}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_summer_school_tuition_en,
+                        school.admissions_breakdown_fees_summer_school_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_summer_school_tuition_en,
+                                school.admissions_breakdown_fees_summer_school_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_summer_school_registration_fee_en,
+                        school.admissions_breakdown_fees_summer_school_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_summer_school_registration_fee_en,
+                                school.admissions_breakdown_fees_summer_school_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_summer_school_maintenance_fee_en,
+                        school.admissions_breakdown_fees_summer_school_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_summer_school_maintenance_fee_en,
+                                school.admissions_breakdown_fees_summer_school_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Other Fees */}
+              {(getLocalizedContent(
+                school.admissions_breakdown_fees_other_tuition_en,
+                school.admissions_breakdown_fees_other_tuition_jp,
+                language
+              ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_other_registration_fee_en,
+                  school.admissions_breakdown_fees_other_registration_fee_jp,
+                  language
+                ) ||
+                getLocalizedContent(
+                  school.admissions_breakdown_fees_other_maintenance_fee_en,
+                  school.admissions_breakdown_fees_other_maintenance_fee_jp,
+                  language
+                )) && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">{translations.sections.otherFees}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_other_tuition_en,
+                        school.admissions_breakdown_fees_other_tuition_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_other_tuition_en,
+                                school.admissions_breakdown_fees_other_tuition_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_other_registration_fee_en,
+                        school.admissions_breakdown_fees_other_registration_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.registration}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_other_registration_fee_en,
+                                school.admissions_breakdown_fees_other_registration_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      {getLocalizedContent(
+                        school.admissions_breakdown_fees_other_maintenance_fee_en,
+                        school.admissions_breakdown_fees_other_maintenance_fee_jp,
+                        language
+                      ) && (
+                          <div className="bg-gray-50 p-4 rounded">
+                            <h4 className="font-medium text-gray-600 mb-2">{translations.sections.maintenance}</h4>
+                            <p className="text-gray-700">
+                              {getLocalizedContent(
+                                school.admissions_breakdown_fees_other_maintenance_fee_en,
+                                school.admissions_breakdown_fees_other_maintenance_fee_jp,
+                                language
+                              )}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
-
-          {/* Kindergarten Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.kindergarten}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_kindergarten_tuition_en,
-                    school.admissions_breakdown_fees_kindergarten_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_kindergarten_registration_fee_en,
-                    school.admissions_breakdown_fees_kindergarten_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_kindergarten_maintenance_fee_en,
-                    school.admissions_breakdown_fees_kindergarten_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Elementary School Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.elementary}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_elementary_tuition_en,
-                    school.admissions_breakdown_fees_grade_elementary_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_elementary_registration_fee_en,
-                    school.admissions_breakdown_fees_grade_elementary_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_elementary_maintenance_fee_en,
-                    school.admissions_breakdown_fees_grade_elementary_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Junior High School Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.juniorhigh}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_junior_high_tuition_en,
-                    school.admissions_breakdown_fees_grade_junior_high_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_junior_high_registration_fee_en,
-                    school.admissions_breakdown_fees_grade_junior_high_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_en,
-                    school.admissions_breakdown_fees_grade_junior_high_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* High School Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.highschool}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_high_school_tuition_en,
-                    school.admissions_breakdown_fees_grade_high_school_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_high_school_registration_fee_en,
-                    school.admissions_breakdown_fees_grade_high_school_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_grade_high_school_maintenance_fee_en,
-                    school.admissions_breakdown_fees_grade_high_school_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Summer School Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.summerSchool}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_summer_school_tuition_en,
-                    school.admissions_breakdown_fees_summer_school_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_summer_school_registration_fee_en,
-                    school.admissions_breakdown_fees_summer_school_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_summer_school_maintenance_fee_en,
-                    school.admissions_breakdown_fees_summer_school_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Other Fees */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">{translations.sections.otherFees}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tuition */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">{translations.sections.tuition}</h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_other_tuition_en,
-                    school.admissions_breakdown_fees_other_tuition_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Registration */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.registration}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_other_registration_fee_en,
-                    school.admissions_breakdown_fees_other_registration_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-              {/* Maintenance */}
-              <div className="bg-gray-50 p-4 rounded">
-                <h4 className="font-medium text-gray-600 mb-2">
-                  {translations.sections.maintenance}
-                </h4>
-                <p className="text-gray-700">
-                  {getLocalizedContent(
-                    school.admissions_breakdown_fees_other_maintenance_fee_en,
-                    school.admissions_breakdown_fees_other_maintenance_fee_jp,
-                    language
-                  ) || translations.sections.noFeeInfo}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
     </div>
   );
 }
