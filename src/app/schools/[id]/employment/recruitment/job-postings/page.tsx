@@ -160,20 +160,36 @@ export default function JobPostingsPage() {
                     </div>
                   )}
                   <div className="mt-6 flex justify-between items-center">
-                    <div className="flex space-x-4">
-                      <Link
-                        href={`/schools/${schoolId}/employment/recruitment/applications?jobPostingId=${job.id}`}
-                        className="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
+                    {isAdmin ? (
+                      <div className="flex space-x-4">
+                        <Link
+                          href={`/schools/${schoolId}/employment/recruitment/applications?jobPostingId=${job.id}`}
+                          className="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
+                        >
+                          Applications
+                        </Link>
+                        <Link
+                          href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`}
+                          className="bg-secondary hover:bg-secondary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
+                        >
+                          Manage
+                        </Link>
+                      </div>
+                    ) : job.hasApplied ? (
+                      <button
+                        disabled
+                        className="bg-gray-400 text-white font-medium px-4 py-2 rounded-md transition-colors cursor-not-allowed"
                       >
-                        Applications
-                      </Link>
+                        Applied
+                      </button>
+                    ) : (
                       <Link
-                        href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}`}
-                        className="bg-secondary hover:bg-secondary/90 text-white font-medium px-4 py-2 rounded-md transition-colors"
+                        href={`/schools/${schoolId}/employment/recruitment/job-postings/${job.id}/apply`}
+                        className="bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-md transition-colors"
                       >
-                        Manage
+                        Apply
                       </Link>
-                    </div>
+                    )}
                     <p className="text-sm text-neutral-700">
                       Created at:{' '}
                       {new Date(job.createdAt).toLocaleString(

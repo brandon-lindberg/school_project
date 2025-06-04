@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { useParams, useSearchParams } from 'next/navigation';
 import ApplicationList from './components/ApplicationList';
 
@@ -17,10 +18,17 @@ interface ApplicationListItem {
   nationality?: string;
   hasJapaneseVisa?: boolean;
   jlpt?: string;
+  jobPosting: { id: number; title: string };
 }
 
 export default function ApplicationsPage() {
   const { id: schoolId } = useParams() as { id: string };
+  const { data: session } = useSession();
+  const userRole = session?.user?.role;
+  const managedFromSession = session?.user?.managedSchools ?? [];
+  const isAdmin =
+    userRole === 'SUPER_ADMIN' ||
+    (userRole === 'SCHOOL_ADMIN' && managedFromSession.some(s => s.school_id === schoolId));
   const [applications, setApplications] = useState<ApplicationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +108,22 @@ export default function ApplicationsPage() {
     }),
     [applications, nationalityFilter, visaFilter, statusFilter, ratingFilter, jlptFilter]
   );
+
+  const groupedApplications = useMemo(() => {
+    const groups: Record<number, { title: string; items: ApplicationListItem[] }> = {};
+    filteredApplications.forEach(app => {
+      const jp = app.jobPosting;
+      if (!groups[jp.id]) {
+        groups[jp.id] = { title: jp.title, items: [] };
+      }
+      groups[jp.id].items.push(app);
+    });
+    return Object.entries(groups).map(([id, group]) => ({
+      id: Number(id),
+      title: group.title,
+      items: group.items,
+    }));
+  }, [filteredApplications]);
 
   if (loading) {
     return <div className="p-8">Loading applications...</div>;
@@ -277,7 +301,15 @@ export default function ApplicationsPage() {
           </div>
         </div>
       )}
-      <ApplicationList applications={filteredApplications} schoolId={schoolId} />
+      {isAdmin
+        ? groupedApplications.map(group => (
+          <div key={group.id} className="mb-8">
+            <h2 className="text-xl font-semibold mb-4"><b>{group.title}</b></h2>
+            <ApplicationList applications={group.items} schoolId={schoolId} />
+          </div>
+        ))
+        : <ApplicationList applications={filteredApplications} schoolId={schoolId} />
+      }
     </div>
   );
 }

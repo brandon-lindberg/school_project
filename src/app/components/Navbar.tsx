@@ -138,7 +138,7 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
   return (
     <>
       {/* Desktop Navbar */}
-      <nav className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-white shadow-lg flex-col">
+      <nav className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-white shadow-lg flex-col z-50">
         {/* Logo Section */}
         <div className="p-6 border-b border-gray-100">
           <Link href="/" className="flex items-center space-x-3">

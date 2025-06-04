@@ -15,6 +15,7 @@ export async function GET(request: NextRequest, context: unknown) {
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
       include: {
+        jobPosting: { select: { title: true } },
         notes: { orderBy: { createdAt: 'desc' } },
         interviews: {
           orderBy: { scheduledAt: 'asc' },

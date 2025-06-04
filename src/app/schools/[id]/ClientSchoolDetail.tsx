@@ -23,6 +23,7 @@ import { CampusForm } from '@/app/components/school-detail/CampusForm';
 import { StudentLifeForm } from '@/app/components/school-detail/StudentLifeForm';
 import { EmploymentForm } from '@/app/components/school-detail/EmploymentForm';
 import { PoliciesForm } from '@/app/components/school-detail/PoliciesForm';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 type Language = 'en' | 'jp';
 
@@ -206,6 +207,8 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
   } | null>(null);
   // State for active/archived filter in job postings list
   const [activeFilter, setActiveFilter] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
+  // State for collapsible slide-out panel
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const translations = getSchoolDetailTranslations(language);
 
@@ -516,6 +519,17 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
     }
   };
 
+  // Extract tab definitions
+  const tabs = [
+    { id: 'overview', name: translations.tabs.overview },
+    { id: 'education', name: translations.tabs.education },
+    { id: 'admissions', name: translations.tabs.admissions },
+    { id: 'campus', name: translations.tabs.campus },
+    { id: 'studentLife', name: translations.tabs.studentLife },
+    { id: 'employment', name: translations.tabs.employment },
+    { id: 'policies', name: translations.tabs.policies },
+  ];
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <BrowsingHistoryRecorder schoolId={school.school_id} />
@@ -528,48 +542,39 @@ export default function ClientSchoolDetail({ school: initialSchool }: ClientScho
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="overflow-x-auto" aria-label="Tabs">
-            <div className="flex min-w-full whitespace-nowrap">
-              {[
-                { id: 'overview', name: translations.tabs.overview },
-                { id: 'education', name: translations.tabs.education },
-                { id: 'admissions', name: translations.tabs.admissions },
-                { id: 'campus', name: translations.tabs.campus },
-                { id: 'studentLife', name: translations.tabs.studentLife },
-                { id: 'employment', name: translations.tabs.employment },
-                { id: 'policies', name: translations.tabs.policies },
-              ].map(tab => {
-                const isDisabled = !isAuthenticated && tab.id !== 'overview' && tab.id !== 'employment';
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={`
-                      ${activeTab === tab.id
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                      }
-                      ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                      whitespace-nowrap border-b-2 py-3 px-4 sm:px-6 text-sm font-medium flex-shrink-0
-                      flex items-center
-                    `}
-                    disabled={isDisabled}
-                  >
-                    {tab.name}
-                    {isDisabled && (
-                      <span className="ml-1 text-xs text-gray-400 hidden sm:inline">
-                        {language === 'en' ? '(Login required)' : '(ログインが必要)'}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </nav>
-        </div>
+      {/* Slide-out vertical tabs anchored to right edge of left navbar */}
+      {/* Toggle handle */}
+      <button
+        onClick={() => setSidebarOpen(open => !open)}
+        className="fixed left-64 top-7 p-2 bg-white rounded-r-md shadow-md z-50 focus:outline-none"
+      >
+        {sidebarOpen ? <ChevronLeftIcon className="h-5 w-5 text-gray-600" /> : <ChevronRightIcon className="h-5 w-5 text-gray-600" />}
+      </button>
+      {/* Slide-out panel */}
+      <div
+        className={`fixed top-16 left-64 w-48 bg-white shadow-md transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <ul className="p-4 space-y-2">
+          {tabs.map(tab => {
+            const isDisabled = !isAuthenticated && tab.id !== 'overview' && tab.id !== 'employment';
+            return (
+              <li key={tab.id}>
+                <button
+                  onClick={() => { handleTabClick(tab.id); setSidebarOpen(false); }}
+                  disabled={isDisabled}
+                  className={`w-full text-left px-3 py-2 rounded ${activeTab === tab.id ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-700 hover:bg-gray-100'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {tab.name}
+                  {isDisabled && (
+                    <span className="ml-1 text-xs text-gray-400">
+                      {language === 'en' ? '(Login required)' : '(ログインが必要)'}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       {/* Content */}
