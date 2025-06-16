@@ -201,9 +201,9 @@ export function OverviewTab({
           />
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end">
-          <div className="p-6 text-white">
-            <h1 className="text-4xl font-bold mb-2">{name}</h1>
-            <p className="text-lg">{shortDescription}</p>
+          <div className="p-4 sm:p-6 text-white">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{name}</h1>
+            <p className="text-base sm:text-lg">{shortDescription}</p>
             {!canEdit && !claimStatus?.isClaimed && (
               <div className="mt-4 flex justify-end">
                 <button
