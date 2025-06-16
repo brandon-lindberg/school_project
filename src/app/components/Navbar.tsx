@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,7 +26,6 @@ import NotificationsDropdown from './NotificationsDropdown';
 
 interface NavbarProps {
   schools?: School[];
-  onRegionClick?: (region: string) => void;
   viewMode?: 'list' | 'grid';
 }
 
@@ -40,7 +39,7 @@ type ExtendedSession = Session & {
   };
 };
 
-export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' }: NavbarProps) {
+export default function Navbar({ schools = [], viewMode = 'list' }: NavbarProps) {
   const { data: session } = useSession() as { data: ExtendedSession | null };
   const { language, toggleLanguage } = useLanguage();
   const pathname = usePathname();
@@ -65,75 +64,31 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
           window.dispatchEvent(event);
         }
       }, 100);
-    } else if (onRegionClick) {
-      onRegionClick(region);
     }
   };
 
-  const schoolsByRegion = useMemo(() => {
-    return Object.entries(REGIONS_CONFIG).reduce(
-      (acc, [region]) => {
-        acc[region] = schools.filter(school => {
-          const schoolLocation =
-            getLocalizedContent(school.location_en, school.location_jp, 'en') || '';
-          // Handle special cases for region matching
-          if (
-            region === 'Kansai' &&
-            (schoolLocation.includes('Kyoto') ||
-              schoolLocation.includes('Osaka') ||
-              schoolLocation.includes('Kobe') ||
-              schoolLocation.includes('京都') ||
-              schoolLocation.includes('大阪') ||
-              schoolLocation.includes('神戸'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Aichi' &&
-            (schoolLocation.includes('Nagoya') || schoolLocation.includes('名古屋'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Ibaraki' &&
-            (schoolLocation.includes('Tsukuba') || schoolLocation.includes('つくば'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Miyagi' &&
-            (schoolLocation.includes('Sendai') || schoolLocation.includes('仙台'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Iwate' &&
-            (schoolLocation.includes('Appi Kogen') || schoolLocation.includes('安比高原'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Yamanashi' &&
-            (schoolLocation.includes('Kofu') || schoolLocation.includes('甲府'))
-          ) {
-            return true;
-          }
-          if (
-            region === 'Hokkaido' &&
-            (schoolLocation.includes('Sapporo') ||
-              schoolLocation.includes('札幌') ||
-              schoolLocation.includes('Niseko') ||
-              schoolLocation.includes('ニセコ'))
-          ) {
-            return true;
-          }
-          return schoolLocation === region;
-        }).length;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-  }, [schools]);
+  // Scroll to a specific city within a region
+  const handleCityClick = (region: string, city: string) => {
+    const targetId = `${region}-${city}`;
+    if (pathname !== '/list') {
+      router.push('/list');
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const event = new CustomEvent('expandRegion', { detail: region });
+          window.dispatchEvent(event);
+        }
+      }, 100);
+    } else {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const event = new CustomEvent('expandRegion', { detail: region });
+        window.dispatchEvent(event);
+      }
+    }
+  };
 
   return (
     <>
@@ -200,8 +155,9 @@ export default function Navbar({ schools = [], onRegionClick, viewMode = 'list' 
               language={language}
               regionsConfig={REGIONS_CONFIG}
               onRegionClick={handleRegionClick}
+              onCityClick={handleCityClick}
               viewMode={viewMode}
-              schoolsByRegion={schoolsByRegion}
+              schools={schools}
             />
           )}
         </div>

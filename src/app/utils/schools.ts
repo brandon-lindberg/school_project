@@ -1,7 +1,27 @@
 import { School } from '@/types/school';
 import { Language } from '../types/language';
 import { getLocalizedContent } from '@/utils/language';
-import { LOCATION_ORDER } from '../config/regions';
+import { REGIONS_CONFIG, REGION_ORDER } from '../config/regions';
+
+// Simple map of major cities to their regions for fallback inference
+const CITY_TO_REGION: Record<string, string> = {
+  // Kanto major cities
+  Tokyo: 'Kanto', Yokohama: 'Kanto', Chiba: 'Kanto', Saitama: 'Kanto',
+  // Chubu
+  Nagoya: 'Chubu', Niigata: 'Chubu', Kanazawa: 'Chubu',
+  // Kansai
+  Osaka: 'Kansai', Kyoto: 'Kansai', Kobe: 'Kansai', Nara: 'Kansai',
+  // Tohoku
+  Sendai: 'Tohoku', Aomori: 'Tohoku', Morioka: 'Tohoku',
+  // Hokkaido
+  Sapporo: 'Hokkaido', Niseko: 'Hokkaido',
+  // Chugoku
+  Hiroshima: 'Chugoku', Okayama: 'Chugoku',
+  // Shikoku
+  Matsuyama: 'Shikoku', Takamatsu: 'Shikoku',
+  // Kyushu
+  Fukuoka: 'Kyushu', Kumamoto: 'Kyushu', Naha: 'Kyushu',
+};
 
 export const groupSchoolsByLocation = (schools: School[], language: Language) => {
   // First, group schools by their location
@@ -56,7 +76,7 @@ export const groupSchoolsByLocation = (schools: School[], language: Language) =>
   }, {});
 
   // Create an ordered object based on LOCATION_ORDER
-  const orderedLocations = LOCATION_ORDER.reduce((acc: { [key: string]: School[] }, location) => {
+  const orderedLocations = REGION_ORDER.reduce((acc: { [key: string]: School[] }, location) => {
     if (grouped[location]) {
       acc[location] = grouped[location];
     }
@@ -76,4 +96,66 @@ export const groupSchoolsByLocation = (schools: School[], language: Language) =>
   }
 
   return orderedLocations;
+};
+
+/**
+ * Group schools dynamically by the eight major regions, then by city.
+ * Returns an object: { [regionKey]: { [cityName]: School[] } }
+ */
+export const groupSchoolsByRegionAndCity = (
+  schools: School[],
+  language: Language
+): Record<string, Record<string, School[]>> => {
+  const grouped: Record<string, Record<string, School[]>> = {};
+  schools.forEach(school => {
+    // Determine region key by matching config key or Japanese label
+    const regionRaw = (getLocalizedContent(
+      school.region_en || '',
+      school.region_jp || '',
+      language
+    ) || '').trim();
+    // Try direct key match (case-insensitive)
+    let regionKey = Object.keys(REGIONS_CONFIG).find(
+      key => key.toLowerCase() === regionRaw.toLowerCase()
+    );
+    // Fallback to matching Japanese label exactly
+    if (!regionKey) {
+      regionKey = Object.entries(REGIONS_CONFIG).find(
+        ([key, value]) => value.jp === regionRaw
+      )?.[0];
+    }
+    if (!regionKey) {
+      // Infer region from city if not set
+      const cityRaw = getLocalizedContent(school.location_en || '', school.location_jp || '', language) || '';
+      const normalizedCity = cityRaw.trim();
+      const inferred = CITY_TO_REGION[normalizedCity];
+      regionKey = inferred || 'Other';
+    }
+    // Determine city name from location
+    const cityRaw =
+      getLocalizedContent(school.location_en || '', school.location_jp || '', language) ||
+      'Other';
+    const cityKey = cityRaw;
+
+    // Initialize containers
+    if (!grouped[regionKey]) {
+      grouped[regionKey] = {};
+    }
+    if (!grouped[regionKey][cityKey]) {
+      grouped[regionKey][cityKey] = [];
+    }
+    grouped[regionKey][cityKey].push(school);
+  });
+
+  // Order regions according to REGION_ORDER, and append Other at end
+  const ordered: Record<string, Record<string, School[]>> = {};
+  REGION_ORDER.forEach(region => {
+    if (grouped[region]) {
+      ordered[region] = grouped[region];
+    }
+  });
+  if (grouped.Other) {
+    ordered.Other = grouped.Other;
+  }
+  return ordered;
 };

@@ -8,32 +8,24 @@ export type RegionsConfig = {
 };
 
 export const REGIONS_CONFIG: RegionsConfig = {
-  Tokyo: { en: 'Tokyo', jp: '東京' },
-  Kansai: { en: 'Kansai', jp: '関西' },
-  Aichi: { en: 'Aichi', jp: '愛知県' },
-  Ibaraki: { en: 'Ibaraki', jp: '茨城県' },
-  Nagano: { en: 'Nagano', jp: '長野県' },
-  Hokkaido: { en: 'Hokkaido', jp: '北海道' },
-  Okinawa: { en: 'Okinawa', jp: '沖縄県' },
-  Miyagi: { en: 'Miyagi', jp: '宮城県' },
-  Hiroshima: { en: 'Hiroshima', jp: '広島県' },
-  Fukuoka: { en: 'Fukuoka', jp: '福岡県' },
-  Iwate: { en: 'Iwate', jp: '岩手県' },
-  Yamanashi: { en: 'Yamanashi', jp: '山梨県' },
+  Hokkaido: { en: 'Hokkaidō Region', jp: '北海道地方' },
+  Tohoku: { en: 'Tōhoku Region', jp: '東北地方' },
+  Kanto: { en: 'Kantō Region', jp: '関東地方' },
+  Chubu: { en: 'Chūbu Region', jp: '中部地方' },
+  Kansai: { en: 'Kansai Region', jp: '関西地方' },
+  Chugoku: { en: 'Chūgoku Region', jp: '中国地方' },
+  Shikoku: { en: 'Shikoku Region', jp: '四国地方' },
+  Kyushu: { en: 'Kyūshū Region', jp: '九州地方' },
   Other: { en: 'Other', jp: 'その他' },
 };
 
-export const LOCATION_ORDER = [
-  'Tokyo',
+export const REGION_ORDER = [
+  'Kanto',
   'Kansai',
-  'Aichi',
-  'Ibaraki',
-  'Nagano',
   'Hokkaido',
-  'Okinawa',
-  'Miyagi',
-  'Hiroshima',
-  'Fukuoka',
-  'Iwate',
-  'Yamanashi',
+  'Tohoku',
+  'Chubu',
+  'Chugoku',
+  'Shikoku',
+  'Kyushu',
 ];

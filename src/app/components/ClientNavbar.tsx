@@ -26,16 +26,5 @@ export default function ClientNavbar() {
     fetchSchools();
   }, []);
 
-  const handleRegionClick = (region: string) => {
-    const element = document.getElementById(region);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      // Dispatch event to expand the section
-      const event = new CustomEvent('expandRegion', { detail: region });
-      window.dispatchEvent(event);
-    }
-  };
-
-  return <Navbar schools={schools} onRegionClick={handleRegionClick} viewMode={viewMode} />;
+  return <Navbar schools={schools} viewMode={viewMode} />;
 }

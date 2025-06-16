@@ -14,7 +14,7 @@ import { getLocalizedContent } from '@/utils/language';
 import Link from 'next/link';
 import { BsGrid, BsListUl } from 'react-icons/bs';
 import { REGIONS_CONFIG } from '../config/regions';
-import { groupSchoolsByLocation } from '../utils/schools';
+import { groupSchoolsByRegionAndCity } from '../utils/schools';
 import { useViewMode } from '../contexts/ViewModeContext';
 import RegistrationPrompt from '../components/RegistrationPrompt';
 import SchoolCard from '../components/SchoolCard';
@@ -101,7 +101,7 @@ interface Notification {
 const getDefaultCollapsedState = () => {
   return Object.keys(REGIONS_CONFIG).reduce(
     (acc, region) => {
-      if (region !== 'Tokyo') {
+      if (region !== 'Kanto') {
         acc[region] = true;
       }
       return acc;
@@ -446,6 +446,12 @@ const ListPage: React.FC = () => {
       .filter((s): s is School => !!s);
   }, [featuredSlots, randomSchools]);
 
+  // Group schools by region and then by city for nested listing
+  const groupedSchools = useMemo(
+    () => groupSchoolsByRegionAndCity(schools, language),
+    [schools, language]
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       {notification && (
@@ -666,57 +672,69 @@ const ListPage: React.FC = () => {
           />
         ) : (
           <>
-            {/* Region Sections */}
+            {/* Region → City Sections */}
             <div className={`space-y-8 ${!session?.user ? 'blur-sm pointer-events-none' : ''}`}>
-              {Object.entries(groupSchoolsByLocation(schools, language)).map(
-                ([location, locationSchools]) => {
-                  const schools = locationSchools as School[];
-                  return (
-                    <div
-                      key={location}
-                      id={location}
-                      className={`${collapsedSections[location] ? 'mb-2' : 'mb-8'}`}
-                    >
-                      <div
-                        onClick={() => toggleSection(location)}
-                        className="flex items-center justify-between cursor-pointer hover:bg-gray-25/50 p-4 rounded-lg"
-                      >
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-xl font-semibold">
-                            {REGIONS_CONFIG[location]
-                              ? language === 'en'
-                                ? REGIONS_CONFIG[location].en
-                                : REGIONS_CONFIG[location].jp
-                              : location}
-                          </h2>
-                          <span className="text-gray-500 text-sm">({schools.length} Schools)</span>
-                        </div>
-                        <div>
-                          {collapsedSections[location] ? (
-                            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
-                          ) : (
-                            <ChevronUpIcon className="h-5 w-5 text-gray-500" />
-                          )}
-                        </div>
-                      </div>
-                      <div
-                        className={`transition-all duration-300 ease-in-out ${collapsedSections[location]
-                          ? 'h-0 opacity-0 invisible overflow-hidden'
-                          : 'opacity-100 visible'
-                          }`}
-                      >
-                        <SchoolList
-                          schools={schools}
-                          viewMode={viewMode}
-                          language={language}
-                          searchQuery={searchQuery}
-                          onNotification={handleNotification}
-                        />
-                      </div>
+              {Object.entries(groupedSchools).map(([region, cities]) => (
+                <div
+                  key={region}
+                  id={region}
+                  className={`${collapsedSections[region] ? 'mb-2' : 'mb-8'}`}
+                >
+                  <div
+                    onClick={() => toggleSection(region)}
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-25/50 p-4 rounded-lg"
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-semibold">
+                        {REGIONS_CONFIG[region]
+                          ? language === 'en'
+                            ? REGIONS_CONFIG[region].en
+                            : REGIONS_CONFIG[region].jp
+                          : region}
+                      </h2>
+                      <span className="text-gray-500 text-sm">
+                        ({Object.values(cities).reduce((sum, arr) => sum + arr.length, 0)} Schools)
+                      </span>
                     </div>
-                  );
-                }
-              )}
+                    <div>
+                      {collapsedSections[region] ? (
+                        <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                      ) : (
+                        <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`transition-all duration-300 ease-in-out ${collapsedSections[region]
+                      ? 'h-0 opacity-0 invisible overflow-hidden'
+                      : 'opacity-100 visible'
+                      }`}
+                  >
+                    {Object.entries(cities)
+                      .sort((a, b) => {
+                        if (region === 'Kanto') {
+                          if (a[0] === 'Tokyo') return -1;
+                          if (b[0] === 'Tokyo') return 1;
+                        }
+                        return 0;
+                      })
+                      .map(([city, citySchools]) => (
+                        <div key={city} id={`${region}-${city}`} className="mb-6 pl-4">
+                          <h3 className="text-lg font-medium mb-2">
+                            {city} ({citySchools.length})
+                          </h3>
+                          <SchoolList
+                            schools={citySchools}
+                            viewMode={viewMode}
+                            language={language}
+                            searchQuery={searchQuery}
+                            onNotification={handleNotification}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
