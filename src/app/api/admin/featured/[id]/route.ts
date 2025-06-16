@@ -60,6 +60,20 @@ export async function PUT(request: NextRequest) {
     }
     const body = await request.json();
     const { slotNumber, schoolId, startDate, endDate } = body;
+    // Prevent overlapping schedules for the same slot
+    const newStart = new Date(startDate);
+    const newEnd = new Date(endDate);
+    const conflicts = await prisma.featuredSlot.findMany({
+      where: {
+        slotNumber: Number(slotNumber),
+        startDate: { lte: newEnd },
+        endDate: { gte: newStart },
+        id: { not: slotId },
+      },
+    });
+    if (conflicts.length > 0) {
+      return NextResponse.json({ error: 'Schedule overlaps an existing schedule for this slot.' }, { status: 400 });
+    }
     const data: Prisma.FeaturedSlotUpdateInput = {};
     if (slotNumber !== undefined) data.slotNumber = Number(slotNumber);
     if (schoolId !== undefined) {
