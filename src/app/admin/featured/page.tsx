@@ -183,7 +183,7 @@ export default function AdminFeaturedPage() {
     const slot = slots[index];
     // basic validation
     if (!slot.schoolId || !slot.startDate || !slot.endDate || slot.startDate > slot.endDate) {
-      alert('Invalid slot data');
+      toast.error('Invalid slot data');
       return;
     }
     setSavingSlot(index);
@@ -214,14 +214,14 @@ export default function AdminFeaturedPage() {
           }
           return [...curr, data];
         });
-        alert('Slot saved');
+        toast.success('Slot saved');
       } else {
         const err = await res.json();
-        alert(err.error || 'Save failed');
+        toast.error(err.error || 'Save failed');
       }
     } catch (e) {
       console.error(e);
-      alert('Error saving slot');
+      toast.error('Error saving slot');
     } finally {
       setSavingSlot(null);
     }
@@ -242,14 +242,14 @@ export default function AdminFeaturedPage() {
       if (res.ok) {
         setSlots(curr => curr.map((s, i) => i === index ? { slotNumber: s.slotNumber, startDate: '', endDate: '' } : s));
         setAllSlots(curr => curr.filter(d => d.id !== slot.id));
-        alert('Slot cleared');
+        toast.success('Slot cleared');
       } else {
         const err = await res.json();
-        alert(err.error || 'Clear failed');
+        toast.error(err.error || 'Clear failed');
       }
     } catch (e) {
       console.error(e);
-      alert('Error clearing slot');
+      toast.error('Error clearing slot');
     } finally {
       setSavingSlot(null);
     }
@@ -267,7 +267,7 @@ export default function AdminFeaturedPage() {
   const handleUpdateUpcoming = async (id: number, slotNumber: number) => {
     const d = editingUpcomingData;
     if (!d.schoolId || !d.startDate || !d.endDate || d.startDate > d.endDate) {
-      alert('Invalid data');
+      toast.error('Invalid data');
       return;
     }
     setUpdatingUpcomingId(id);
@@ -279,13 +279,15 @@ export default function AdminFeaturedPage() {
       if (res.ok) {
         const updated = await res.json();
         setAllSlots(curr => curr.map(d => d.id === id ? updated : d));
-        alert('Upcoming schedule updated');
+        toast.success('Upcoming schedule updated');
         setEditingUpcomingId(null);
       } else {
-        const err = await res.json(); alert(err.error || 'Update failed');
+        const err = await res.json();
+        toast.error(err.error || 'Update failed');
       }
     } catch (e) {
-      console.error(e); alert('Error updating upcoming schedule');
+      console.error(e);
+      toast.error('Error updating upcoming schedule');
     } finally {
       setUpdatingUpcomingId(null);
     }
@@ -299,12 +301,14 @@ export default function AdminFeaturedPage() {
       if (res.ok) {
         setAllSlots(curr => curr.filter(d => d.id !== id));
         setEditingUpcomingId(null);
-        alert('Upcoming schedule deleted');
+        toast.success('Upcoming schedule deleted');
       } else {
-        const err = await res.json(); alert(err.error || 'Delete failed');
+        const err = await res.json();
+        toast.error(err.error || 'Delete failed');
       }
     } catch (e) {
-      console.error(e); alert('Error deleting upcoming schedule');
+      console.error(e);
+      toast.error('Error deleting upcoming schedule');
     } finally {
       setUpdatingUpcomingId(null);
     }
