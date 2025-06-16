@@ -131,14 +131,20 @@ export function OverviewForm({
         newErrors.location_en = language === 'en' ? 'Location is required' : '所在地は必須です';
       }
 
-      // Format URLs to ensure they have proper protocol
+      // Format URLs to ensure they have proper protocol or allow relative paths
       const formatUrl = (url: string) => {
         if (!url || url.trim() === '') return '';
         const trimmedUrl = url.trim();
-        if (!/^https?:\/\//i.test(trimmedUrl)) {
-          return `https://${trimmedUrl}`;
+        // Allow relative URLs
+        if (trimmedUrl.startsWith('/')) return trimmedUrl;
+        // Allow data URIs
+        if (trimmedUrl.startsWith('data:')) return trimmedUrl;
+        // If already absolute HTTP/HTTPS, return as-is
+        if (/^https?:\/\//i.test(trimmedUrl)) {
+          return trimmedUrl;
         }
-        return trimmedUrl;
+        // Otherwise prefix with HTTPS
+        return `https://${trimmedUrl}`;
       };
 
       // Validate URLs if they are not empty
@@ -168,8 +174,8 @@ export function OverviewForm({
         ...formData,
         url_en: formatUrl(formData.url_en),
         url_jp: formatUrl(formData.url_jp),
-        image_url: formData.image_url,
-        logo_url: formData.logo_url,
+        image_url: formatUrl(formData.image_url),
+        logo_url: formatUrl(formData.logo_url),
       };
 
       await onSave(dataToSubmit);

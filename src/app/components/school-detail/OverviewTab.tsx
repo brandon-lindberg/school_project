@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ZodIssue } from 'zod';
 import { School } from '@prisma/client';
 import FallbackImage from '../FallbackImage';
 import { Language, getLocalizedContent } from '@/utils/language';
@@ -112,34 +113,36 @@ export function OverviewTab({
     try {
       const response = await fetch(`/api/schools/${school.school_id}/basic`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save changes');
-      }
-
       const result = await response.json();
-
+      if (!response.ok) {
+        // Prefer showing validation error details if available
+        const detailMsgs = Array.isArray(result.details)
+          ? result.details.map((d: ZodIssue) => {
+            const path = Array.isArray(d.path) && d.path.length ? d.path.join('.') : '';
+            return path ? `${path}: ${d.message}` : d.message;
+          }).join(', ')
+          : '';
+        const message = detailMsgs || result.error ||
+          (language === 'en' ? 'Failed to save changes' : '変更の保存に失敗しました');
+        throw new Error(message);
+      }
       // Update the school data with the response
       Object.assign(school, result.school);
-
       setIsEditing(false);
       setNotification({
         type: 'success',
         message: language === 'en' ? 'Changes saved successfully' : '変更が保存されました',
       });
-
-      // Force a page refresh to show updated data
+      // Refresh to show updated data
       window.location.reload();
     } catch (error) {
       console.error('Error saving changes:', error);
       setNotification({
         type: 'error',
-        message: language === 'en' ? 'Failed to save changes' : '変更の保存に失敗しました',
+        message: error instanceof Error ? error.message : (language === 'en' ? 'Failed to save changes' : '変更の保存に失敗しました'),
       });
     }
   };
@@ -198,9 +201,9 @@ export function OverviewTab({
           />
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end">
-          <div className="p-6 text-white">
-            <h1 className="text-4xl font-bold mb-2">{name}</h1>
-            <p className="text-lg">{shortDescription}</p>
+          <div className="p-4 sm:p-6 text-white">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{name}</h1>
+            <p className="text-base sm:text-lg">{shortDescription}</p>
             {!canEdit && !claimStatus?.isClaimed && (
               <div className="mt-4 flex justify-end">
                 <button
@@ -239,17 +242,17 @@ export function OverviewTab({
               <div className="space-y-2">
                 {getLocalizedContent(school.location_en, school.location_jp, language) && (
                   <p className="text-gray-600">
-                    {getLocalizedContent(school.location_en, school.location_jp, language)}
+                    City: {getLocalizedContent(school.location_en, school.location_jp, language)}
                   </p>
                 )}
                 {getLocalizedContent(school.region_en, school.region_jp, language) && (
                   <p className="text-gray-600">
-                    {getLocalizedContent(school.region_en, school.region_jp, language)}
+                    Region: {getLocalizedContent(school.region_en, school.region_jp, language)}
                   </p>
                 )}
                 {getLocalizedContent(school.country_en, school.country_jp, language) && (
                   <p className="text-gray-600">
-                    {getLocalizedContent(school.country_en, school.country_jp, language)}
+                    Country: {getLocalizedContent(school.country_en, school.country_jp, language)}
                   </p>
                 )}
               </div>

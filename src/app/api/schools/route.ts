@@ -182,6 +182,8 @@ export async function GET(request: Request) {
           { name_jp: { contains: search, mode: QUERY_MODE } },
           { description_en: { contains: search, mode: QUERY_MODE } },
           { description_jp: { contains: search, mode: QUERY_MODE } },
+          { accreditation_en: { has: search } },
+          { accreditation_jp: { has: search } },
         ],
       });
     }

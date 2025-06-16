@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import AdminNav from './components/AdminNav';
 import { UserRole } from '@prisma/client';
 import { Session } from 'next-auth';
+import { Toaster } from 'react-hot-toast';
 
 type ExtendedSession = Session & {
   user: {
@@ -62,6 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50">
       {session?.user?.role === UserRole.SUPER_ADMIN && <AdminNav />}
+      <Toaster position="top-center" />
       <main className="py-6">{children}</main>
     </div>
   );

@@ -63,7 +63,17 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
     }
-
+    // Prevent overlapping schedules for the same slot
+    const conflicts = await prisma.featuredSlot.findMany({
+      where: {
+        slotNumber: slotNum,
+        startDate: { lte: end },
+        endDate: { gte: start },
+      },
+    });
+    if (conflicts.length > 0) {
+      return NextResponse.json({ error: 'Schedule overlaps an existing schedule for this slot.' }, { status: 400 });
+    }
     const newSlot = await prisma.featuredSlot.create({
       data: {
         slotNumber: slotNum,
