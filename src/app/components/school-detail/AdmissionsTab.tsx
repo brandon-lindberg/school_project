@@ -8,6 +8,7 @@ interface AdmissionsTabProps {
   translations: Translations;
   language: Language;
   isSchoolAdmin?: boolean;
+  isSuperAdmin?: boolean;
   onEdit?: () => void;
 }
 
@@ -16,6 +17,7 @@ export function AdmissionsTab({
   translations,
   language,
   isSchoolAdmin,
+  isSuperAdmin,
   onEdit,
 }: AdmissionsTabProps) {
   // Helper function to check if a section has content
@@ -60,8 +62,20 @@ export function AdmissionsTab({
   // If no data exists, show a message
   if (!hasAdmissionsInfo && !hasFeesInfo) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        {translations.sections.noAdmissionsInfo || 'No admissions information available'}
+      <div className="space-y-6">
+        {(isSchoolAdmin || isSuperAdmin) && (
+          <div className="flex justify-end">
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+            >
+              {translations.buttons?.edit || 'Edit Admissions Information'}
+            </button>
+          </div>
+        )}
+        <div className="text-center py-8 text-gray-500">
+          {translations.sections.noAdmissionsInfo || 'No admissions information available'}
+        </div>
       </div>
     );
   }
@@ -78,7 +92,7 @@ export function AdmissionsTab({
   return (
     <div className="space-y-6">
       {/* Admin Edit Button */}
-      {isSchoolAdmin && (
+      {(isSchoolAdmin || isSuperAdmin) && (
         <div className="flex justify-end">
           <button
             onClick={onEdit}
