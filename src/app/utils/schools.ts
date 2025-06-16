@@ -118,10 +118,10 @@ export const groupSchoolsByRegionAndCity = (
     let regionKey = Object.keys(REGIONS_CONFIG).find(
       key => key.toLowerCase() === regionRaw.toLowerCase()
     );
-    // Fallback to matching Japanese label exactly
+    // Fallback to matching Japanese label exactly (ignore the key)
     if (!regionKey) {
       regionKey = Object.entries(REGIONS_CONFIG).find(
-        ([key, value]) => value.jp === regionRaw
+        ([, value]) => value.jp === regionRaw
       )?.[0];
     }
     if (!regionKey) {

@@ -8,7 +8,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 import RegionNavigation from './RegionNavigation';
 import { REGIONS_CONFIG } from '../config/regions';
 import { School } from '@/types/school';
-import { getLocalizedContent } from '@/utils/language';
 import {
   HomeIcon,
   BuildingLibraryIcon,
